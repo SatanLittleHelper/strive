@@ -16,6 +16,5 @@ export class AppComponent {
 
   constructor() {
     this.telegramService.webApp.ready();
-    console.log(this.telegramService.webApp);
   }
 }

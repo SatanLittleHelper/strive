@@ -32,10 +32,11 @@ module.exports = tseslint.config(
       },
     },
     rules: {
-      // --- Angular ---
+      "no-console": [
+        "error",
+        { allow: [ "error"] },
+      ],
       "@angular-eslint/prefer-on-push-component-change-detection": "error",
-
-      // --- TypeScript ---
       "@typescript-eslint/explicit-function-return-type": [
         "error",
         {
@@ -55,8 +56,6 @@ module.exports = tseslint.config(
         "error",
         { checksVoidReturn: { attributes: false } },
       ],
-
-      // --- Imports (Airbnb-like) ---
       "import/order": [
         "error",
         {
@@ -78,9 +77,26 @@ module.exports = tseslint.config(
           alphabetize: { order: "asc", caseInsensitive: true },
         },
       ],
+      "import/no-duplicates": "error",
+      "import/no-extraneous-dependencies": [
+        "error",
+        {
+          devDependencies: [
+            "**/*.spec.ts",
+            "**/karma.conf.*",
+            "**/test/**",
+            "**/*.config.*",
+            "**/*.conf.*",
+          ],
+        },
+      ],
+      "import/extensions": [
+        "error",
+        "ignorePackages",
+        { ts: "never", tsx: "never", js: "never", jsx: "never" },
+      ],
       "import/newline-after-import": ["error", { count: 1 }],
 
-      // --- Additional best practices ---
       "import/no-default-export": "error",
 
       "@angular-eslint/directive-selector": [
