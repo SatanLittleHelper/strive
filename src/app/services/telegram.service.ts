@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import type { WebApp } from 'telegram-web-app';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TelegramService {
   private readonly tg: WebApp;
