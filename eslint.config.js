@@ -88,6 +88,7 @@ module.exports = tseslint.config(
             "**/*.config.*",
             "**/*.conf.*",
           ],
+          packageDir: [__dirname],
         },
       ],
       "import/extensions": [

@@ -2,7 +2,7 @@ import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
-import { TelegramService } from './app/services/telegram.service';
+import { TelegramService } from './services/telegram.service';
 
 @Component({
   selector: 'app-root',

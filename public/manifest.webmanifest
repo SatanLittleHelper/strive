@@ -1,0 +1,9 @@
+{
+  "name": "Strive",
+  "short_name": "Strive",
+  "display": "standalone",
+  "scope": "./",
+  "start_url": "./",
+  "icons": [
+  ]
+}
