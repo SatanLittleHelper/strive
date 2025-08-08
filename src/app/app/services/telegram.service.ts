@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import {WebApp} from 'telegram-web-app';
+
+import type { WebApp } from 'telegram-web-app';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +12,7 @@ export class TelegramService {
     this.tg = window.Telegram.WebApp;
   }
 
-  get webApp() {
+  get webApp(): WebApp {
     return this.tg;
   }
 }
