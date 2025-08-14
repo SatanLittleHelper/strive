@@ -1,8 +1,8 @@
 :root {
   /* Colors (light theme) */
-  --color-primary: hsl(222deg 89% 56%);
+  --color-primary: hsl(268deg 75% 55%);
   --color-secondary: hsl(215deg 16% 47%);
-  --color-accent: hsl(272deg 77% 57%);
+  --color-accent: hsl(200deg 95% 54%);
   --color-background: hsl(0deg 0% 100%);
   --color-surface: hsl(0deg 0% 98%);
   --color-error: hsl(0deg 84% 60%);
@@ -65,9 +65,9 @@
 @media (prefers-color-scheme: dark) {
   :root {
     /* Colors (dark theme) */
-    --color-primary: hsl(217deg 91% 60%);
+    --color-primary: hsl(268deg 68% 62%);
     --color-secondary: hsl(215deg 20% 65%);
-    --color-accent: hsl(272deg 77% 65%);
+    --color-accent: hsl(200deg 95% 61%);
     --color-background: hsl(224deg 71% 4%);
     --color-surface: hsl(224deg 14% 10%);
     --color-error: hsl(0deg 72% 51%);
@@ -84,9 +84,9 @@
 
 /* Explicit theme override via data-theme attribute */
 :root[data-theme='light'] {
-  --color-primary: hsl(222deg 89% 56%);
+  --color-primary: hsl(268deg 75% 55%);
   --color-secondary: hsl(215deg 16% 47%);
-  --color-accent: hsl(272deg 77% 57%);
+  --color-accent: hsl(200deg 95% 54%);
   --color-background: hsl(0deg 0% 100%);
   --color-surface: hsl(0deg 0% 98%);
   --color-error: hsl(0deg 84% 60%);
@@ -101,9 +101,9 @@
 }
 
 :root[data-theme='dark'] {
-  --color-primary: hsl(217deg 91% 60%);
+  --color-primary: hsl(268deg 68% 62%);
   --color-secondary: hsl(215deg 20% 65%);
-  --color-accent: hsl(272deg 77% 65%);
+  --color-accent: hsl(200deg 95% 61%);
   --color-background: hsl(224deg 71% 4%);
   --color-surface: hsl(224deg 14% 10%);
   --color-error: hsl(0deg 72% 51%);
