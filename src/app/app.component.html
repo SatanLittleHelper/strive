@@ -1,4 +1,7 @@
   <div class="router-outlet-wrapper">
+    <app-button class="theme-toggle" variant="secondary" size="md" (click)="toggleTheme()">
+      @if (isDark()) { Dark } @else { Light }
+    </app-button>
     <router-outlet />
   </div>
 

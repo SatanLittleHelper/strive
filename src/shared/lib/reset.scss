@@ -25,7 +25,7 @@ footer, header, hgroup, menu, nav, section {
 }
 
 body {
-  line-height: 1;
+  line-height: 1.5;
 }
 
 ol, ul {
@@ -33,7 +33,7 @@ ol, ul {
 }
 
 blockquote, q {
-  quotes: none;
+  quotes: unset;
 }
 
 blockquote::before, blockquote::after,
@@ -49,5 +49,33 @@ table {
 /* Box sizing border-box for all elements */
 *, *::before, *::after {
   box-sizing: border-box;
+}
+
+/* Media elements should be responsive by default */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* Inherit typography for form controls */
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 
