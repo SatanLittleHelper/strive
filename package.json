@@ -13,6 +13,7 @@
     "format": "prettier --write .",
     "prepare": "husky"
   },
+  "type": "module",
   "private": true,
   "lint-staged": {
     "*.{ts,html}": [
@@ -31,19 +32,23 @@
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
     "@angular/service-worker": "^19.2.0",
+    "@eslint/js": "^9.33.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^19.2.15",
+    "@angular-eslint/eslint-plugin": "^20.1.1",
+    "@angular-eslint/eslint-plugin-template": "^20.1.1",
+    "@angular-eslint/template-parser": "^20.1.1",
     "@angular/cli": "^19.2.15",
     "@angular/compiler-cli": "^19.2.0",
-    "@eslint/js": "^9.32.0",
     "@types/jasmine": "~5.1.0",
     "@types/telegram-web-app": "^9.0.0",
     "angular-eslint": "20.1.1",
-    "eslint": "^9.29.0",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-boundaries": "^5.0.1",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^5.2.2",
     "husky": "^9.1.7",

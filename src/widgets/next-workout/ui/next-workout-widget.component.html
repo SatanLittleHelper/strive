@@ -1,0 +1,10 @@
+<section>
+  <h2>Next Workout</h2>
+  <ul>
+    @for (workout of workouts(); track workout.id) {
+      <li>
+        <app-workout-info [workout]="workout" />
+      </li>
+    }
+  </ul>
+</section>

@@ -1,12 +1,4 @@
-<main class="main">
-	@if (telegramService.webApp.initDataUnsafe.user) {
-		<div>
-			<h1>Welcome, {{ telegramService.webApp.initDataUnsafe.user.first_name }}</h1>
-			<pre>{{ telegramService.webApp.initDataUnsafe.user | json }}</pre>
-		</div>
-	} @else {
-		<h1>Welcome to Strive!</h1>
-	}
-</main>
+  <div class="router-outlet-wrapper">
+    <router-outlet />
+  </div>
 
-<router-outlet />

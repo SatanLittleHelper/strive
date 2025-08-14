@@ -1,1 +1,6 @@
-/* You can add global styles to this file, and also import other style files */
+@use './shared/lib/reset' as *;
+@use './shared/lib/variables' as *;
+
+body {
+  background: var(--color-background);
+}
