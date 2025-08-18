@@ -53,7 +53,7 @@
   --duration-normal: 300ms;
   --duration-slow: 500ms;
   --easing-standard: ease;
-  
+
   /* Backward-compatible shorthands */
   --transition-fast: 0.15s ease;
   --transition-normal: 0.3s ease;
@@ -82,8 +82,8 @@
   }
 }
 
-/* Explicit theme override via data-theme attribute */
-:root[data-theme='light'] {
+/* Explicit theme override via tuiTheme attribute */
+:root[tuiTheme='light'] {
   --color-primary: hsl(268deg 75% 55%);
   --color-secondary: hsl(215deg 16% 47%);
   --color-accent: hsl(200deg 95% 54%);
@@ -100,7 +100,7 @@
   color-scheme: light;
 }
 
-:root[data-theme='dark'] {
+:root[tuiTheme='dark'] {
   --color-primary: hsl(268deg 68% 62%);
   --color-secondary: hsl(215deg 20% 65%);
   --color-accent: hsl(200deg 95% 61%);

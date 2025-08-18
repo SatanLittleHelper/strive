@@ -1,0 +1,32 @@
+:root {
+  --tui-primary: var(--color-primary);
+  --tui-primary-hover: color-mix(in hsl, var(--color-primary) 92%, white 8%);
+  --tui-primary-active: color-mix(in hsl, var(--color-primary) 80%, black 20%);
+  --tui-primary-text: var(--color-text);
+
+  /* new palette tokens used by components */
+  --tui-background-accent-1: var(--color-primary);
+  --tui-background-accent-1-hover: color-mix(in hsl, var(--color-primary) 92%, white 8%);
+  --tui-background-accent-1-pressed: color-mix(in hsl, var(--color-primary) 80%, black 20%);
+  --tui-text-primary-on-accent-1: var(--color-text-light);
+
+  /* accent-2 used by appearance="accent" */
+  --tui-background-accent-2: var(--color-accent);
+  --tui-background-accent-2-hover: color-mix(in hsl, var(--color-accent) 92%, white 8%);
+  --tui-background-accent-2-pressed: color-mix(in hsl, var(--color-accent) 80%, black 20%);
+  --tui-text-primary-on-accent-2: var(--color-text);
+  --tui-text-primary: var(--color-text);
+  --tui-base-01: var(--color-background);
+  --tui-base-02: var(--color-surface);
+  --tui-base-03: var(--color-border);
+  --tui-text-01: var(--color-text);
+  --tui-text-02: var(--color-muted);
+  --tui-error-fill: var(--color-error);
+  --tui-success-fill: var(--color-success);
+  --tui-warning-fill: var(--color-warning);
+  --tui-link: var(--color-accent);
+  --tui-focus: var(--color-primary);
+  --tui-background-base: var(--color-surface);
+  --tui-background-elevation-2: var(--color-background)
+}
+

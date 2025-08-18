@@ -55,7 +55,7 @@ export class ThemeService {
   }
 
   private applyTheme(theme: Theme): void {
-    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.setAttribute('tuiTheme', theme);
   }
 
   private storeTheme(theme: Theme): void {
