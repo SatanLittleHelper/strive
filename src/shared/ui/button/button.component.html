@@ -1,0 +1,9 @@
+<button
+  [disabled]="disabled()"
+  [class]="buttonClass()"
+  [attr.aria-disabled]="disabled() ? 'true' : null"
+>
+  <ng-content />
+</button>
+
+

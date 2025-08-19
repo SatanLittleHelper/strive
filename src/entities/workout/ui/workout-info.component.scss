@@ -1,0 +1,41 @@
+.name {
+  margin-right: var(--space-md);
+  font-weight: var(--font-weight-normal);
+}
+
+.date {
+  color: var(--color-secondary);
+}
+
+.percent-circle {
+  $status-colors: (
+    success: var(--color-success),
+    warning: var(--color-warning),
+    error: var(--color-error),
+  );
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 3rem;
+  height: 3rem;
+  margin-right: var(--space-md);
+  border: 2px solid var(--color-secondary);
+  border-radius: 50%;
+
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-secondary);
+  vertical-align: middle;
+
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+
+  @each $status, $color in $status-colors {
+    &.percent-#{$status} {
+      border-color: $color;
+      color: $color;
+    }
+  }
+}

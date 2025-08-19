@@ -1,1 +1,12 @@
-/* You can add global styles to this file, and also import other style files */
+@use './shared/lib/reset' as *;
+@use './shared/lib/variables' as *;
+@use './shared/lib/typography' as *;
+@use './shared/lib/taiga-theme' as *;
+
+body {
+  font-family: var(--font-family-base);
+  color: var(--color-text);
+  background: var(--color-background);
+}
+
+
