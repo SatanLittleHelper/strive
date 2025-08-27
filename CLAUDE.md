@@ -62,13 +62,17 @@ Import restrictions between layers are enforced - higher layers can import from 
 - Use signals for reactive state management
 
 ### Component Architecture
+- **Template Files**: Always use separate `.html` files for component templates (never inline templates)
+- Components must have corresponding `.html`, `.ts`, and `.scss` files
+
 ```typescript
 @Component({
   selector: 'app-example',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, TuiButton],
-  template: `...`
+  templateUrl: './example.component.html',
+  styleUrls: ['./example.component.scss']
 })
 export class ExampleComponent {
   private readonly service = inject(ExampleService);
@@ -162,3 +166,4 @@ Access Telegram features through `TelegramService` in `/src/shared/services/tele
 - PWA service worker is configured in `/ngsw-config.json`
 - Main color palette can be adjusted in `/src/shared/lib/variables.scss`
 - Taiga UI components are imported individually for better tree-shaking
+- add to memory используй бэм для верстки и цсс

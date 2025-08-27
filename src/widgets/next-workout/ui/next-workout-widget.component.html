@@ -1,8 +1,8 @@
-<section>
-  <h2>Next Workout</h2>
-  <ul>
+<section class="next-workout-widget">
+  <h2 class="next-workout-widget__title">Next Workout</h2>
+  <ul class="next-workout-widget__list">
     @for (workout of workouts(); track workout.id) {
-      <li>
+      <li class="next-workout-widget__item">
         <app-workout-info [workout]="workout" />
       </li>
     }

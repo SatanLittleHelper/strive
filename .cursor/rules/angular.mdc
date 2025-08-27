@@ -35,6 +35,8 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Keep templates simple and avoid complex logic
 - Use native control flow (`@if`, `@for`, `@switch`) instead of `*ngIf`, `*ngFor`, `*ngSwitch`
 - Use the async pipe to handle observables
+- Use BEM for styles
+- Use separated files for html and css
 ## Services
 - Design services around a single responsibility
 - Use the `providedIn: 'root'` option for singleton services

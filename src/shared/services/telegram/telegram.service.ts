@@ -6,11 +6,7 @@ import type { WebApp } from 'telegram-web-app';
   providedIn: 'root',
 })
 export class TelegramService {
-  private readonly tg: WebApp;
-
-  constructor() {
-    this.tg = window.Telegram.WebApp;
-  }
+  private readonly tg: WebApp = window.Telegram.WebApp;
 
   get webApp(): WebApp {
     return this.tg;

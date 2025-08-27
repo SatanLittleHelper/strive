@@ -4,6 +4,7 @@ import { TuiRoot, TuiButton } from '@taiga-ui/core';
 
 import { TelegramService } from '@/shared/services/telegram';
 import { ThemeService } from '@/shared/services/theme';
+import type { OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-root',
@@ -12,11 +13,11 @@ import { ThemeService } from '@/shared/services/theme';
   styleUrl: './app.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   private readonly telegramService = inject(TelegramService);
   private readonly themeService = inject(ThemeService);
 
-  constructor() {
+  ngOnInit(): void {
     this.telegramService.webApp.ready();
   }
 
