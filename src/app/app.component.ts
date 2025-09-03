@@ -1,14 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TuiRoot, TuiButton } from '@taiga-ui/core';
 
-import { TelegramService } from '@/shared/services/telegram';
-import { ThemeService } from '@/shared/services/theme';
+import { TelegramService, ThemeService } from '@/shared';
 import type { OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, TuiRoot, TuiButton],
+  imports: [RouterOutlet, TuiRoot, TuiButton, RouterLink, RouterLinkActive],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

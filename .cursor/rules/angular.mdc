@@ -17,6 +17,15 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Do NOT use the `@HostBinding` and `@HostListener` decorators. Put host bindings inside the `host` object of the `@Component` or `@Directive` decorator instead
 - Use `NgOptimizedImage` for all static images.
   - `NgOptimizedImage` does not work for inline base64 images.
+
+## Template Syntax Rules
+- **Without square brackets** `property="string"` - for static string values
+- **With square brackets** `[property]="expression"` - for dynamic values and expressions
+- **Examples:**
+  - `label="Static Text"` ✅ (static string)
+  - `[value]="dynamicValue"` ✅ (dynamic value)
+  - `[isHighlighted]="true"` ✅ (boolean value)
+  - `[label]="'Static Text'"` ❌ (unnecessary binding for static string)
 ## Components
 - Keep components small and focused on a single responsibility
 - Use `input()` and `output()` functions instead of decorators
@@ -39,6 +48,20 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Use separated files for html and css
 ## Services
 - Design services around a single responsibility
+- Use the `providedIn: 'root'` option for singleton services
+- Use the `inject()` function instead of constructor injection
+## Common pitfalls
+- Control flow (`@if`):
+  - You cannot use `as` expressions in `@else if (...)`. E.g. invalid code: `@else if (bla(); as x)`.
+- RxJS subscriptions:
+  - ALWAYS unsubscribe from RxJS subscriptions to prevent memory leaks
+  - Use `takeUntil` with destroy subject, `take(1)`, or `async` pipe when possible
+  - Implement `OnDestroy` interface and call `unsubscribe()` in `ngOnDestroy()`
+- Use the `providedIn: 'root'` option for singleton services
+- Use the `inject()` function instead of constructor injection
+## Common pitfalls
+- Control flow (`@if`):
+  - You cannot use `as` expressions in `@else if (...)`. E.g. invalid code: `@else if (bla(); as x)`.
 - Use the `providedIn: 'root'` option for singleton services
 - Use the `inject()` function instead of constructor injection
 ## Common pitfalls

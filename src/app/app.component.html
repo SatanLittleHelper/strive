@@ -1,9 +1,15 @@
-  <tui-root>
-    <div class="router-outlet-wrapper">
-      <button tuiButton class="theme-toggle" size="m" appearance="primary" (click)="toggleTheme()" type="button">
-        @if (isDark()) { Dark } @else { Light }
-      </button>
-      <router-outlet />
-    </div>
-  </tui-root>
+<tui-root>
+  <div class="router-outlet-wrapper">
+    <nav class="navigation">
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">Dashboard</a>
+      <a routerLink="/calorie-calculator" routerLinkActive="active" class="nav-link">Calorie Calculator</a>
+    </nav>
+    
+    <button tuiButton class="theme-toggle" size="m" appearance="primary" (click)="toggleTheme()" type="button">
+      @if (isDark()) { Dark } @else { Light }
+    </button>
+    
+    <router-outlet />
+  </div>
+</tui-root>
 

@@ -1,0 +1,537 @@
+---
+description: Project structure and architecture overview for Strive Angular application
+globs:
+alwaysApply: true
+---
+
+# Strive Project Structure & Architecture
+
+## Project Overview
+**Strive** is a modern Angular 19 Telegram Web App for fitness/workout management using Feature-Sliced Design (FSD) architecture.
+
+## Current Project Structure
+
+```
+strive/
+├── src/
+│   ├── app/                          # Application layer (FSD)
+│   │   ├── app.component.ts          # Root component
+│   │   ├── app.component.html        # Root template
+│   │   ├── app.component.scss        # Root styles
+│   │   ├── app.component.spec.ts     # Root tests
+│   │   ├── app.config.ts             # App configuration & providers
+│   │   └── app.routes.ts             # Main routing
+│   │
+│   ├── pages/                        # Pages layer (FSD)
+│   │   ├── dashboard/                # Dashboard page
+│   │   │   ├── dashboard.routes.ts   # Page routing
+│   │   │   ├── index.ts              # Public API
+│   │   │   └── ui/                   # Page components
+│   │   │       ├── dashboard.component.ts
+│   │   │       ├── dashboard.component.html
+│   │   │       ├── dashboard.component.scss
+│   │   │       └── dashboard.component.spec.ts
+│   │   └── calorie-calculator/       # Calorie calculator page
+│   │       ├── calorie-calculator.routes.ts
+│   │       ├── index.ts
+│   │       ├── ui/                   # Step components
+│   │       │   └── step/
+│   │       ├── calorie-calculator.component.ts
+│   │       ├── calorie-calculator.component.html
+│   │       ├── calorie-calculator.component.scss
+│   │       └── calorie-calculator.component.spec.ts
+│   │
+│   ├── widgets/                      # Widgets layer (FSD)
+│   │   ├── index.ts                  # Public API
+│   │   ├── next-workout/             # Next workout widget
+│   │   │   ├── index.ts              # Public API
+│   │   │   └── ui/                   # Widget components
+│   │   │       ├── next-workout-widget.component.ts
+│   │   │       ├── next-workout-widget.component.html
+│   │   │       ├── next-workout-widget.component.scss
+│   │   │       └── next-workout-widget.component.spec.ts
+│   │   └── calorie-widget/           # Calorie widget
+│   │       ├── index.ts
+│   │       ├── calorie-widget.component.ts
+│   │       ├── calorie-widget.component.html
+│   │       ├── calorie-widget.component.scss
+│   │       └── calorie-widget.component.spec.ts
+│   │
+│   ├── features/                     # Features layer (FSD)
+│   │   └── calorie-calculation/      # Calorie calculation feature
+│   │       ├── index.ts              # Public API
+│   │       ├── models/               # Feature models
+│   │       │   ├── index.ts
+│   │       │   └── calorie-data.types.ts
+│   │       ├── services/             # Feature services
+│   │       │   ├── index.ts
+│   │       │   ├── calorie-api.service.ts
+│   │       │   ├── calorie-api.service.spec.ts
+│   │       │   ├── calorie-calculator.service.ts
+│   │       │   └── calorie-calculator.service.spec.ts
+│   │       └── ui/                   # Feature components
+│   │           ├── index.ts
+│   │           ├── basic-data-form/   # Basic data form
+│   │           ├── activity-goal-form/ # Activity goal form
+│   │           └── results-display/   # Results display
+│   │
+│   ├── entities/                     # Entities layer (FSD)
+│   │   └── workout/                  # Workout entity
+│   │       ├── index.ts              # Public API
+│   │       ├── model/                # Entity models
+│   │       │   └── workout.entity.ts
+│   │       └── ui/                   # Entity components
+│   │           ├── workout-info.component.ts
+│   │           ├── workout-info.component.html
+│   │           ├── workout-info.component.scss
+│   │           └── workout-info.component.spec.ts
+│   │
+│   ├── shared/                       # Shared layer (FSD)
+│   │   ├── index.ts                  # Public API
+│   │   ├── lib/                      # Shared libraries
+│   │   │   ├── types/                # Shared types
+│   │   │   │   ├── index.ts
+│   │   │   └── select-option.types.ts
+│   │   │   ├── utils/                # Shared utilities
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── select-options.utils.ts
+│   │   │   │   └── select-options.utils.spec.ts
+│   │   │   ├── variables.scss        # CSS design tokens
+│   │   │   ├── reset.scss            # CSS reset
+│   │   │   ├── typography.scss       # Typography scale
+│   │   │   └── taiga-theme.scss      # Taiga UI theme
+│   │   ├── services/                 # Shared services
+│   │   │   ├── telegram/             # Telegram integration
+│   │   │   │   ├── telegram.service.ts
+│   │   │   │   └── index.ts
+│   │   │   └── theme/                # Theme management
+│   │   │       ├── theme.service.ts
+│   │   │       └── index.ts
+│   │   └── ui/                       # Shared UI components
+│   │       └── result-item/          # Result item component
+│   │           ├── index.ts
+│   │           ├── result-item.component.ts
+│   │           ├── result-item.component.html
+│   │           ├── result-item.component.scss
+│   │           └── result-item.component.spec.ts
+│   │
+│   ├── main.ts                       # Application entry point
+│   ├── index.html                    # HTML template
+│   ├── styles.scss                   # Global styles
+│   └── test-setup.ts                 # Zoneless testing configuration
+│
+├── .cursor/rules/                    # Cursor IDE rules
+│   ├── angular.mdc                   # Angular coding rules
+│   ├── taiga-ui.mdc                  # Taiga UI usage rules
+│   ├── testing.mdc                   # Testing rules and patterns
+│   ├── commits.mdc                   # Commit message rules
+│   └── project-structure.mdc         # This file
+│
+├── angular.json                      # Angular CLI config
+├── tsconfig.json                     # TypeScript config
+├── eslint.config.mjs                 # ESLint with FSD boundaries
+├── karma.conf.cjs                    # Karma configuration for zoneless testing
+├── package.json                      # Dependencies & scripts
+└── CLAUDE.md                         # Project documentation
+```
+
+## Project Rules & Standards
+
+### 📚 Cursor IDE Rules
+
+The project uses comprehensive rules defined in `.cursor/rules/` directory to ensure code quality and consistency:
+
+#### 1. **Angular Rules** (`.cursor/rules/angular.mdc`)
+- **TypeScript Best Practices**: Strict type checking, avoid `any` type
+- **Angular Best Practices**: Standalone components, signals for state management
+- **Template Syntax**: Proper binding syntax, native control flow (`@if`, `@for`, `@switch`)
+- **Component Architecture**: Small focused components, `input()`/`output()` functions
+- **State Management**: Signals with `computed()`, avoid `mutate`
+- **Forms**: Reactive forms preferred, proper RxJS unsubscription
+- **Styling**: BEM methodology, separated HTML/CSS files
+
+#### 2. **Taiga UI Rules** (`.cursor/rules/taiga-ui.mdc`)
+- **Import Guidelines**: Correct package imports (`@taiga-ui/kit` vs `@taiga-ui/core`)
+- **Modern Select Implementation**: Using `tui-data-list-wrapper` with `new` attribute
+- **Optimized Patterns**: Computed signals for better performance
+- **Component Usage**: Proper setup with `tuiItemsHandlersProvider`
+- **Stringify Functions**: Custom stringification for select options
+
+#### 3. **Testing Rules** (`.cursor/rules/testing.mdc`)
+- **Zoneless Testing**: Mandatory use of `configureZonelessTestingModule()`
+- **Coverage Requirements**: 80% statements, 70% branches, 80% functions, 80% lines
+- **Test Patterns**: Component, service, utility testing patterns
+- **Mock Data**: Standardized mock object and spy creation
+- **Test Organization**: Descriptive names, nested describe blocks
+- **Best Practices**: Test isolation, specific assertions, edge case coverage
+
+#### 4. **Commit Rules** (`.cursor/rules/commits.mdc`)
+- **Pre-commit Checklist**:
+  1. ✅ Linter errors check and fix
+  2. ✅ Application build verification
+  3. ✅ Test coverage compliance
+  4. ✅ All tests passing
+  5. ✅ Project structure file updates
+
+### 🏗️ Architecture Rules
+
+#### **Feature-Sliced Design (FSD)**
+- **Layer Boundaries**: Strict import restrictions between layers
+- **Public API**: All exports through `index.ts` files
+- **Import Hierarchy**: `app → pages → widgets → features → entities → shared`
+
+#### **Component Structure**
+- **Standalone Components**: No NgModules, modern Angular approach
+- **File Organization**: Separate `.ts`, `.html`, `.scss`, `.spec.ts` files
+- **Naming Convention**: Kebab-case files, PascalCase classes
+
+#### **Service Architecture**
+- **Singleton Services**: `providedIn: 'root'` for global services
+- **Dependency Injection**: Use `inject()` function instead of constructor
+- **State Management**: Signals for reactive state
+
+### 🎨 Styling Rules
+
+#### **CSS Architecture**
+- **BEM Methodology**: Block__Element--Modifier naming convention
+- **Design Tokens**: HSL-based color system in `variables.scss`
+- **Modular SCSS**: Component-scoped styles with shared variables
+- **Taiga UI Integration**: Custom theme extending Taiga UI design system
+
+#### **Responsive Design**
+- **Mobile-First**: Optimized for Telegram Web App
+- **CSS Grid/Flexbox**: Modern layout techniques
+- **Design System**: Consistent spacing, typography, and colors
+
+### 🔧 Development Rules
+
+#### **Code Quality**
+- **ESLint**: Strict TypeScript and Angular rules
+- **Prettier**: Consistent code formatting
+- **Stylelint**: SCSS code quality enforcement
+- **Husky**: Pre-commit hooks for quality assurance
+
+#### **Performance Rules**
+- **Lazy Loading**: Feature-based route splitting
+- **Change Detection**: OnPush strategy for components
+- **Image Optimization**: `NgOptimizedImage` for static images
+- **Bundle Optimization**: Tree-shaking and code splitting
+
+#### **Testing Standards**
+- **Zoneless Mode**: Experimental Angular feature for better performance
+- **Karma Configuration**: Optimized for zoneless testing
+- **Coverage Enforcement**: Automated coverage checking
+- **Test Patterns**: Consistent testing approaches across the project
+
+## FSD Architecture Layers
+
+### 1. **App Layer** (`/src/app/`)
+- **Purpose**: Application entry point, routing, and global providers
+- **Can import**: All layers below
+- **Key files**:
+  - `app.config.ts` - Global providers (zoneless CD, router, PWA)
+  - `app.routes.ts` - Main routing configuration
+  - `app.component.ts` - Root component with theme toggle
+
+### 2. **Pages Layer** (`/src/pages/`)
+- **Purpose**: Page-level components (route components)
+- **Can import**: widgets, features, entities, shared
+- **Current pages**:
+  - `dashboard/` - Main dashboard page with widgets
+  - `calorie-calculator/` - Calorie calculation page with step-by-step form
+
+### 3. **Widgets Layer** (`/src/widgets/`)
+- **Purpose**: Complex UI blocks and composite components
+- **Can import**: features, entities, shared
+- **Current widgets**:
+  - `next-workout/` - Widget showing next scheduled workout
+  - `calorie-widget/` - Widget displaying calorie calculation results
+
+### 4. **Features Layer** (`/src/features/`)
+- **Purpose**: Business logic features (reusable across pages)
+- **Can import**: entities, shared
+- **Current features**:
+  - `calorie-calculation/` - Complete calorie calculation feature with:
+    - Models: Data types and interfaces
+    - Services: API integration and business logic
+    - UI Components: Forms, displays, and step navigation
+
+### 5. **Entities Layer** (`/src/entities/`)
+- **Purpose**: Business entities and domain models
+- **Can import**: shared only
+- **Current entities**:
+  - `workout/` - Workout entity with model and UI components
+
+### 6. **Shared Layer** (`/src/shared/`)
+- **Purpose**: Shared utilities, services, UI components, and libraries
+- **Can import**: shared only
+- **Structure**:
+  - `lib/` - Design system (variables, typography, themes)
+  - `lib/types/` - Shared TypeScript types and interfaces
+  - `lib/utils/` - Utility functions and helpers
+  - `services/` - Global services (Telegram, Theme)
+  - `ui/` - Reusable UI components
+
+## Taiga UI Integration
+
+### UI Library
+- **Version**: 4.49.0
+- **Documentation**: https://taiga-ui.dev/
+- **Storybook**: https://taiga-ui.dev/storybook/
+- **Rules**: See `.cursor/rules/taiga-ui.mdc` for detailed usage guidelines
+
+### Key Components
+- **Forms**: `TuiInputModule`, `TuiSelectModule`, `TuiCheckboxModule`
+- **Buttons**: `TuiButtonModule`
+- **Layout**: `TuiCardModule`, `TuiSurfaceModule`
+- **Navigation**: `TuiTabsModule`, `TuiBreadcrumbsModule`
+
+### Import Guidelines
+```typescript
+// ✅ Correct imports
+import { TuiButton } from '@taiga-ui/core';
+import { TuiSelect, TuiInputModule } from '@taiga-ui/kit';
+
+// ❌ Wrong imports
+import { TuiSelect } from '@taiga-ui/core';
+```
+
+## Import Restrictions (ESLint Boundaries)
+
+```
+app → pages → widgets → features → entities → shared
+```
+
+- Higher layers can import from lower layers
+- Same layer can import from same layer
+- Lower layers CANNOT import from higher layers
+- All imports must go through public API (`index.ts`)
+
+## Key Technical Decisions
+
+### Architecture
+- **Feature-Sliced Design (FSD)** with strict layer boundaries
+- **Standalone Components** - No NgModules
+- **Zoneless Change Detection** - Experimental Angular feature
+- **Signals** - Primary state management
+
+### Styling
+- **SCSS** with modular architecture
+- **BEM** methodology for CSS classes
+- **Design Tokens** - HSL-based color system
+- **Taiga UI** - Primary component library
+
+### Development
+- **Strict TypeScript** with explicit return types
+- **ESLint** with FSD boundaries enforcement
+- **Prettier** + **Stylelint** for code formatting
+- **Husky** + **lint-staged** for pre-commit hooks
+
+## Component Structure Pattern
+
+Every component follows this structure:
+```
+component-name/
+├── component-name.component.ts       # Component logic
+├── component-name.component.html     # Template
+├── component-name.component.scss     # Styles
+├── component-name.component.spec.ts  # Tests
+└── index.ts                          # Public API export
+```
+
+## Service Structure Pattern
+
+Every service follows this structure:
+```
+service-name/
+├── service-name.service.ts           # Service implementation
+├── service-name.service.spec.ts      # Tests
+└── index.ts                          # Public API export
+```
+
+## Adding New Components
+
+### 1. Create component structure:
+```bash
+src/[layer]/[feature]/ui/component-name/
+├── component-name.component.ts
+├── component-name.component.html
+├── component-name.component.scss
+└── index.ts
+```
+
+### 2. Follow naming conventions:
+- **Files**: kebab-case
+- **Classes**: PascalCase
+- **Selectors**: `app-kebab-case`
+
+### 3. Use proper imports:
+```typescript
+// ✅ Correct - importing from lower layer
+import { SomeService } from '@/shared/services/some';
+
+// ❌ Wrong - importing from higher layer
+import { SomeComponent } from '@/pages/some-page';
+```
+
+## Routing Standards
+
+### Route Naming Convention
+
+All route constants must use **UPPER_SNAKE_CASE** naming:
+
+```typescript
+// ✅ Correct - UPPER_SNAKE_CASE
+export const DASHBOARD_ROUTES: Route[] = [...];
+export const CALORIE_CALCULATOR_ROUTES: Routes = [...];
+export const USER_PROFILE_ROUTES: Routes = [...];
+
+// ❌ Wrong - camelCase
+export const dashboardRoutes: Route[] = [...];
+export const calorieCalculatorRoutes: Routes = [...];
+```
+
+### Route File Structure
+
+Every page must have a routes file following this pattern:
+
+```
+src/pages/[page-name]/
+├── [page-name].routes.ts     # Route definitions
+├── index.ts                  # Public API exports
+└── ui/                       # Page components
+    ├── [page-name].component.ts
+    ├── [page-name].component.html
+    └── [page-name].component.scss
+```
+
+### Route File Template
+
+```typescript
+// [page-name].routes.ts
+import { [PageName]Component } from './ui/[page-name].component';
+import type { Routes } from '@angular/router';
+
+export const [PAGE_NAME]_ROUTES: Routes = [
+  {
+    path: '',
+    component: [PageName]Component,
+    title: '[Page Title]',
+  },
+];
+
+// index.ts
+export { [PAGE_NAME]_ROUTES } from './[page-name].routes';
+export { [PageName]Component } from './ui/[page-name].component';
+```
+
+### Main App Routes
+
+Main routing configuration in `src/app/app.routes.ts`:
+
+```typescript
+export const routes: Routes = [
+  {
+    path: '',
+    redirectTo: '/dashboard',
+    pathMatch: 'full',
+  },
+  {
+    path: 'dashboard',
+    loadChildren: () => import('@/pages/dashboard').then((m) => m.DASHBOARD_ROUTES),
+    title: 'Dashboard',
+  },
+  {
+    path: 'calorie-calculator',
+    loadChildren: () => import('@/pages/calorie-calculator').then((m) => m.CALORIE_CALCULATOR_ROUTES),
+    title: 'Calorie Calculator',
+  },
+];
+```
+
+**Key Rules:**
+- Route constants: **UPPER_SNAKE_CASE** (e.g., `DASHBOARD_ROUTES`)
+- Route files: **kebab-case** (e.g., `dashboard.routes.ts`)
+- Route paths: **kebab-case** (e.g., `'calorie-calculator'`)
+- Component names: **PascalCase** (e.g., `DashboardComponent`)
+- Always include `title` property for better UX
+
+## Current State & Next Steps
+
+### ✅ Completed
+- FSD architecture setup
+- Basic dashboard page
+- Next workout widget
+- Workout entity
+- Theme service
+- Telegram integration
+- Design system foundation
+- Zoneless change detection configuration
+- Comprehensive testing setup for zoneless mode
+- Karma configuration optimized for zoneless testing
+- **Testing rules and patterns** documented in `.cursor/rules/testing.mdc`
+- **Calorie calculator feature** with complete implementation
+- **Shared UI components** and utilities
+- **Comprehensive project rules** for all development aspects
+
+### 🚧 Ready for Development
+- Features layer (empty, ready for business logic)
+- Additional widgets
+- More entities
+- Enhanced UI components
+
+### 🎯 Potential Features
+- Calorie calculator feature
+- Workout planner feature
+- User profile entity
+- Progress tracking widgets
+- Settings page
+
+## Development Commands
+
+```bash
+npm start              # Development server
+npm run build          # Production build
+npm test               # Run tests (zoneless mode)
+npm run test:coverage  # Run tests with coverage
+npm run test:ci        # Run tests in CI mode (headless)
+npm run test:single    # Run specific test file
+npm run lint           # Lint code
+npm run format         # Format code
+```
+
+## Testing Standards
+
+### Test Configuration
+- **Zoneless Testing**: All tests use `configureZonelessTestingModule()` from `@/test-setup`
+- **Coverage Requirements**: Minimum 80% statements, 70% branches, 80% functions, 80% lines
+- **Test Framework**: Jasmine with Karma, optimized for zoneless Angular
+
+### Test Patterns
+- **Components**: Test creation, rendering, inputs/outputs, form validation
+- **Services**: Test method calls, signal behavior, error handling, API integration
+- **Utilities**: Test pure functions, edge cases, return values
+- **Integration**: Test component-service interactions and data flow
+
+### Test Organization
+- Use descriptive test names: `should [behavior] when [condition]`
+- Group related tests in nested `describe` blocks
+- Test both success and error scenarios
+- Mock external dependencies consistently
+
+**For detailed testing patterns, see `.cursor/rules/testing.mdc`**
+
+## Important Notes
+
+- All routes currently redirect to `/dashboard`
+- Uses experimental zoneless change detection
+- PWA service worker configured
+- Telegram Web App integration ready
+- Strict FSD boundaries enforced by ESLint
+- All text in application should be in English
+
+
+- Telegram Web App integration ready
+- Strict FSD boundaries enforced by ESLint
+- All text in application should be in English
+

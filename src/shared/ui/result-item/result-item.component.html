@@ -1,0 +1,10 @@
+<div 
+  class="result-item"
+  [class.result-item--highlighted]="isHighlighted()"
+>
+  <div class="result-item__label">{{ label() }}</div>
+  <div class="result-item__value">{{ value() }}</div>
+  <div class="result-item__description">
+    {{ description() }}
+  </div>
+</div>

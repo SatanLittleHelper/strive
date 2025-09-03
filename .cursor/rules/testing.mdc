@@ -1,0 +1,385 @@
+# Testing Rules & Patterns
+
+## Overview
+This document defines testing standards and patterns for the Strive project, based on analysis of existing test implementations.
+
+## Test Setup & Configuration
+
+### Zoneless Testing Module
+- **Always use** `configureZonelessTestingModule()` from `@/test-setup` for all tests
+- **Never use** standard `TestBed.configureTestingModule()` directly
+- **Import pattern**: `import { configureZonelessTestingModule } from '@/test-setup';`
+
+### Test Configuration
+```typescript
+// ✅ Correct - using zoneless testing module
+beforeEach(() => {
+  configureZonelessTestingModule({
+    imports: [ComponentName],
+    providers: [{ provide: ServiceName, useValue: serviceSpy }],
+  });
+});
+
+// ❌ Wrong - using standard TestBed
+beforeEach(() => {
+  TestBed.configureTestingModule({
+    declarations: [ComponentName],
+  });
+});
+```
+
+## Component Testing Patterns
+
+### Basic Component Tests
+```typescript
+describe('ComponentName', () => {
+  let component: ComponentName;
+  let fixture: ComponentFixture<ComponentName>;
+
+  beforeEach((): void => {
+    configureZonelessTestingModule({
+      imports: [ComponentName],
+    });
+
+    fixture = TestBed.createComponent(ComponentName);
+    component = fixture.componentInstance;
+  });
+
+  it('should create', (): void => {
+    expect(component).toBeTruthy();
+  });
+
+  it('should display expected content', (): void => {
+    fixture.detectChanges();
+    
+    const element = fixture.nativeElement.querySelector('.expected-class');
+    expect(element).toBeTruthy();
+  });
+});
+```
+
+### Input/Output Testing
+```typescript
+it('should initialize with input data', (): void => {
+  const mockData = { /* test data */ };
+  
+  fixture.componentRef.setInput('inputName', mockData);
+  fixture.detectChanges();
+  
+  expect(component.property).toEqual(mockData);
+});
+
+it('should emit output when action occurs', (): void => {
+  fixture.detectChanges();
+  
+  spyOn(component.outputName, 'emit');
+  component.performAction();
+  
+  expect(component.outputName.emit).toHaveBeenCalledWith(expectedValue);
+});
+```
+
+### Form Testing
+```typescript
+it('should validate required fields', (): void => {
+  fixture.detectChanges();
+  
+  const control = component.form.get('fieldName');
+  expect(control?.hasError('required')).toBeTruthy();
+});
+
+it('should emit data when form is valid', (): void => {
+  fixture.detectChanges();
+  
+  component.form.patchValue(mockValidData);
+  spyOn(component.dataSubmitted, 'emit');
+  
+  component.onSubmit();
+  
+  expect(component.dataSubmitted.emit).toHaveBeenCalledWith(mockValidData);
+});
+```
+
+## Service Testing Patterns
+
+### Service Setup
+```typescript
+describe('ServiceName', () => {
+  let service: ServiceName;
+  let dependencySpy: jasmine.SpyObj<DependencyService>;
+
+  beforeEach(() => {
+    const spy = jasmine.createSpyObj('DependencyService', ['methodName']);
+    
+    configureZonelessTestingModule({
+      providers: [
+        ServiceName,
+        { provide: DependencyService, useValue: spy }
+      ],
+    });
+
+    TestBed.runInInjectionContext(() => {
+      service = TestBed.inject(ServiceName);
+      dependencySpy = TestBed.inject(DependencyService) as jasmine.SpyObj<DependencyService>;
+    });
+  });
+});
+```
+
+### Signal Testing
+```typescript
+describe('signals behavior', () => {
+  it('should properly update signal values', () => {
+    TestBed.runInInjectionContext(() => {
+      expect(service.signalName()).toBe(initialValue);
+      
+      service['_privateSignal'].set(newValue);
+      expect(service.signalName()).toEqual(newValue);
+    });
+  });
+
+  it('should provide readonly access to signals', () => {
+    TestBed.runInInjectionContext(() => {
+      expect(typeof service.signalName).toBe('function');
+      expect(service.signalName).toBeDefined();
+    });
+  });
+});
+```
+
+### Observable Testing
+```typescript
+it('should handle successful API response', (done) => {
+  TestBed.runInInjectionContext(() => {
+    dependencySpy.methodName.and.returnValue(of(mockResponse));
+    
+    service.methodName().subscribe({
+      next: (result) => {
+        expect(dependencySpy.methodName).toHaveBeenCalledWith(expectedParams);
+        expect(result).toEqual(mockResponse);
+        done();
+      },
+      error: done.fail,
+    });
+  });
+});
+
+it('should handle API errors gracefully', (done) => {
+  TestBed.runInInjectionContext(() => {
+    const errorMessage = 'API Error';
+    dependencySpy.methodName.and.returnValue(throwError(() => new Error(errorMessage)));
+    
+    service.methodName().subscribe({
+      next: () => done.fail('Should have errored'),
+      error: (error) => {
+        expect(error.message).toBe(errorMessage);
+        done();
+      },
+    });
+  });
+});
+```
+
+## Utility Testing Patterns
+
+### Pure Function Testing
+```typescript
+describe('functionName', () => {
+  it('should return expected result for valid input', () => {
+    const input = { /* test data */ };
+    const expected = { /* expected result */ };
+    
+    const result = functionName(input);
+    
+    expect(result).toEqual(expected);
+  });
+
+  it('should handle edge cases', () => {
+    const edgeCaseInput = { /* edge case data */ };
+    
+    const result = functionName(edgeCaseInput);
+    
+    expect(result).toBeDefined();
+    // Add specific assertions for edge case behavior
+  });
+});
+```
+
+## Mock Data Patterns
+
+### Mock Object Creation
+```typescript
+const mockBasicData: BasicData = {
+  gender: Gender.MALE,
+  age: 30,
+  height: 180,
+  weight: 80,
+};
+
+const mockServiceResponse: ServiceResponse = {
+  success: true,
+  data: mockBasicData,
+  message: 'Success',
+};
+```
+
+### Spy Object Creation
+```typescript
+const serviceSpy = jasmine.createSpyObj('ServiceName', [
+  'method1',
+  'method2',
+  'method3',
+], {
+  property: 'value'
+});
+```
+
+## Test Organization
+
+### Describe Block Structure
+```typescript
+describe('ServiceName', () => {
+  // Setup and basic tests
+  
+  describe('methodName', () => {
+    // Method-specific tests
+    
+    describe('success cases', () => {
+      // Success scenario tests
+    });
+    
+    describe('error cases', () => {
+      // Error scenario tests
+    });
+    
+    describe('edge cases', () => {
+      // Edge case tests
+    });
+  });
+  
+  describe('signals behavior', () => {
+    // Signal-related tests
+  });
+  
+  describe('integration scenarios', () => {
+    // Integration tests
+  });
+});
+```
+
+## Coverage Requirements
+
+### Minimum Coverage Thresholds
+- **Statements**: 80%
+- **Branches**: 70%
+- **Functions**: 80%
+- **Lines**: 80%
+
+### What to Test
+- ✅ **Component creation and rendering**
+- ✅ **Input/Output behavior**
+- ✅ **Form validation and submission**
+- ✅ **Service method calls and responses**
+- ✅ **Signal updates and access**
+- ✅ **Error handling scenarios**
+- ✅ **Edge cases and boundary conditions**
+- ✅ **Integration between components/services**
+
+### What NOT to Test
+- ❌ **Angular framework functionality**
+- ❌ **Standard validation functions**
+- ❌ **Third-party library behavior**
+- ❌ **Model interfaces/types (only test implementations)**
+
+## Testing Best Practices
+
+### Test Naming
+- Use descriptive test names that explain the expected behavior
+- Follow pattern: `should [expected behavior] when [condition]`
+- Examples:
+  - `should create component successfully`
+  - `should emit data when form is valid`
+  - `should handle API errors gracefully`
+
+### Test Isolation
+- Each test should be independent
+- Use `beforeEach` for common setup
+- Avoid sharing state between tests
+- Mock external dependencies consistently
+
+### Assertion Quality
+- Test one behavior per test
+- Use specific assertions (avoid generic `toBeTruthy()` when possible)
+- Verify both positive and negative cases
+- Test edge cases and error conditions
+
+### Performance Considerations
+- Use `TestBed.runInInjectionContext()` for service tests
+- Minimize DOM manipulation in tests
+- Use `fixture.detectChanges()` only when necessary
+- Avoid complex async operations in unit tests
+
+## Common Test Patterns
+
+### Component Input Testing
+```typescript
+it('should update display when input changes', (): void => {
+  const initialData = { value: 'initial' };
+  const updatedData = { value: 'updated' };
+  
+  fixture.componentRef.setInput('data', initialData);
+  fixture.detectChanges();
+  expect(fixture.nativeElement.textContent).toContain('initial');
+  
+  fixture.componentRef.setInput('data', updatedData);
+  fixture.detectChanges();
+  expect(fixture.nativeElement.textContent).toContain('updated');
+});
+```
+
+### Service State Testing
+```typescript
+it('should maintain state between method calls', (): void => {
+  TestBed.runInInjectionContext(() => {
+    const firstCall = service.methodName();
+    const secondCall = service.methodName();
+    
+    expect(firstCall).not.toEqual(secondCall);
+    expect(service.stateSignal()).toBeDefined();
+  });
+});
+```
+
+### Form Interaction Testing
+```typescript
+it('should update form validation on input change', (): void => {
+  fixture.detectChanges();
+  
+  const input = fixture.nativeElement.querySelector('input[name="fieldName"]');
+  input.value = 'new value';
+  input.dispatchEvent(new Event('input'));
+  
+  fixture.detectChanges();
+  
+  const control = component.form.get('fieldName');
+  expect(control?.valid).toBeTrue();
+});
+```
+
+## Debugging Tests
+
+### Common Issues
+1. **Zoneless mode errors**: Ensure using `configureZonelessTestingModule()`
+2. **Signal access errors**: Use `TestBed.runInInjectionContext()`
+3. **DOM query failures**: Check if `fixture.detectChanges()` was called
+4. **Async test failures**: Ensure proper `done()` callback usage
+
+### Debugging Tips
+- Use `console.log()` in tests for debugging
+- Check test output for detailed error messages
+- Verify mock data structure matches expected types
+- Ensure all dependencies are properly mocked
+description:
+globs:
+alwaysApply: true
+---

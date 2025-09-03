@@ -1,0 +1,45 @@
+.calorie-calculator {
+  min-height: 100vh;
+  padding: 1rem;
+  background: var(--tui-base-01);
+  
+  &__container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  &__title {
+    margin-bottom: 2rem;
+
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--tui-text-01);
+    text-align: center;
+  }
+  
+  &__loading {
+    padding: 3rem;
+    color: var(--tui-text-02);
+    text-align: center;
+  }
+  
+  &__tabs {
+    margin-bottom: 2rem;
+  }
+  
+  &__content {
+    padding: 2rem;
+    border-radius: 1rem;
+    background: var(--tui-base-02);
+  }
+  
+  &__step {
+    &-title {
+      margin-bottom: 1.5rem;
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: var(--tui-text-01);
+    }
+  }
+}

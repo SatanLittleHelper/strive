@@ -1,0 +1,60 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="activity-goal-form">
+  <div class="activity-goal-form__field">
+    <label for="activityLevel" class="activity-goal-form__field-label">Activity Level</label>
+    <tui-textfield tuiChevron [stringify]="stringifyActivityLevel">
+      <input
+        tuiSelect
+        formControlName="activityLevel"
+      />
+      <tui-data-list
+        *tuiTextfieldDropdown
+      >
+        @for (item of activityLevelOptions(); track item.value) {
+          <button
+            new
+            tuiOption
+            type="button"
+            [value]="item.value"
+          >
+            {{ item.displayText }}
+          </button>
+        }
+      </tui-data-list>
+    </tui-textfield>
+  </div>
+
+  <div class="activity-goal-form__field">
+    <label for="goal" class="activity-goal-form__field-label">Goal</label>
+    <tui-textfield tuiChevron [stringify]="stringifyGoal">
+      <input
+        tuiSelect
+        formControlName="goal"
+      />
+      <tui-data-list
+        *tuiTextfieldDropdown
+      >
+        @for (item of goalOptions(); track item.value) {
+          <button
+            new
+            tuiOption
+            type="button"
+            [value]="item.value"
+          >
+            {{ item.displayText }}
+          </button>
+        }
+      </tui-data-list>
+    </tui-textfield>
+  </div>
+
+  <div class="activity-goal-form__actions">
+    <button
+      tuiButton
+      type="submit"
+      [disabled]="form.invalid"
+      appearance="primary"
+    >
+      Calculate Calories
+    </button>
+  </div>
+</form>

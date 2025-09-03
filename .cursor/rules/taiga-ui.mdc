@@ -1,0 +1,479 @@
+# Taiga UI Правила для Cursor
+
+## Основные принципы использования Taiga UI
+
+### 1. Правильные импорты
+
+```typescript
+// ✅ Правильно - компоненты из @taiga-ui/kit
+import { TuiSelect, TuiInputNumber, TuiDataListWrapper, TuiChevron } from '@taiga-ui/kit';
+
+// ✅ Правильно - базовые компоненты из @taiga-ui/core  
+import { TuiButton, TuiTextfield, tuiItemsHandlersProvider } from '@taiga-ui/core';
+
+// ❌ Неправильно - не импортируй компоненты из @taiga-ui/core
+import { TuiSelect } from '@taiga-ui/core';
+```
+
+### 2. Современный способ использования селектов (Taiga UI 4.x)
+
+```typescript
+// В компоненте
+import { signal } from '@angular/core';
+import { tuiItemsHandlersProvider } from '@taiga-ui/core';
+
+@Component({
+  // ...
+  providers: [
+    tuiItemsHandlersProvider({
+      stringify: signal((x: SelectOption) => 
+        x.description ? `${x.label} (${x.description})` : x.label
+      ),
+      identityMatcher: signal((a: SelectOption, b: SelectOption) => a.value === b.value),
+    }),
+  ],
+})
+export class ExampleComponent {
+  readonly options: SelectOption[] = [
+    { value: 'value1', label: 'Label 1', description: 'Description 1' },
+    { value: 'value2', label: 'Label 2' }, // description необязательный
+  ];
+}
+```
+
+```html
+<!-- В шаблоне - современный способ -->
+<tui-textfield tuiChevron>
+  <input
+    tuiSelect
+    formControlName="fieldName"
+  />
+  <tui-data-list-wrapper
+    *tuiTextfieldDropdown
+    new
+    [items]="options"
+  >
+  </tui-data-list-wrapper>
+</tui-textfield>
+```
+
+**ВАЖНО: Атрибут `new` ОБЯЗАТЕЛЕН в `tui-data-list-wrapper` для корректной работы селектов!**
+
+### 2.1. Оптимизированный подход с computed сигналами (РЕКОМЕНДУЕМЫЙ)
+
+Для лучшей производительности используйте computed сигналы с предварительно отформатированным текстом:
+
+```typescript
+// В компоненте
+import { computed } from '@angular/core';
+import { stringifySelectOptionByValue } from '@/shared';
+
+@Component({
+  // ...
+})
+export class ExampleComponent {
+  // Computed сигнал для опций с displayText
+  protected readonly options = computed(() =>
+    generateSelectOptions(SourceObject).map(option => ({
+      ...option,
+      displayText: stringifySelectOptionByValue(generateSelectOptions(SourceObject), option.value)
+    }))
+  );
+
+  // Функция для [stringify] на tui-textfield
+  protected readonly stringifyOption = (item: string): string =>
+    stringifySelectOptionByValue(generateSelectOptions(SourceObject), item);
+}
+```
+
+```html
+<!-- В шаблоне - оптимизированный способ -->
+<tui-textfield tuiChevron [stringify]="stringifyOption">
+  <input
+    tuiSelect
+    formControlName="fieldName"
+  />
+  <tui-data-list
+    *tuiTextfieldDropdown
+  >
+    @for (item of options(); track item.value) {
+      <button
+        new
+        tuiOption
+        type="button"
+        [value]="item.value"
+      >
+        {{ item.displayText }}
+      </button>
+    }
+  </tui-data-list>
+</tui-textfield>
+```
+
+**Преимущества computed сигналов:**
+- ✅ **Кэширование результата** - вычисляется только при изменении зависимостей
+- ✅ **Нет лишних вызовов** - при наведении на опции функции не вызываются заново
+- ✅ **Автоматическое обновление** - при изменении опций сигнал пересчитывается
+- ✅ **Производительность** - результат кэшируется до изменения зависимостей
+- ✅ **Единообразное отображение** - везде одинаковый формат текста
+
+**Ключевые моменты:**
+- Используйте `[stringify]="stringifyFunction"` на `tui-textfield` для форматирования выбранного значения
+- Используйте `{{ item.displayText }}` в опциях для отображения предварительно отформатированного текста
+- Используйте `tui-data-list` с `@for` циклом вместо `tui-data-list-wrapper` с `[items]`
+- Передавайте `[value]="item.value"` для передачи только значения в форму
+
+### 3. Правильное использование TuiInputNumber
+
+```typescript
+// В компоненте
+import { TuiInputNumber } from '@taiga-ui/kit';
+import { TuiTextfield } from '@taiga-ui/core';
+
+@Component({
+  imports: [
+    ReactiveFormsModule,
+    TuiInputNumber,
+    TuiTextfield,
+    // другие импорты
+  ],
+})
+export class ExampleComponent {
+  readonly form = new FormGroup({
+    age: new FormControl<number | null>(null, [
+      Validators.required,
+      Validators.min(10),
+      Validators.max(120)
+    ]),
+  });
+}
+```
+
+```html
+<!-- В шаблоне - ОБЯЗАТЕЛЬНО оборачивать в tui-textfield -->
+<tui-textfield>
+  <input
+    tuiInputNumber
+    formControlName="age"
+    placeholder="Enter age"
+    [min]="10"
+    [max]="120"
+  />
+</tui-textfield>
+```
+
+### 4. Правильное использование TuiButton
+
+```typescript
+// В компоненте
+import { TuiButton } from '@taiga-ui/core';
+
+@Component({
+  imports: [
+    TuiButton,
+    // другие импорты
+  ],
+})
+export class ExampleComponent {
+  // логика компонента
+}
+```
+
+```html
+<!-- В шаблоне - использовать директиву на нативном button -->
+<button
+  tuiButton
+  type="submit"
+  [disabled]="form.invalid"
+  appearance="primary"
+>
+  Submit
+</button>
+```
+
+### 5. Структура данных для селектов
+
+```typescript
+interface SelectOption {
+  value: string;
+  label: string;
+  description?: string; // необязательный
+}
+
+// Пример данных
+readonly activityLevelOptions: SelectOption[] = [
+  {
+    value: 'sedentary',
+    label: 'Sedentary',
+    description: 'Little or no exercise'
+  },
+  {
+    value: 'active',
+    label: 'Active'
+    // description можно не указывать
+  }
+];
+```
+
+### 6. Утилитарные функции для генерации SelectOption
+
+```typescript
+import { generateSelectOptions, generateSimpleSelectOptions } from '@/shared';
+
+// Для сложных объектов (ActivityLevel, Goal)
+readonly activityLevelOptions: SelectOption[] = generateSelectOptions(ActivityLevel);
+
+// Для простых объектов (Gender) с описаниями
+readonly genderOptions: SelectOption[] = generateSimpleSelectOptions(Gender, {
+  male: 'Male',
+  female: 'Female',
+}, {
+  male: 'Male gender',
+  female: 'Female gender',
+});
+
+// Для простых объектов без описаний
+readonly simpleOptions: SelectOption[] = generateSimpleSelectOptions(SimpleObject, {
+  option1: 'Option 1',
+  option2: 'Option 2',
+});
+
+// Для простых объектов без labels (используются значения как labels)
+readonly autoOptions: SelectOption[] = generateSimpleSelectOptions(SimpleObject);
+```
+
+### 7. Формы с Taiga UI
+
+```typescript
+// Всегда используй ReactiveFormsModule
+imports: [ReactiveFormsModule, TuiTextfield, TuiSelect, TuiDataListWrapper, TuiChevron, TuiInputNumber, TuiButton]
+
+// В шаблоне
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <!-- Селект -->
+  <tui-textfield tuiChevron>
+    <input
+      tuiSelect
+      formControlName="fieldName"
+    />
+    <tui-data-list-wrapper
+      *tuiTextfieldDropdown
+      new
+      [items]="options"
+    >
+    </tui-data-list-wrapper>
+  </tui-textfield>
+
+  <!-- Числовой ввод - ОБЯЗАТЕЛЬНО оборачивать в tui-textfield -->
+  <tui-textfield>
+    <input
+      tuiInputNumber
+      formControlName="numberField"
+      [min]="0"
+      [max]="100"
+    />
+  </tui-textfield>
+
+  <!-- Кнопка -->
+  <button
+    tuiButton
+    type="submit"
+    [disabled]="form.invalid"
+  >
+    Submit
+  </button>
+</form>
+```
+
+### 8. Стилизация
+
+```scss
+// Используй CSS переменные Taiga UI
+:host {
+  --tui-primary: var(--color-primary);
+  --tui-base-01: var(--color-background);
+}
+```
+
+### 9. Доступные компоненты
+
+- **Формы**: `TuiTextfield`, `TuiSelect`, `TuiInputNumber`, `TuiDataListWrapper`
+- **Кнопки**: `TuiButton` (директива на `<button>`)
+- **Иконки**: `TuiChevron`
+- **Провайдеры**: `tuiItemsHandlersProvider`
+
+### 10. Версия проекта
+
+Проект использует Taiga UI версии 4.49.0. Все импорты должны соответствовать этой версии.
+
+### 11. Структура компонентов
+
+```typescript
+@Component({
+  selector: 'app-example',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    ReactiveFormsModule,
+    TuiTextfield,
+    TuiSelect,
+    TuiDataListWrapper,
+    TuiChevron,
+    TuiInputNumber,
+    TuiButton,
+  ],
+  providers: [
+    tuiItemsHandlersProvider({
+      stringify: signal((x: SelectOption) => 
+        x.description ? `${x.label} (${x.description})` : x.label
+      ),
+      identityMatcher: signal((a: SelectOption, b: SelectOption) => a.value === b.value),
+    }),
+  ],
+  templateUrl: './example.component.html',
+  styleUrl: './example.component.scss',
+})
+export class ExampleComponent {
+  // логика компонента
+}
+```
+
+### 12. Работа с объектами в select
+
+```typescript
+// Используй tuiItemsHandlersProvider для настройки отображения
+providers: [
+  tuiItemsHandlersProvider({
+    stringify: signal((x: SelectOption) => 
+      x.description ? `${x.label} (${x.description})` : x.label
+    ),
+    identityMatcher: signal((a: SelectOption, b: SelectOption) => a.value === b.value),
+  }),
+],
+
+// Правильная структура данных для select
+readonly options: SelectOption[] = [
+  { value: 'value1', label: 'Label 1', description: 'Description 1' },
+  { value: 'value2', label: 'Label 2' }, // без description
+];
+
+// В шаблоне - современный способ без ng-template
+<tui-textfield tuiChevron>
+  <input
+    tuiSelect
+    formControlName="fieldName"
+  />
+  <tui-data-list-wrapper
+    *tuiTextfieldDropdown
+    new
+    [items]="options"
+  >
+  </tui-data-list-wrapper>
+</tui-textfield>
+```
+
+### 13. Типичные ошибки и их решения
+
+**Ошибка: "No value accessor for form control name"**
+- Убедись, что используешь `tuiSelect` директиву на `<input>` элементе
+- Проверь, что `TuiSelect` импортирован из `@taiga-ui/kit`
+- Убедись, что `formControlName` привязан к `<input>` элементу
+
+**Ошибка: "Class constructor _TuiSelectOption cannot be invoked without 'new'"**
+- Добавь `TuiSelectOption` в импорты из `@taiga-ui/kit`
+- Убедись, что все необходимые компоненты добавлены в массив `imports`
+
+**Ошибка: "Can't bind to 'items' since it isn't a known property"**
+- Убедись, что `TuiDataListWrapper` импортирован из `@taiga-ui/kit`
+- Проверь, что используешь `*tuiTextfieldDropdown` вместо `*tuiDataList`
+- **ОБЯЗАТЕЛЬНО добавь атрибут `new` в `tui-data-list-wrapper`**
+
+**Ошибка: "Can't bind to 'min' since it isn't a known property of 'tui-input-number'"**
+- Используй `<input tuiInputNumber>` вместо `<tui-input-number>`
+- ОБЯЗАТЕЛЬНО оборачивай в `<tui-textfield>`
+
+**Ошибка: "'tui-button' is not a known element"**
+- Используй `<button tuiButton>` вместо `<tui-button>`
+- Импортируй `TuiButton` из `@taiga-ui/core`
+
+### 14. Правила линтера и форматирования
+
+**Импорты:**
+```typescript
+// ✅ Правильно - разделение типов и значений
+import { generateSelectOptions } from '@/shared';
+import type { SelectOption } from '@/shared';
+
+// ❌ Неправильно - смешивание типов и значений
+import { generateSelectOptions, type SelectOption } from '@/shared';
+```
+
+**Функции:**
+```typescript
+// ✅ Правильно - явная типизация возвращаемого значения
+stringify: signal((x: SelectOption): string => 
+  x.description ? `${x.label} (${x.description})` : x.label
+)
+
+// ❌ Неправильно - без типизации
+stringify: signal((x: SelectOption) => 
+  x.description ? `${x.label} (${x.description})` : x.label
+)
+```
+
+**Форматирование:**
+```typescript
+// ✅ Правильно - trailing commas
+readonly form = new FormGroup({
+  gender: new FormControl<Gender | null>(null, [Validators.required]),
+  age: new FormControl<number | null>(null, [
+    Validators.required,
+    Validators.min(10),
+    Validators.max(120),
+  ]),
+});
+
+// ❌ Неправильно - без trailing commas
+readonly form = new FormGroup({
+  gender: new FormControl<Gender | null>(null, [Validators.required]),
+  age: new FormControl<number | null>(null, [
+    Validators.required,
+    Validators.min(10),
+    Validators.max(120)
+  ])
+});
+```
+
+**Утилитарные функции:**
+```typescript
+// ✅ Правильно - использование утилитарных функций
+readonly options: SelectOption[] = generateSelectOptions(ActivityLevel);
+
+// ❌ Неправильно - ручное создание массивов
+readonly options: SelectOption[] = [
+  {
+    value: ActivityLevel.SEDENTARY.value,
+    label: ActivityLevel.SEDENTARY.label,
+    description: ActivityLevel.SEDENTARY.description,
+  },
+  // ... дублирование кода
+];
+```
+
+### 15. Рекомендации
+
+- Всегда используй standalone компоненты
+- Придерживайся принципов FSD архитектуры
+- Используй строгую типизацию TypeScript
+- Следуй паттернам, установленным в проекте
+- Используй современный способ с `tuiItemsHandlersProvider` для селектов
+- НЕ используй устаревшие компоненты типа `tui-select` (старый способ)
+- Для `TuiInputNumber` используй директиву на `<input>` и ОБЯЗАТЕЛЬНО оборачивай в `tui-textfield`
+- Для `TuiButton` используй директиву на `<button>`, НЕ используй `<tui-button>`
+- Всегда добавляй провайдер `tuiItemsHandlersProvider` для селектов с объектами
+- **ОБЯЗАТЕЛЬНО добавляй атрибут `new` в `tui-data-list-wrapper` для корректной работы селектов**
+- Используй утилитарные функции `generateSelectOptions` и `generateSimpleSelectOptions` для генерации опций
+- `description` в `SelectOption` необязательный - используй его только когда нужно дополнительное описание
+- Всегда указывай типы возвращаемых значений функций
+- Используй trailing commas во всех объектах и массивах
+- Разделяй импорты типов и значений
+- Проверяй код линтером перед коммитом

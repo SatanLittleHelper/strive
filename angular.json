@@ -86,8 +86,8 @@
           "options": {
             "polyfills": [],
             "tsConfig": "tsconfig.spec.json",
+            "karmaConfig": "karma.conf.cjs",
             "inlineStyleLanguage": "scss",
-            "browsers": "ChromeHeadless",
             "assets": [
               {
                 "glob": "**/*",

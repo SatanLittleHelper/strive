@@ -2,7 +2,7 @@ import { DashboardComponent } from './ui/dashboard.component';
 
 import type { Route } from '@angular/router';
 
-export const dashboardRoutes: Route[] = [
+export const DASHBOARD_ROUTES: Route[] = [
   {
     path: '',
     component: DashboardComponent,
