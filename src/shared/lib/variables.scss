@@ -24,6 +24,20 @@
   --font-weight-bold: 700;
   --line-height-tight: 1.2;
   --line-height-base: 1.5;
+  
+  /* Responsive typography scale */
+  --font-size-h1-mobile: 1.75rem;
+  --font-size-h1-tablet: 2rem;
+  --font-size-h1-desktop: 2.25rem;
+  --font-size-h2-mobile: 1.375rem;
+  --font-size-h2-tablet: 1.5rem;
+  --font-size-h2-desktop: 1.75rem;
+  --font-size-h3-mobile: 1.125rem;
+  --font-size-h3-tablet: 1.25rem;
+  --font-size-h3-desktop: 1.375rem;
+  --font-size-body-mobile: 0.875rem;
+  --font-size-body-tablet: 1rem;
+  --font-size-body-desktop: 1rem;
 
   /* Spacing */
   --space-xs: 0.25rem;

@@ -9,7 +9,7 @@
       "@/features/*": ["features/*"],
       "@/entities/*": ["entities/*"],
       "@/widgets/*": ["widgets/*"],
-      "@/shared": ["shared/index"]
+      "@/shared": ["shared/index"],
     },
     "outDir": "./dist/out-tsc",
     "strict": true,

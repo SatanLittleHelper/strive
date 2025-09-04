@@ -108,12 +108,30 @@ strive/
 │   │   │       ├── theme.service.ts
 │   │   │       └── index.ts
 │   │   └── ui/                       # Shared UI components
-│   │       └── result-item/          # Result item component
+│   │       ├── result-item/          # Result item component
+│   │       │   ├── index.ts
+│   │       │   ├── result-item.component.ts
+│   │       │   ├── result-item.component.html
+│   │       │   ├── result-item.component.scss
+│   │       │   └── result-item.component.spec.ts
+│   │       ├── select-field/         # Select field component
+│   │       │   ├── index.ts
+│   │       │   ├── select-field.component.ts
+│   │       │   ├── select-field.component.html
+│   │       │   ├── select-field.component.scss
+│   │       │   └── select-field.component.spec.ts
+│   │       ├── step-navigation/      # Step navigation component
+│   │       │   ├── index.ts
+│   │       │   ├── step-navigation.component.ts
+│   │       │   ├── step-navigation.component.html
+│   │       │   ├── step-navigation.component.scss
+│   │       │   └── step-navigation.component.spec.ts
+│   │       └── navigation/           # Adaptive navigation component
 │   │           ├── index.ts
-│   │           ├── result-item.component.ts
-│   │           ├── result-item.component.html
-│   │           ├── result-item.component.scss
-│   │           └── result-item.component.spec.ts
+│   │           ├── navigation.component.ts
+│   │           ├── navigation.component.html
+│   │           ├── navigation.component.scss
+│   │           └── navigation.component.spec.ts
 │   │
 │   ├── main.ts                       # Application entry point
 │   ├── index.html                    # HTML template

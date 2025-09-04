@@ -1,66 +1,36 @@
 :host {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-
-  min-width: 100vw;
-  min-height: 100vh;
-
-  background: var(--color-surface);
-}
-
-.router-outlet-wrapper {
   display: block;
-
-  box-sizing: border-box;
   width: 100vw;
   height: 100vh;
-  padding: var(--space-lg);
+  background: var(--color-surface);
 }
 
-.navigation {
-  position: fixed;
-  z-index: var(--z-header);
-  top: var(--space-md);
-  left: var(--space-md);
+.app-container {
+  position: relative;
 
   display: flex;
-  gap: var(--space-sm);
+  flex-direction: column;
 
-  padding: var(--space-sm);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-
-  background: var(--color-surface);
-  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
+  width: 100%;
+  height: 100%;
 }
 
-.nav-link {
-  display: inline-block;
+.main-content {
+  overflow: hidden auto;
+  flex: 1;
 
-  padding: var(--space-sm) var(--space-md);
-  border-radius: 6px;
+  min-height: 0;
+  padding: var(--space-md);
 
-  font-weight: 500;
-  color: var(--color-text);
-  text-decoration: none;
-
-  transition: all 0.2s ease;
-
-  &:hover {
-    color: var(--color-text-light);
-    background: var(--color-primary);
+  background: var(--tui-base-01);
+  
+  @media (width >= 768px) {
+    padding: var(--space-lg);
+    padding-bottom: 0;
   }
-
-  &.active {
-    color: var(--color-text-light);
-    background: var(--color-primary);
+  
+  @media (width >= 1024px) {
+    padding: var(--space-xl);
+    padding-bottom: 0;
   }
-}
-
-.theme-toggle {
-  position: fixed;
-  z-index: var(--z-header);
-  top: var(--space-md);
-  right: var(--space-md);
 }
