@@ -30,12 +30,24 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: 'package-lock.json'
         
     - name: Install dependencies
       run: |
         echo "Installing dependencies..."
         echo "Node version: $(node --version)"
         echo "NPM version: $(npm --version)"
+        
+        # Force clear npm cache to avoid sync issues
+        echo "Clearing npm cache..."
+        npm cache clean --force
+        
+        # Remove any existing node_modules to ensure clean install
+        echo "Removing existing node_modules..."
+        rm -rf node_modules
+        
+        echo "Running npm ci..."
         npm ci
         echo "Dependencies installed successfully"
       
