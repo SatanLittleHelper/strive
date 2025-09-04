@@ -37,16 +37,7 @@ jobs:
         echo "Installing dependencies..."
         echo "Node version: $(node --version)"
         echo "NPM version: $(npm --version)"
-        echo "Checking package.json and package-lock.json sync..."
-        echo "Package.json contains angular-cli-ghpages: $(grep -c 'angular-cli-ghpages' package.json || echo '0')"
-        echo "Package-lock.json contains angular-cli-ghpages: $(grep -c 'angular-cli-ghpages' package-lock.json || echo '0')"
-        
-        # Try npm ci first, fallback to npm install if it fails
-        if ! npm ci --verbose; then
-          echo "npm ci failed, trying npm install..."
-          npm install --verbose
-        fi
-        
+        npm ci
         echo "Dependencies installed successfully"
       
     - name: Run tests
