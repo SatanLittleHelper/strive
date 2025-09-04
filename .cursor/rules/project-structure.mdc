@@ -549,8 +549,68 @@ npm run format         # Format code
 - Strict FSD boundaries enforced by ESLint
 - All text in application should be in English
 
+## Deployment Configuration
+
+### GitHub Pages Deployment
+- **Automatic Deployment**: GitHub Actions workflow configured for automatic deployment
+- **Build Configuration**: Special `github-pages` configuration with proper base href
+- **Deployment Scripts**: `build:github` and `deploy` scripts available
+- **Documentation**: Complete deployment guide in `docs/DEPLOYMENT.md`
+
+### Build Configurations
+- **Production**: Standard production build for general deployment
+- **GitHub Pages**: Specialized build with `/strive/` base href for GitHub Pages
+- **Development**: Development build with source maps and no optimization
+
+### Deployment Files
+```
+.github/
+└── workflows/
+    └── deploy.yml              # GitHub Actions deployment workflow
+
+docs/
+└── DEPLOYMENT.md               # Deployment documentation and guide
+```
+
+### Key Deployment Features
+- **Automated Testing**: Tests run before deployment
+- **PWA Support**: Service Worker and PWA manifest included
+- **Telegram Integration**: Web App API integration maintained
+- **Asset Optimization**: Taiga UI icons and assets properly configured
+- **Rollback Support**: Easy rollback through GitHub Actions
+
 
 - Telegram Web App integration ready
 - Strict FSD boundaries enforced by ESLint
 - All text in application should be in English
+
+## Deployment Configuration
+
+### GitHub Pages Deployment
+- **Automatic Deployment**: GitHub Actions workflow configured for automatic deployment
+- **Build Configuration**: Special `github-pages` configuration with proper base href
+- **Deployment Scripts**: `build:github` and `deploy` scripts available
+- **Documentation**: Complete deployment guide in `docs/DEPLOYMENT.md`
+
+### Build Configurations
+- **Production**: Standard production build for general deployment
+- **GitHub Pages**: Specialized build with `/strive/` base href for GitHub Pages
+- **Development**: Development build with source maps and no optimization
+
+### Deployment Files
+```
+.github/
+└── workflows/
+    └── deploy.yml              # GitHub Actions deployment workflow
+
+docs/
+└── DEPLOYMENT.md               # Deployment documentation and guide
+```
+
+### Key Deployment Features
+- **Automated Testing**: Tests run before deployment
+- **PWA Support**: Service Worker and PWA manifest included
+- **Telegram Integration**: Web App API integration maintained
+- **Asset Optimization**: Taiga UI icons and assets properly configured
+- **Rollback Support**: Easy rollback through GitHub Actions
 

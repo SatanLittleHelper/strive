@@ -58,6 +58,23 @@
               "outputHashing": "all",
               "serviceWorker": "ngsw-config.json"
             },
+            "github-pages": {
+              "baseHref": "/strive/",
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "800kB",
+                  "maximumError": "1.2MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kB",
+                  "maximumError": "10kB"
+                }
+              ],
+              "outputHashing": "all",
+              "serviceWorker": "ngsw-config.json"
+            },
             "development": {
               "optimization": false,
               "extractLicenses": false,

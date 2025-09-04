@@ -5,6 +5,7 @@
 	align-items: center;
 	justify-content: space-between;
 
+
 	padding: var(--space-md);
 	border-bottom: 1px solid var(--color-border);
 
@@ -43,6 +44,7 @@
 .navigation-nav {
 	display: flex;
 	gap: var(--space-sm);
+	align-items: center;
 
 	@media (width <= 767px) {
 		gap: var(--space-lg);
@@ -52,7 +54,6 @@
 .navigation-button {
 	display: flex;
 	gap: var(--space-xs);
-	align-items: center;
 
 	&.active {
 		color: var(--color-text-light);
@@ -63,6 +64,7 @@
 		height: 40px;
 		padding: 0 var(--space-md);
 	}
+
 
 	@media (width <= 767px) {
 		justify-content: center;
