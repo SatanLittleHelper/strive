@@ -24,7 +24,6 @@
 		border-top: 1px solid var(--color-border);
 		border-bottom: none;
 
-		background: var(--color-surface);
 		box-shadow: 0 -2px 8px rgb(0 0 0 / 10%);
 	}
 }
@@ -76,7 +75,8 @@
 	}
 }
 
-.navigation-label {
+.navigation-label,
+.navigation-theme-toggle {
 	font-size: var(--font-size-sm);
 	font-weight: var(--font-weight-normal);
 	
@@ -87,6 +87,10 @@
 	@media (width <= 767px) {
 		display: none;
 	}
+}
+
+.navigation-theme-toggle {
+	flex-shrink: 0;
 }
 
 .navigation-icon {
@@ -94,20 +98,6 @@
 	height: 24px;
 
 	@media (width >= 768px) {
-		display: none;
-	}
-}
-
-.navigation-theme-toggle {
-	flex-shrink: 0;
-	font-size: var(--font-size-sm);
-	font-weight: var(--font-weight-normal);
-	
-	@media (width >= 768px) {
-		font-size: var(--font-size-md);
-	}
-
-	@media (width <= 767px) {
 		display: none;
 	}
 }
