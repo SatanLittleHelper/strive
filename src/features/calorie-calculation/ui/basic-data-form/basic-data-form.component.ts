@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, input, output, computed } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TuiButton, TuiTextfield } from '@taiga-ui/core';
 import { TuiInputNumber } from '@taiga-ui/kit';
-import { Subject, takeUntil } from 'rxjs';
 
 import { type BasicData, GenderOptions, type Gender } from '@/features/calorie-calculation';
 import { generateSelectOptions, SelectFieldComponent } from '@/shared';
 
-import type { OnDestroy, OnInit } from '@angular/core';
+import type { OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-basic-data-form',
@@ -17,14 +17,12 @@ import type { OnDestroy, OnInit } from '@angular/core';
   templateUrl: './basic-data-form.component.html',
   styleUrl: './basic-data-form.component.scss',
 })
-export class BasicDataFormComponent implements OnInit, OnDestroy {
+export class BasicDataFormComponent implements OnInit {
   readonly initialData = input<BasicData | null>(null);
   readonly dataSubmitted = output<BasicData>();
   readonly dataChanged = output<void>();
 
   protected readonly genderOptions = computed(() => generateSelectOptions(GenderOptions));
-
-  private readonly destroy$ = new Subject<void>();
 
   readonly form = new FormGroup({
     gender: new FormControl<Gender | null>(null, [Validators.required]),
@@ -45,20 +43,17 @@ export class BasicDataFormComponent implements OnInit, OnDestroy {
     ]),
   });
 
+  constructor() {
+    this.form.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
+      this.dataChanged.emit();
+    });
+  }
+
   ngOnInit(): void {
     const data = this.initialData();
     if (data) {
       this.form.patchValue(data);
     }
-
-    this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
-      this.dataChanged.emit();
-    });
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   onSubmit(): void {

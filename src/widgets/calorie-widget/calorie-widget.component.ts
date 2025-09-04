@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { TuiButton } from '@taiga-ui/core';
 
 import { CalorieCalculatorService } from '@/features/calorie-calculation';
-import type { OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-calorie-widget',
@@ -13,14 +13,14 @@ import type { OnInit } from '@angular/core';
   templateUrl: './calorie-widget.component.html',
   styleUrl: './calorie-widget.component.scss',
 })
-export class CalorieWidgetComponent implements OnInit {
+export class CalorieWidgetComponent {
   private readonly router = inject(Router);
   private readonly calorieService = inject(CalorieCalculatorService);
 
   readonly caloriesResults = this.calorieService.caloriesResults;
 
-  ngOnInit(): void {
-    this.calorieService.fetchCaloriesResult().subscribe();
+  constructor() {
+    this.calorieService.fetchCaloriesResult().pipe(takeUntilDestroyed()).subscribe();
   }
 
   async onCalculateCalories(): Promise<void> {

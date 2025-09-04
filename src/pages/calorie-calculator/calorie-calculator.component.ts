@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import type {
   BasicData,
@@ -15,7 +16,6 @@ import {
 } from '@/features/calorie-calculation';
 import { StepNavigationComponent, type StepConfig } from '@/shared';
 import { StepComponent } from './ui/step';
-import type { OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-calorie-calculator',
@@ -31,7 +31,7 @@ import type { OnInit } from '@angular/core';
   templateUrl: './calorie-calculator.component.html',
   styleUrl: './calorie-calculator.component.scss',
 })
-export class CalorieCalculatorComponent implements OnInit {
+export class CalorieCalculatorComponent {
   private readonly calorieService = inject(CalorieCalculatorService);
   private readonly formStateService = inject(CalorieFormStateService);
 
@@ -55,6 +55,10 @@ export class CalorieCalculatorComponent implements OnInit {
     },
   ]);
 
+  constructor() {
+    this.calorieService.fetchCaloriesResult().pipe(takeUntilDestroyed()).subscribe();
+  }
+
   protected onBasicDataSubmitted(data: BasicData): void {
     this.formStateService.setBasicData(data);
   }
@@ -71,9 +75,12 @@ export class CalorieCalculatorComponent implements OnInit {
       ...data,
     };
 
-    this.calorieService.fetchCalculateCalories(calculationData).subscribe(() => {
-      this.formStateService.setCurrentStep(2);
-    });
+    this.calorieService
+      .fetchCalculateCalories(calculationData)
+      .pipe(takeUntilDestroyed(inject(DestroyRef)))
+      .subscribe(() => {
+        this.formStateService.setCurrentStep(2);
+      });
   }
 
   protected onRecalculate(): void {
@@ -82,9 +89,5 @@ export class CalorieCalculatorComponent implements OnInit {
 
   protected onTabClick(index: number): void {
     this.formStateService.setCurrentStep(index);
-  }
-
-  ngOnInit(): void {
-    this.calorieService.fetchCaloriesResult().subscribe();
   }
 }

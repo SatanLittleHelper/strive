@@ -50,13 +50,51 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Design services around a single responsibility
 - Use the `providedIn: 'root'` option for singleton services
 - Use the `inject()` function instead of constructor injection
+
+## RxJS Subscription Management
+- **Preferred approach**: Use `takeUntilDestroyed()` for automatic subscription cleanup
+- **Import**: `import { takeUntilDestroyed } from '@angular/core/rxjs-interop';`
+- **Usage patterns**:
+  - In constructor (injection context): `observable.pipe(takeUntilDestroyed()).subscribe()`
+  - In methods (non-injection context): `observable.pipe(takeUntilDestroyed(inject(DestroyRef))).subscribe()`
+- **Best practice**: Move subscriptions to constructor when possible
+- **Injection context explanation**:
+  - Constructor has automatic access to `DestroyRef` - no need to inject it
+  - Methods don't have injection context - must use `inject(DestroyRef)`
+- **Example with inject in method**:
+  ```typescript
+  someMethod(): void {
+    this.service.getData().pipe(
+      takeUntilDestroyed(inject(DestroyRef))
+    ).subscribe();
+  }
+  ```
+- **Form valueChanges example**:
+  ```typescript
+  constructor() {
+    this.form.valueChanges.pipe(
+      takeUntilDestroyed()  // No inject() needed in constructor
+    ).subscribe(() => {
+      this.dataChanged.emit();
+    });
+  }
+  ```
+- **Service initialization example**:
+  ```typescript
+  constructor() {
+    this.service.fetchData().pipe(
+      takeUntilDestroyed()  // No inject() needed in constructor
+    ).subscribe();
+  }
+  ```
 ## Common pitfalls
 - Control flow (`@if`):
   - You cannot use `as` expressions in `@else if (...)`. E.g. invalid code: `@else if (bla(); as x)`.
 - RxJS subscriptions:
   - ALWAYS unsubscribe from RxJS subscriptions to prevent memory leaks
-  - Use `takeUntil` with destroy subject, `take(1)`, or `async` pipe when possible
-  - Implement `OnDestroy` interface and call `unsubscribe()` in `ngOnDestroy()`
+  - Use `takeUntilDestroyed()` for automatic subscription management (preferred)
+  - Use `takeUntil` with destroy subject, `take(1)`, or `async` pipe when `takeUntilDestroyed()` is not suitable
+  - Implement `OnDestroy` interface and call `unsubscribe()` in `ngOnDestroy()` only when necessary
 - Use the `providedIn: 'root'` option for singleton services
 - Use the `inject()` function instead of constructor injection
 ## Common pitfalls

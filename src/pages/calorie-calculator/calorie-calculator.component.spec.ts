@@ -88,9 +88,7 @@ describe('CalorieCalculatorComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should call fetchCaloriesResult on init', (): void => {
-    component.ngOnInit();
-
+  it('should call fetchCaloriesResult in constructor', (): void => {
     expect(calorieServiceSpy.fetchCaloriesResult).toHaveBeenCalledTimes(1);
   });
 
