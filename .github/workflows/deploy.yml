@@ -33,13 +33,23 @@ jobs:
         cache: 'npm'
         
     - name: Install dependencies
-      run: npm ci
+      run: |
+        echo "Installing dependencies..."
+        npm ci
+        echo "Dependencies installed successfully"
       
     - name: Run tests
-      run: npm run test:ci
+      run: |
+        echo "Running tests..."
+        npm run test:ci
+        echo "Tests completed successfully"
       
     - name: Build for GitHub Pages
-      run: npm run build:github
+      run: |
+        echo "Building for GitHub Pages..."
+        npm run build:github
+        echo "Build completed successfully"
+        ls -la dist/strive/
       
     - name: Setup Pages
       uses: actions/configure-pages@v4
