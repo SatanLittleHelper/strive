@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { CalorieCalculatorService } from '@/features/calorie-calculation';
 import { configureZonelessTestingModule } from '@/test-setup';
-import { CalorieWidgetComponent } from '@/widgets';
+import { CalorieWidgetComponent } from './calorie-widget.component';
 import type { ComponentFixture } from '@angular/core/testing';
 
 describe('CalorieWidgetComponent', () => {

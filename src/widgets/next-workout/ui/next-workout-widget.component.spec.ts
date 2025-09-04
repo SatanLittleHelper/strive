@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { configureZonelessTestingModule } from '@/test-setup';
-import { NextWorkoutWidgetComponent } from '@/widgets';
+import { NextWorkoutWidgetComponent } from './next-workout-widget.component';
 import type { ComponentFixture } from '@angular/core/testing';
 
 describe('NextWorkoutWidgetComponent', () => {

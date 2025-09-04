@@ -1,7 +1,6 @@
 import {
   generateSelectOptions,
   stringifySelectOption,
-  stringifySelectOptionByValue,
   identityMatcherSelectOption,
 } from '@/shared';
 import type { SelectOption } from '../types';
@@ -45,25 +44,6 @@ describe('Select Options Utils', () => {
       const result = stringifySelectOption(option);
 
       expect(result).toBe('Test Label');
-    });
-  });
-
-  describe('stringifySelectOptionByValue', () => {
-    const options: SelectOption[] = [
-      { value: 'option1', label: 'Option 1', description: 'First option' },
-      { value: 'option2', label: 'Option 2' },
-    ];
-
-    it('should find and format option by value', () => {
-      const result = stringifySelectOptionByValue(options, 'option1');
-
-      expect(result).toBe('Option 1 (First option)');
-    });
-
-    it('should return empty string for non-existent value', () => {
-      const result = stringifySelectOptionByValue(options, 'nonexistent');
-
-      expect(result).toBe('');
     });
   });
 

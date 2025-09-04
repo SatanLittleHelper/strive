@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 import { TelegramService } from '@/shared';
 import { configureZonelessTestingModule } from '@/test-setup';
 import { AppComponent } from './app.component';
@@ -16,7 +17,7 @@ describe('AppComponent', () => {
     });
 
     configureZonelessTestingModule({
-      imports: [AppComponent],
+      imports: [AppComponent, RouterTestingModule],
       providers: [{ provide: TelegramService, useValue: telegramServiceSpy }],
     });
     await TestBed.compileComponents();

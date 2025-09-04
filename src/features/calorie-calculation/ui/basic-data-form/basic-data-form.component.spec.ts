@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { ReactiveFormsModule } from '@angular/forms';
 import { Gender } from '@/features/calorie-calculation';
 import type { BasicData } from '@/features/calorie-calculation';
 import { configureZonelessTestingModule } from '@/test-setup';
@@ -18,7 +19,7 @@ describe('BasicDataFormComponent', () => {
 
   beforeEach((): void => {
     configureZonelessTestingModule({
-      imports: [BasicDataFormComponent],
+      imports: [BasicDataFormComponent, ReactiveFormsModule],
     });
 
     fixture = TestBed.createComponent(BasicDataFormComponent);

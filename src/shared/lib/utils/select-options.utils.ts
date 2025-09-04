@@ -25,18 +25,6 @@ export function stringifySelectOption(option: SelectOption): string {
 }
 
 /**
- * Универсальная функция для поиска SelectOption по value и форматирования в строку
- * @param options - массив SelectOption
- * @param value - значение для поиска
- * @returns отформатированная строка или пустая строка если не найдено
- */
-export function stringifySelectOptionByValue(options: SelectOption[], value: string): string {
-  const option = options.find((opt) => opt.value === value);
-  if (!option) return '';
-  return stringifySelectOption(option);
-}
-
-/**
  * Универсальная функция для сравнения SelectOption объектов по value
  * @param a - первый SelectOption объект
  * @param b - второй SelectOption объект

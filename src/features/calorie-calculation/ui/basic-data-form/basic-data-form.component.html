@@ -1,29 +1,12 @@
 <form [formGroup]="form" (ngSubmit)="onSubmit()" class="basic-data-form">
   <div class="basic-data-form__field">
-    <label for="gender" class="basic-data-form__field-label">Gender</label>
-    <tui-textfield tuiChevron
-                   [stringify]="stringifyGender"
-    >
-      <input
-        tuiSelect
-        placeholder="Select gender"
-        formControlName="gender"
-      />
-      <tui-data-list
-        *tuiTextfieldDropdown
-      >
-        @for (item of genderOptions(); track item.value) {
-          <button
-            new
-            tuiOption
-            type="button"
-            [value]="item.value"
-          >
-            {{ item.displayText }}
-          </button>
-        }
-      </tui-data-list>
-    </tui-textfield>
+    <app-select-field
+      [options]="genderOptions()"
+      [label]="'Gender'"
+      [placeholder]="'Select gender'"
+      [required]="true"
+      formControlName="gender"
+    />
   </div>
 
   <div class="basic-data-form__field">

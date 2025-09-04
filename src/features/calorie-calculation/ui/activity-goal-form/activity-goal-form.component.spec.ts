@@ -1,7 +1,14 @@
 import { TestBed } from '@angular/core/testing';
+import { FormControl, ReactiveFormsModule, NgControl } from '@angular/forms';
 import { configureZonelessTestingModule } from '@/test-setup';
 import { ActivityGoalFormComponent } from './activity-goal-form.component';
 import type { ComponentFixture } from '@angular/core/testing';
+
+// Mock NgControl
+class MockNgControl extends NgControl {
+  control = new FormControl();
+  viewToModelUpdate(): void {}
+}
 
 describe('ActivityGoalFormComponent', () => {
   let component: ActivityGoalFormComponent;
@@ -9,7 +16,13 @@ describe('ActivityGoalFormComponent', () => {
 
   beforeEach((): void => {
     configureZonelessTestingModule({
-      imports: [ActivityGoalFormComponent],
+      imports: [ActivityGoalFormComponent, ReactiveFormsModule],
+      providers: [
+        {
+          provide: NgControl,
+          useClass: MockNgControl,
+        },
+      ],
     });
 
     fixture = TestBed.createComponent(ActivityGoalFormComponent);

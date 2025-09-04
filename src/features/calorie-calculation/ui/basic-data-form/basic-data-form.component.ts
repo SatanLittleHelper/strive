@@ -1,26 +1,18 @@
 import { ChangeDetectionStrategy, Component, input, output, computed } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TuiButton, TuiDataList, TuiTextfield } from '@taiga-ui/core';
-import { TuiChevron, TuiInputNumber, TuiSelect } from '@taiga-ui/kit';
+import { TuiButton, TuiTextfield } from '@taiga-ui/core';
+import { TuiInputNumber } from '@taiga-ui/kit';
 import { Subject, takeUntil } from 'rxjs';
 
 import { type BasicData, GenderOptions, type Gender } from '@/features/calorie-calculation';
-import { generateSelectOptions, stringifySelectOptionByValue } from '@/shared';
+import { generateSelectOptions, SelectFieldComponent } from '@/shared';
 
 import type { OnDestroy, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-basic-data-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ReactiveFormsModule,
-    TuiButton,
-    TuiInputNumber,
-    TuiTextfield,
-    TuiSelect,
-    TuiDataList,
-    TuiChevron,
-  ],
+  imports: [ReactiveFormsModule, TuiButton, TuiInputNumber, TuiTextfield, SelectFieldComponent],
 
   templateUrl: './basic-data-form.component.html',
   styleUrl: './basic-data-form.component.scss',
@@ -30,15 +22,7 @@ export class BasicDataFormComponent implements OnInit, OnDestroy {
   readonly dataSubmitted = output<BasicData>();
   readonly dataChanged = output<void>();
 
-  protected readonly genderOptions = computed(() =>
-    generateSelectOptions(GenderOptions).map((option) => ({
-      ...option,
-      displayText: stringifySelectOptionByValue(generateSelectOptions(GenderOptions), option.value),
-    })),
-  );
-
-  protected readonly stringifyGender = (item: string): string =>
-    stringifySelectOptionByValue(generateSelectOptions(GenderOptions), item);
+  protected readonly genderOptions = computed(() => generateSelectOptions(GenderOptions));
 
   private readonly destroy$ = new Subject<void>();
 

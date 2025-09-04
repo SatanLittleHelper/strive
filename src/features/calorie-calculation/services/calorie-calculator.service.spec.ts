@@ -366,9 +366,8 @@ describe('CalorieCalculatorService', () => {
     it('should handle rapid successive calls', (done) => {
       TestBed.runInInjectionContext(() => {
         const results = [mockCalorieResults, { ...mockCalorieResults, bmr: 1900 }];
-        let callIndex = 0;
 
-        apiServiceSpy.calculateCalories.and.returnValue(of(results[callIndex++]));
+        apiServiceSpy.calculateCalories.and.returnValues(of(results[0]), of(results[1]));
 
         let completedCalls = 0;
         const totalCalls = 2;
@@ -378,6 +377,8 @@ describe('CalorieCalculatorService', () => {
             next: () => {
               completedCalls++;
               if (completedCalls === totalCalls) {
+                expect(apiServiceSpy.calculateCalories).toHaveBeenCalledTimes(totalCalls);
+                expect(service.caloriesResults()).toEqual(results[1]); // Last result should be set
                 done();
               }
             },
