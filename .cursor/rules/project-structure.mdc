@@ -50,7 +50,7 @@ strive/
 │   │   │       ├── next-workout-widget.component.html
 │   │   │       ├── next-workout-widget.component.scss
 │   │   │       └── next-workout-widget.component.spec.ts
-│   │   └── calorie-widget/           # Calorie widget
+│   │   └── calorie-widget/           # Calorie widget with auto-loading
 │   │       ├── index.ts
 │   │       ├── calorie-widget.component.ts
 │   │       ├── calorie-widget.component.html
@@ -245,7 +245,7 @@ The project uses comprehensive rules defined in `.cursor/rules/` directory to en
 - **Can import**: features, entities, shared
 - **Current widgets**:
   - `next-workout/` - Widget showing next scheduled workout
-  - `calorie-widget/` - Widget displaying calorie calculation results
+  - `calorie-widget/` - Widget displaying calorie calculation results with auto-loading from localStorage
 
 ### 4. **Features Layer** (`/src/features/`)
 - **Purpose**: Business logic features (reusable across pages)
@@ -473,6 +473,7 @@ export const routes: Routes = [
 - **Calorie calculator feature** with complete implementation
 - **Shared UI components** and utilities
 - **Comprehensive project rules** for all development aspects
+- **Calorie widget auto-loading** - Widget automatically loads saved results from localStorage on initialization
 
 ### 🚧 Ready for Development
 - Features layer (empty, ready for business logic)

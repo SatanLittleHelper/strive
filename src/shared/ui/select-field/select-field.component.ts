@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { TuiDataList, tuiItemsHandlersProvider, TuiTextfield } from '@taiga-ui/core';
 import { TuiChevron, TuiSelect } from '@taiga-ui/kit';
@@ -41,12 +41,6 @@ export class SelectFieldComponent implements ControlValueAccessor {
     void value;
   };
   private _onTouched = (): void => {};
-
-  readonly selectedOption = computed(() => {
-    const value = this.value;
-    if (!value) return null;
-    return this.options().find((option) => option.value === value) || null;
-  });
 
   readonly stringify = (item: SelectOption | null): string => {
     if (!item) return '';

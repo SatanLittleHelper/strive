@@ -1,6 +1,7 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
+import { of } from 'rxjs';
 import { CalorieCalculatorService } from '@/features/calorie-calculation';
 import { configureZonelessTestingModule } from '@/test-setup';
 import { CalorieWidgetComponent } from './calorie-widget.component';
@@ -20,9 +21,10 @@ describe('CalorieWidgetComponent', () => {
 
   beforeEach(() => {
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    calorieServiceSpy = jasmine.createSpyObj('CalorieCalculatorService', [], {
+    calorieServiceSpy = jasmine.createSpyObj('CalorieCalculatorService', ['fetchCaloriesResult'], {
       caloriesResults: signal(mockCaloriesResults),
     });
+    calorieServiceSpy.fetchCaloriesResult.and.returnValue(of(void 0));
 
     configureZonelessTestingModule({
       imports: [CalorieWidgetComponent],
@@ -38,6 +40,12 @@ describe('CalorieWidgetComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should load saved calories results on init', () => {
+    fixture.detectChanges();
+
+    expect(calorieServiceSpy.fetchCaloriesResult).toHaveBeenCalled();
   });
 
   it('should display title', () => {
@@ -61,9 +69,14 @@ describe('CalorieWidgetComponent', () => {
   });
 
   it('should display correct state when no caloriesResults', () => {
-    const serviceWithNoResults = jasmine.createSpyObj('CalorieCalculatorService', [], {
-      caloriesResults: signal(null),
-    });
+    const serviceWithNoResults = jasmine.createSpyObj(
+      'CalorieCalculatorService',
+      ['fetchCaloriesResult'],
+      {
+        caloriesResults: signal(null),
+      },
+    );
+    serviceWithNoResults.fetchCaloriesResult.and.returnValue(of(void 0));
 
     TestBed.resetTestingModule();
     configureZonelessTestingModule({
