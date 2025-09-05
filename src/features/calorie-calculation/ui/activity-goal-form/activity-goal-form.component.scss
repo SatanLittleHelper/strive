@@ -1,0 +1,37 @@
+.activity-goal-form {
+  display: grid;
+  gap: var(--space-lg);
+
+  &__field {
+    display: grid;
+    gap: var(--space-sm);
+
+    &-label {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+  }
+
+  &__option {
+    display: grid;
+    gap: var(--space-xs);
+
+    &-label {
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    &-description {
+      font-size: 0.875rem;
+      line-height: 1.4;
+      color: var(--color-muted);
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: var(--space-md);
+  }
+}

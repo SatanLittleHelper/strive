@@ -1,0 +1,14 @@
+<tui-tabs
+  class="step-navigation"
+  [activeItemIndex]="activeStepIndex()"
+>
+  @for (step of steps(); track $index) {
+    <button
+      tuiTab
+      (click)="onStepClick($index)"
+      [disabled]="step.disabled"
+    >
+      {{ step.title }}
+    </button>
+  }
+</tui-tabs>

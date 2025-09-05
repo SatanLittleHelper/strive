@@ -5,25 +5,25 @@
 
   background: var(--color-surface);
   box-shadow: var(--shadow-sm);
-}
 
-h2 {
-  margin-bottom: var(--space-md);
-}
+  &__title {
+    margin-bottom: var(--space-md);
+  }
 
-ul {
-  padding: 0;
-  list-style: none;
-}
+  &__list {
+    padding: 0;
+    list-style: none;
+  }
 
-li {
-  display: flex;
-  gap: var(--space-md);
-  align-items: center;
+  &__item {
+    display: flex;
+    gap: var(--space-md);
+    align-items: center;
 
-  margin-bottom: var(--space-sm);
-  padding: var(--space-sm) var(--space-md);
-  border-radius: var(--radius-sm);
+    margin-bottom: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-sm);
 
-  background: var(--color-background);
+    background: var(--color-background);
+  }
 }

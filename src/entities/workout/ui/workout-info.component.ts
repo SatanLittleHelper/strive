@@ -16,9 +16,9 @@ export class WorkoutInfoComponent {
 
   readonly percentClass = computed(() => {
     const percent = this.workout().completedPercent;
-    if (percent === 0) return 'percent-default';
-    if (percent > 80) return 'percent-success';
-    if (percent > 25) return 'percent-warning';
-    return 'percent-error';
+    if (percent === 0) return 'workout-info__percent-circle--default';
+    if (percent > 80) return 'workout-info__percent-circle--success';
+    if (percent > 25) return 'workout-info__percent-circle--warning';
+    return 'workout-info__percent-circle--error';
   });
 }

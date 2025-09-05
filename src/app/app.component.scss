@@ -1,27 +1,42 @@
 :host {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-
-  min-width: 100vw;
-  min-height: 100vh;
-
-  background: var(--color-surface);
-}
-
-.router-outlet-wrapper {
   display: block;
-
-  box-sizing: border-box;
   width: 100vw;
   height: 100vh;
-  padding: var(--space-lg);
-
+  background: var(--tui-base-01);
 }
 
-.theme-toggle {
-  position: fixed;
-  z-index: var(--z-header);
-  top: var(--space-md);
-  right: var(--space-md);
+.app-container {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  height: 100vh;
+
+  @media (width >= 768px) {
+    padding-bottom: var(--space-lg);
+  }
+  
+  @media (width >= 1024px) {
+    padding-bottom: var(--space-xl);
+  }
+}
+
+.main-content {
+  overflow: hidden auto;
+  flex: 1;
+
+  min-height: 0;
+  padding: var(--space-md);
+
+  background: var(--tui-base-01);
+  
+  @media (width >= 768px) {
+    padding: var(--space-lg);
+  }
+  
+  @media (width >= 1024px) {
+    padding: var(--space-xl);
+  }
 }

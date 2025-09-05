@@ -1,9 +1,10 @@
-  <tui-root>
-    <div class="router-outlet-wrapper">
-      <button tuiButton class="theme-toggle" size="m" appearance="primary" (click)="toggleTheme()" type="button">
-        @if (isDark()) { Dark } @else { Light }
-      </button>
+<tui-root>
+  <div class="app-container">
+    <app-navigation></app-navigation>
+    
+    <main class="main-content">
       <router-outlet />
-    </div>
-  </tui-root>
+    </main>
+  </div>
+</tui-root>
 

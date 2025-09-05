@@ -1,0 +1,16 @@
+.select-field {
+  &__label {
+    display: block;
+
+    margin-bottom: 0.5rem;
+
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--tui-text-01);
+  }
+
+  &__required {
+    margin-left: 0.25rem;
+    color: var(--tui-error);
+  }
+}

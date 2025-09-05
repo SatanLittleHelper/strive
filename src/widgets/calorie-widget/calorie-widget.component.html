@@ -1,0 +1,27 @@
+<div class="calorie-widget">
+  <h3 class="calorie-widget__title">Calorie Calculator</h3>
+  
+  @if (caloriesResults()) {
+    <div class="calorie-widget__results">
+      <p class="calorie-widget__results-item calorie-widget__target">
+        <strong>Target Calories:</strong> {{ caloriesResults()!.targetCalories }}
+      </p>
+      <p class="calorie-widget__results-item calorie-widget__tdee">
+        <strong>TDEE:</strong> {{ caloriesResults()!.tdee }}
+      </p>
+    </div>
+  } @else {
+    <p class="calorie-widget__description">
+      Calculate your daily calorie needs based on your activity level and goals.
+    </p>
+  }
+  
+  <button
+    tuiButton
+    appearance="primary"
+    size="s"
+    (click)="onCalculateCalories()"
+  >
+    {{ caloriesResults() ? 'Recalculate' : 'Calculate Calories' }}
+  </button>
+</div>

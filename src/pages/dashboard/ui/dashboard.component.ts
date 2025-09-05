@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { CalorieWidgetComponent } from '@/widgets/calorie-widget';
 import { NextWorkoutWidgetComponent } from '@/widgets/next-workout';
 
 @Component({
@@ -9,7 +10,7 @@ import { NextWorkoutWidgetComponent } from '@/widgets/next-workout';
   host: {
     class: 'dashboard',
   },
-  imports: [NextWorkoutWidgetComponent],
+  imports: [NextWorkoutWidgetComponent, CalorieWidgetComponent],
 })
 export class DashboardComponent {
   private readonly tasks = signal([

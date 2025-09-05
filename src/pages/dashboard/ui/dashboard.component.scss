@@ -1,3 +1,12 @@
 .dashboard {
-  padding: 2rem;
+  &__title {
+    margin-bottom: 2rem;
+    color: var(--tui-text-01);
+  }
+  
+  &__widgets {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
 }

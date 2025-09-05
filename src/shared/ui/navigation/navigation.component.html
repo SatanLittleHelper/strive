@@ -1,0 +1,30 @@
+<nav class="navigation">
+	<div class="navigation-content">
+		<div class="navigation-nav">
+			@for (item of navigationItems; track item.route) {
+				<button 
+					tuiButton 
+					[routerLink]="item.route" 
+					routerLinkActive="active" 
+					class="navigation-button"
+					size="s"
+					appearance="secondary"
+				>
+					<span class="navigation-label">{{ item.label }}</span>
+					<tui-icon [icon]="item.icon" class="navigation-icon"></tui-icon>
+				</button>
+			}
+		</div>
+		
+		<button 
+			tuiButton 
+			class="navigation-theme-toggle" 
+			size="m" 
+			appearance="primary" 
+			(click)="toggleTheme()" 
+			type="button"
+		>
+			@if (isDark()) { Dark } @else { Light }
+		</button>
+	</div>
+</nav>

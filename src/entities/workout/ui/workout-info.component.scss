@@ -1,41 +1,44 @@
-.name {
-  margin-right: var(--space-md);
-  font-weight: var(--font-weight-normal);
-}
+.workout-info {
+  &__percent-circle {
+    $status-colors: (
+      default: var(--color-secondary),
+      success: var(--color-success),
+      warning: var(--color-warning),
+      error: var(--color-error),
+    );
 
-.date {
-  color: var(--color-secondary);
-}
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 
-.percent-circle {
-  $status-colors: (
-    success: var(--color-success),
-    warning: var(--color-warning),
-    error: var(--color-error),
-  );
+    width: 3rem;
+    height: 3rem;
+    margin-right: var(--space-md);
+    border: 2px solid var(--color-secondary);
+    border-radius: 50%;
 
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-secondary);
+    vertical-align: middle;
 
-  width: 3rem;
-  height: 3rem;
-  margin-right: var(--space-md);
-  border: 2px solid var(--color-secondary);
-  border-radius: 50%;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
 
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-secondary);
-  vertical-align: middle;
-
-  background: var(--color-surface);
-  box-shadow: var(--shadow-sm);
-
-  @each $status, $color in $status-colors {
-    &.percent-#{$status} {
-      border-color: $color;
-      color: $color;
+    @each $status, $color in $status-colors {
+      &--#{$status} {
+        border-color: $color;
+        color: $color;
+      }
     }
+  }
+
+  &__name {
+    margin-right: var(--space-md);
+    font-weight: var(--font-weight-normal);
+  }
+
+  &__date {
+    color: var(--color-secondary);
   }
 }

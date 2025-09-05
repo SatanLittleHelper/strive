@@ -62,13 +62,17 @@ Import restrictions between layers are enforced - higher layers can import from 
 - Use signals for reactive state management
 
 ### Component Architecture
+- **Template Files**: Always use separate `.html` files for component templates (never inline templates)
+- Components must have corresponding `.html`, `.ts`, and `.scss` files
+
 ```typescript
 @Component({
   selector: 'app-example',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, TuiButton],
-  template: `...`
+  templateUrl: './example.component.html',
+  styleUrls: ['./example.component.scss']
 })
 export class ExampleComponent {
   private readonly service = inject(ExampleService);
@@ -162,3 +166,93 @@ Access Telegram features through `TelegramService` in `/src/shared/services/tele
 - PWA service worker is configured in `/ngsw-config.json`
 - Main color palette can be adjusted in `/src/shared/lib/variables.scss`
 - Taiga UI components are imported individually for better tree-shaking
+- add to memory используй бэм для верстки и цсс
+
+## Routing Standards
+
+### Route Naming Convention
+
+All route constants must use **UPPER_SNAKE_CASE** naming:
+
+```typescript
+// ✅ Correct - UPPER_SNAKE_CASE
+export const DASHBOARD_ROUTES: Route[] = [...];
+export const CALORIE_CALCULATOR_ROUTES: Routes = [...];
+
+// ❌ Wrong - camelCase
+export const dashboardRoutes: Route[] = [...];
+export const calorieCalculatorRoutes: Routes = [...];
+```
+
+### Route File Structure
+
+Every page must follow this pattern:
+```
+src/pages/[page-name]/
+├── [page-name].routes.ts     # Route definitions with UPPER_SNAKE_CASE exports
+├── index.ts                  # Public API exports
+└── ui/                       # Page components
+```
+
+### Key Rules:
+- **Route constants**: UPPER_SNAKE_CASE (e.g., `DASHBOARD_ROUTES`)
+- **Route files**: kebab-case (e.g., `dashboard.routes.ts`)
+- **Route paths**: kebab-case (e.g., `'calorie-calculator'`)
+- **Component names**: PascalCase (e.g., `DashboardComponent`)
+- **Always include `title`** property for better UX
+
+For detailed routing rules, see `.cursor/rules/project-structure.mdc`.
+
+## Taiga UI Best Practices
+
+### Select Components with Computed Signals
+
+For optimal performance when using Taiga UI Select components, use computed signals with pre-formatted display text:
+
+```typescript
+// ✅ Recommended approach
+@Component({
+  // ...
+})
+export class ExampleComponent {
+  // Computed signal for options with displayText
+  protected readonly options = computed(() =>
+    generateSelectOptions(SourceObject).map(option => ({
+      ...option,
+      displayText: stringifySelectOptionByValue(generateSelectOptions(SourceObject), option.value)
+    }))
+  );
+
+  // Function for [stringify] on tui-textfield
+  protected readonly stringifyOption = (item: string): string =>
+    stringifySelectOptionByValue(generateSelectOptions(SourceObject), item);
+}
+```
+
+```html
+<!-- ✅ Recommended template structure -->
+<tui-textfield tuiChevron [stringify]="stringifyOption">
+  <input tuiSelect formControlName="fieldName" />
+  <tui-data-list *tuiTextfieldDropdown>
+    @for (item of options(); track item.value) {
+      <button new tuiOption type="button" [value]="item.value">
+        {{ item.displayText }}
+      </button>
+    }
+  </tui-data-list>
+</tui-textfield>
+```
+
+**Key Benefits:**
+- **Performance**: Computed signals cache results and only recalculate when dependencies change
+- **Consistency**: Same formatting logic applied everywhere
+- **No redundant calls**: Functions aren't called repeatedly during rendering
+- **Maintainability**: Centralized formatting logic
+
+**Important Notes:**
+- Use `[stringify]="function"` on `tui-textfield` for selected value formatting
+- Use `{{ item.displayText }}` in options for pre-formatted text display
+- Use `tui-data-list` with `@for` loop instead of `tui-data-list-wrapper` with `[items]`
+- Pass `[value]="item.value"` to send only the value to the form
+
+For detailed Taiga UI usage rules, see `.cursor/rules/taiga-ui.mdc`.
