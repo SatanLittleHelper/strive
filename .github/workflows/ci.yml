@@ -1,0 +1,51 @@
+name: CI - Tests and Linting
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test-and-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: 'package-lock.json'
+
+    - name: Install dependencies
+      run: |
+        echo "Installing dependencies..."
+        npm ci
+        echo "Dependencies installed successfully"
+
+    - name: Run linter
+      run: |
+        echo "Running ESLint..."
+        npm run lint
+        echo "Linting completed successfully"
+
+    - name: Run tests
+      run: |
+        echo "Running tests..."
+        npm run test:ci
+        echo "Tests completed successfully"
+
+    - name: Check test coverage
+      run: |
+        echo "Running tests with coverage..."
+        npm run test:coverage
+        echo "Coverage check completed successfully"
+
+    - name: Build application
+      run: |
+        echo "Building application..."
+        npm run build
+        echo "Build completed successfully"

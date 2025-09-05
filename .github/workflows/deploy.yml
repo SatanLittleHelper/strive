@@ -38,12 +38,6 @@ jobs:
         npm ci
         echo "Dependencies installed successfully"
 
-    - name: Run tests
-      run: |
-        echo "Running tests..."
-        npm run test:ci
-        echo "Tests completed successfully"
-
     - name: Build for GitHub Pages
       run: |
         echo "Building for GitHub Pages..."
