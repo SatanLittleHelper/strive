@@ -9,7 +9,7 @@ on:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -50,7 +50,7 @@ jobs:
     - name: Deploy to GitHub Pages
       uses: JamesIves/github-pages-deploy-action@v4
       with:
-        token: ${{ secrets.GH_PAGES_TOKEN }}
+        token: ${{ secrets.GITHUB_TOKEN }}
         branch: gh-pages
         folder: dist/strive/browser
         clean: true
