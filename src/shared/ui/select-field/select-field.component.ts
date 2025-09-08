@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, signal, computed } from '@angular/core';
 import { FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { TuiDataList, tuiItemsHandlersProvider, TuiTextfield } from '@taiga-ui/core';
 import { TuiChevron, TuiSelect } from '@taiga-ui/kit';
@@ -36,26 +36,28 @@ export class SelectFieldComponent implements ControlValueAccessor {
 
   readonly valueChange = output<string>();
 
-  value: string | null = null;
+  private readonly selectedValue = signal<string | null>(null);
+
+  readonly selectedOption = computed((): SelectOption | null => {
+    const value = this.selectedValue();
+    if (!value) return null;
+    return this.options().find((option) => option.value === value) ?? null;
+  });
+
   private _onChange = (value: string | null): void => {
     void value;
   };
   private _onTouched = (): void => {};
 
-  readonly stringify = (item: SelectOption | null): string => {
-    if (!item) return '';
-    return item.description ? `${item.label} (${item.description})` : item.label;
-  };
-
-  onOptionSelect(value: string): void {
-    this.value = value;
-    this._onChange(value);
+  onOptionSelect(option: SelectOption): void {
+    this.selectedValue.set(option.value);
+    this._onChange(option.value);
     this._onTouched();
-    this.valueChange.emit(value);
+    this.valueChange.emit(option.value);
   }
 
   writeValue(value: string | null): void {
-    this.value = value;
+    this.selectedValue.set(value);
   }
 
   registerOnChange(fn: (value: string | null) => void): void {

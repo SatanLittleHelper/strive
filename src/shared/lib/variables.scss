@@ -1,18 +1,4 @@
 :root {
-  /* Colors (light theme) */
-  --color-primary: hsl(268deg 75% 55%);
-  --color-secondary: hsl(215deg 16% 47%);
-  --color-accent: hsl(200deg 95% 54%);
-  --color-background: hsl(0deg 0% 100%);
-  --color-surface: hsl(0deg 0% 98%);
-  --color-error: hsl(0deg 84% 60%);
-  --color-success: hsl(142deg 71% 45%);
-  --color-warning: hsl(38deg 92% 50%);
-  --color-text: hsl(224deg 71% 4%);
-  --color-text-light: hsl(0deg 0% 98%);
-  --color-border: hsl(215deg 16% 84%);
-  --color-muted: hsl(215deg 20% 65%);
-
   /* Typography */
   --font-family-base: 'Inter', 'Roboto', arial, sans-serif;
   --font-size-xs: 0.75rem;
@@ -24,7 +10,7 @@
   --font-weight-bold: 700;
   --line-height-tight: 1.2;
   --line-height-base: 1.5;
-  
+
   /* Responsive typography scale */
   --font-size-h1-mobile: 1.75rem;
   --font-size-h1-tablet: 2rem;
@@ -73,27 +59,6 @@
   --transition-normal: 0.3s ease;
   --transition-slow: 0.5s ease;
 
-  color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Colors (dark theme) */
-    --color-primary: hsl(268deg 68% 62%);
-    --color-secondary: hsl(215deg 20% 65%);
-    --color-accent: hsl(200deg 95% 61%);
-    --color-background: hsl(224deg 71% 4%);
-    --color-surface: hsl(224deg 14% 10%);
-    --color-error: hsl(0deg 72% 51%);
-    --color-success: hsl(142deg 70% 45%);
-    --color-warning: hsl(43deg 96% 56%);
-    --color-text: hsl(213deg 31% 91%);
-    --color-text-light: hsl(0deg 0% 100%);
-    --color-border: hsl(215deg 16% 24%);
-    --color-muted: hsl(215deg 20% 65%);
-
-    color-scheme: dark;
-  }
 }
 
 /* Explicit theme override via tuiTheme attribute */
