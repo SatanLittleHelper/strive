@@ -43,32 +43,26 @@ describe('SelectFieldComponent', () => {
   it('should select option', (): void => {
     spyOn(component.valueChange, 'emit');
 
-    component.onOptionSelect('option1');
+    component.onOptionSelect(mockOptions[0]);
 
-    expect(component.value).toBe('option1');
+    expect(component.selectedOption()).toEqual(mockOptions[0]);
     expect(component.valueChange.emit).toHaveBeenCalledWith('option1');
   });
 
   it('should set value correctly', (): void => {
-    component.value = 'option1';
+    component.writeValue('option1');
 
-    expect(component.value).toBe('option1');
+    expect(component.selectedOption()).toEqual(mockOptions[0]);
   });
 
-  it('should stringify option with description', (): void => {
-    const result = component.stringify(mockOptions[0]);
+  it('should handle null value correctly', (): void => {
+    component.writeValue(null);
 
-    expect(result).toBe('Option 1 (First option)');
-  });
-
-  it('should stringify option without description', (): void => {
-    const result = component.stringify(mockOptions[1]);
-
-    expect(result).toBe('Option 2');
+    expect(component.selectedOption()).toBeNull();
   });
 
   it('should implement ControlValueAccessor', (): void => {
-    const testValue = 'test';
+    const testValue = 'option1';
     const onChangeSpy = jasmine.createSpy('onChange');
     const onTouchedSpy = jasmine.createSpy('onTouched');
 
@@ -76,6 +70,11 @@ describe('SelectFieldComponent', () => {
     component.registerOnTouched(onTouchedSpy);
     component.writeValue(testValue);
 
-    expect(component.value).toBe(testValue);
+    expect(component.selectedOption()).toEqual(mockOptions[0]);
+
+    component.onOptionSelect(mockOptions[1]);
+
+    expect(onChangeSpy).toHaveBeenCalledWith('option2');
+    expect(onTouchedSpy).toHaveBeenCalled();
   });
 });

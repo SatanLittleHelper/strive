@@ -15,7 +15,7 @@
       id="select-field-input"
       tuiSelect
       [placeholder]="placeholder()"
-      [(ngModel)]="value"
+      [ngModel]="selectedOption()"
       [disabled]="disabled()"
     />
     <tui-data-list *tuiTextfieldDropdown>
@@ -25,7 +25,7 @@
           tuiOption
           type="button"
           [value]="option"
-          (click)="onOptionSelect(option.value)"
+          (click)="onOptionSelect(option)"
         >
           {{ option.description ? option.label + ' (' + option.description + ')' : option.label }}
         </button>
