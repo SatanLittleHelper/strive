@@ -26,6 +26,31 @@
       />
     </div>
 
+    @if (results.macros) {
+      <div class="results-display__macros">
+        <h3 class="results-display__macros-title">Macronutrients</h3>
+        <div class="results-display__macros-content">
+          <app-result-item
+            label="Protein"
+            [value]="results.macros.proteinGrams + 'g'"
+            [description]="getMacroCalories(results.macros, 'proteinGrams') + ' kcal'"
+          />
+
+          <app-result-item
+            label="Fat"
+            [value]="results.macros.fatGrams + 'g'"
+            [description]="getMacroCalories(results.macros, 'fatGrams') + ' kcal'"
+          />
+
+          <app-result-item
+            label="Carbohydrates"
+            [value]="results.macros.carbsGrams + 'g'"
+            [description]="getMacroCalories(results.macros, 'carbsGrams') + ' kcal'"
+          />
+        </div>
+      </div>
+    }
+
     <div class="results-display__actions">
       <button
         tuiButton

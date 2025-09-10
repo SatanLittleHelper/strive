@@ -6,6 +6,7 @@ import type {
   BasicData,
   CalorieCalculationData,
   CalorieResults,
+  Macronutrients,
 } from '../models/calorie-data.types';
 
 describe('CalorieApiService', () => {
@@ -25,11 +26,18 @@ describe('CalorieApiService', () => {
     goal: 'maintain_weight',
   };
 
+  const mockMacronutrients: Macronutrients = {
+    proteinGrams: 128,
+    fatGrams: 80,
+    carbsGrams: 279,
+  };
+
   const mockCalorieResults: CalorieResults = {
     bmr: 1800,
     tdee: 2790,
     targetCalories: 2790,
     formula: 'mifflin',
+    macros: mockMacronutrients,
   };
 
   beforeEach(() => {
@@ -385,6 +393,220 @@ describe('CalorieApiService', () => {
             },
             error: done.fail,
           });
+        },
+        error: done.fail,
+      });
+    });
+  });
+
+  describe('Macronutrients calculation', () => {
+    it('should calculate macronutrients for different activity levels and goals', (done) => {
+      const testData: CalorieCalculationData = {
+        gender: Gender.MALE,
+        age: 30,
+        height: 180,
+        weight: 80,
+        activityLevel: 'moderately_active',
+        goal: 'maintain_weight',
+      };
+
+      service.calculateCalories(testData).subscribe({
+        next: (results) => {
+          expect(results.macros).toBeDefined();
+          expect(results.macros!.proteinGrams).toBeGreaterThan(0);
+          expect(results.macros!.fatGrams).toBeGreaterThan(0);
+          expect(results.macros!.carbsGrams).toBeGreaterThan(0);
+
+          // Check that macronutrient calories approximately equal target calories
+          const totalMacroCalories =
+            results.macros!.proteinGrams * 4 +
+            results.macros!.fatGrams * 9 +
+            results.macros!.carbsGrams * 4;
+
+          // Allow for rounding differences (±50 calories)
+          expect(Math.abs(totalMacroCalories - results.targetCalories)).toBeLessThanOrEqual(50);
+          done();
+        },
+        error: done.fail,
+      });
+    });
+
+    it('should adjust protein based on activity level', (done) => {
+      const baseData = {
+        gender: Gender.MALE,
+        age: 30,
+        height: 180,
+        weight: 80,
+        goal: 'maintain_weight' as const,
+      };
+
+      const sedentaryData: CalorieCalculationData = { ...baseData, activityLevel: 'sedentary' };
+      const veryActiveData: CalorieCalculationData = { ...baseData, activityLevel: 'very_active' };
+
+      service.calculateCalories(sedentaryData).subscribe({
+        next: (sedentaryResults) => {
+          service.calculateCalories(veryActiveData).subscribe({
+            next: (activeResults) => {
+              // Very active should have higher protein than sedentary
+              expect(activeResults.macros!.proteinGrams).toBeGreaterThan(
+                sedentaryResults.macros!.proteinGrams,
+              );
+              done();
+            },
+            error: done.fail,
+          });
+        },
+        error: done.fail,
+      });
+    });
+
+    it('should adjust protein based on goal', (done) => {
+      const baseData = {
+        gender: Gender.MALE,
+        age: 30,
+        height: 180,
+        weight: 80,
+        activityLevel: 'moderately_active' as const,
+      };
+
+      const loseWeightData: CalorieCalculationData = { ...baseData, goal: 'lose_weight' };
+      const gainWeightData: CalorieCalculationData = { ...baseData, goal: 'gain_weight' };
+
+      service.calculateCalories(loseWeightData).subscribe({
+        next: (loseResults) => {
+          service.calculateCalories(gainWeightData).subscribe({
+            next: (gainResults) => {
+              // Lose weight should have higher protein than gain weight
+              expect(loseResults.macros!.proteinGrams).toBeGreaterThan(
+                gainResults.macros!.proteinGrams,
+              );
+              done();
+            },
+            error: done.fail,
+          });
+        },
+        error: done.fail,
+      });
+    });
+
+    it('should adjust fat based on goal', (done) => {
+      const baseData = {
+        gender: Gender.MALE,
+        age: 30,
+        height: 180,
+        weight: 80,
+        activityLevel: 'moderately_active' as const,
+      };
+
+      const loseWeightData: CalorieCalculationData = { ...baseData, goal: 'lose_weight' };
+      const gainWeightData: CalorieCalculationData = { ...baseData, goal: 'gain_weight' };
+
+      service.calculateCalories(loseWeightData).subscribe({
+        next: (loseResults) => {
+          service.calculateCalories(gainWeightData).subscribe({
+            next: (gainResults) => {
+              // Gain weight should have higher fat than lose weight
+              expect(gainResults.macros!.fatGrams).toBeGreaterThan(loseResults.macros!.fatGrams);
+              done();
+            },
+            error: done.fail,
+          });
+        },
+        error: done.fail,
+      });
+    });
+
+    it('should handle negative carbs by adjusting fat and protein', (done) => {
+      // Use extreme case that might cause negative carbs
+      const extremeData: CalorieCalculationData = {
+        gender: Gender.MALE,
+        age: 30,
+        height: 180,
+        weight: 120, // High weight
+        activityLevel: 'sedentary', // Low activity
+        goal: 'lose_weight', // Calorie deficit
+      };
+
+      service.calculateCalories(extremeData).subscribe({
+        next: (results) => {
+          expect(results.macros).toBeDefined();
+          expect(results.macros!.carbsGrams).toBeGreaterThanOrEqual(0);
+          expect(results.macros!.proteinGrams).toBeGreaterThanOrEqual(120 * 1.4); // Min 1.4g/kg
+          done();
+        },
+        error: done.fail,
+      });
+    });
+
+    it('should maintain fat percentage within 20-35% of target calories', (done) => {
+      const testData: CalorieCalculationData = {
+        gender: Gender.MALE,
+        age: 30,
+        height: 180,
+        weight: 80,
+        activityLevel: 'moderately_active',
+        goal: 'maintain_weight',
+      };
+
+      service.calculateCalories(testData).subscribe({
+        next: (results) => {
+          const fatCalories = results.macros!.fatGrams * 9;
+          const fatPercentage = (fatCalories / results.targetCalories) * 100;
+
+          expect(fatPercentage).toBeGreaterThanOrEqual(20);
+          expect(fatPercentage).toBeLessThanOrEqual(35);
+          done();
+        },
+        error: done.fail,
+      });
+    });
+  });
+
+  describe('Lazy migration', () => {
+    it('should calculate macros for old stored data without macros', (done) => {
+      const oldStoredData = {
+        data: mockCalorieCalculationData,
+        results: {
+          bmr: 1800,
+          tdee: 2790,
+          targetCalories: 2790,
+          formula: 'mifflin',
+          // No macros field
+        },
+      };
+
+      localStorageSpy.getItem.and.returnValue(JSON.stringify(oldStoredData));
+
+      service.getCaloriesResult().subscribe({
+        next: (result) => {
+          expect(result).toBeDefined();
+          expect(result!.results.macros).toBeDefined();
+          expect(result!.results.macros!.proteinGrams).toBeGreaterThan(0);
+          expect(result!.results.macros!.fatGrams).toBeGreaterThan(0);
+          expect(result!.results.macros!.carbsGrams).toBeGreaterThan(0);
+
+          // Should save updated result with macros
+          expect(localStorageSpy.setItem).toHaveBeenCalled();
+          done();
+        },
+        error: done.fail,
+      });
+    });
+
+    it('should not modify data that already has macros', (done) => {
+      const storedDataWithMacros = {
+        data: mockCalorieCalculationData,
+        results: mockCalorieResults,
+      };
+
+      localStorageSpy.getItem.and.returnValue(JSON.stringify(storedDataWithMacros));
+
+      service.getCaloriesResult().subscribe({
+        next: (result) => {
+          expect(result).toEqual(storedDataWithMacros);
+          // Should not call setItem for data that already has macros
+          expect(localStorageSpy.setItem).not.toHaveBeenCalled();
+          done();
         },
         error: done.fail,
       });
