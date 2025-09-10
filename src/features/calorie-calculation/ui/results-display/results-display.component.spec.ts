@@ -22,13 +22,6 @@ describe('ResultsDisplayComponent', () => {
     macros: mockMacronutrients,
   };
 
-  const mockResultsWithoutMacros: CalorieResults = {
-    bmr: 1800,
-    tdee: 2200,
-    targetCalories: 2000,
-    formula: 'mifflin',
-  };
-
   beforeEach((): void => {
     configureZonelessTestingModule({
       imports: [ResultsDisplayComponent],
@@ -71,7 +64,7 @@ describe('ResultsDisplayComponent', () => {
   });
 
   describe('Macronutrients display', () => {
-    it('should display macronutrients when available', (): void => {
+    it('should display macronutrients', (): void => {
       fixture.componentRef.setInput('results', mockResults);
       fixture.detectChanges();
 
@@ -80,14 +73,6 @@ describe('ResultsDisplayComponent', () => {
       expect(results?.macros?.proteinGrams).toBe(120);
       expect(results?.macros?.fatGrams).toBe(80);
       expect(results?.macros?.carbsGrams).toBe(200);
-    });
-
-    it('should not display macronutrients section when not available', (): void => {
-      fixture.componentRef.setInput('results', mockResultsWithoutMacros);
-      fixture.detectChanges();
-
-      const results = component.results();
-      expect(results?.macros).toBeUndefined();
     });
 
     it('should calculate macro calories correctly', (): void => {

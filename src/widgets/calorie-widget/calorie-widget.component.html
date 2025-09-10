@@ -10,24 +10,22 @@
         <strong>TDEE:</strong> {{ caloriesResults()!.tdee }}
       </p>
       
-      @if (caloriesResults()!.macros) {
-        <div class="calorie-widget__macros">
-          <p class="calorie-widget__macros-title">
-            <strong>Macros:</strong>
-          </p>
-          <div class="calorie-widget__macros-items">
-            <span class="calorie-widget__macro-item">
-              P: {{ caloriesResults()!.macros!.proteinGrams }}g
-            </span>
-            <span class="calorie-widget__macro-item">
-              F: {{ caloriesResults()!.macros!.fatGrams }}g
-            </span>
-            <span class="calorie-widget__macro-item">
-              C: {{ caloriesResults()!.macros!.carbsGrams }}g
-            </span>
-          </div>
+      <div class="calorie-widget__macros">
+        <p class="calorie-widget__macros-title">
+          <strong>Macros:</strong>
+        </p>
+        <div class="calorie-widget__macros-items">
+          <span class="calorie-widget__macro-item">
+            P: {{ caloriesResults()!.macros.proteinGrams }}g
+          </span>
+          <span class="calorie-widget__macro-item">
+            F: {{ caloriesResults()!.macros.fatGrams }}g
+          </span>
+          <span class="calorie-widget__macro-item">
+            C: {{ caloriesResults()!.macros.carbsGrams }}g
+          </span>
         </div>
-      }
+      </div>
     </div>
   } @else {
     <p class="calorie-widget__description">

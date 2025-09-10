@@ -27,12 +27,6 @@ describe('CalorieWidgetComponent', () => {
     macros: mockMacronutrients,
   };
 
-  const mockCaloriesResultsWithoutMacros = {
-    targetCalories: 2000,
-    tdee: 2200,
-    formula: 'mifflin' as const,
-  };
-
   beforeEach(() => {
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
     calorieServiceSpy = jasmine.createSpyObj('CalorieCalculatorService', ['fetchCaloriesResult'], {
@@ -125,7 +119,7 @@ describe('CalorieWidgetComponent', () => {
   });
 
   describe('Macronutrients display', () => {
-    it('should display macronutrients when available', () => {
+    it('should display macronutrients', () => {
       fixture.detectChanges();
 
       const macrosSection = fixture.nativeElement.querySelector('.calorie-widget__macros');
@@ -136,33 +130,6 @@ describe('CalorieWidgetComponent', () => {
       expect(macroItems[0].textContent).toContain('P: 120g');
       expect(macroItems[1].textContent).toContain('F: 80g');
       expect(macroItems[2].textContent).toContain('C: 200g');
-    });
-
-    it('should not display macronutrients section when not available', () => {
-      const serviceWithoutMacros = jasmine.createSpyObj(
-        'CalorieCalculatorService',
-        ['fetchCaloriesResult'],
-        {
-          caloriesResults: signal(mockCaloriesResultsWithoutMacros),
-        },
-      );
-      serviceWithoutMacros.fetchCaloriesResult.and.returnValue(of(void 0));
-
-      TestBed.resetTestingModule();
-      configureZonelessTestingModule({
-        imports: [CalorieWidgetComponent],
-        providers: [
-          { provide: Router, useValue: routerSpy },
-          { provide: CalorieCalculatorService, useValue: serviceWithoutMacros },
-        ],
-      });
-
-      const fixtureWithoutMacros = TestBed.createComponent(CalorieWidgetComponent);
-      fixtureWithoutMacros.detectChanges();
-
-      const macrosSection =
-        fixtureWithoutMacros.nativeElement.querySelector('.calorie-widget__macros');
-      expect(macrosSection).toBeFalsy();
     });
 
     it('should display correct macro values', () => {

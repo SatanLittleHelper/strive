@@ -413,15 +413,15 @@ describe('CalorieApiService', () => {
       service.calculateCalories(testData).subscribe({
         next: (results) => {
           expect(results.macros).toBeDefined();
-          expect(results.macros!.proteinGrams).toBeGreaterThan(0);
-          expect(results.macros!.fatGrams).toBeGreaterThan(0);
-          expect(results.macros!.carbsGrams).toBeGreaterThan(0);
+          expect(results.macros.proteinGrams).toBeGreaterThan(0);
+          expect(results.macros.fatGrams).toBeGreaterThan(0);
+          expect(results.macros.carbsGrams).toBeGreaterThan(0);
 
           // Check that macronutrient calories approximately equal target calories
           const totalMacroCalories =
-            results.macros!.proteinGrams * 4 +
-            results.macros!.fatGrams * 9 +
-            results.macros!.carbsGrams * 4;
+            results.macros.proteinGrams * 4 +
+            results.macros.fatGrams * 9 +
+            results.macros.carbsGrams * 4;
 
           // Allow for rounding differences (±50 calories)
           expect(Math.abs(totalMacroCalories - results.targetCalories)).toBeLessThanOrEqual(50);
@@ -448,8 +448,8 @@ describe('CalorieApiService', () => {
           service.calculateCalories(veryActiveData).subscribe({
             next: (activeResults) => {
               // Very active should have higher protein than sedentary
-              expect(activeResults.macros!.proteinGrams).toBeGreaterThan(
-                sedentaryResults.macros!.proteinGrams,
+              expect(activeResults.macros.proteinGrams).toBeGreaterThan(
+                sedentaryResults.macros.proteinGrams,
               );
               done();
             },
@@ -477,8 +477,8 @@ describe('CalorieApiService', () => {
           service.calculateCalories(gainWeightData).subscribe({
             next: (gainResults) => {
               // Lose weight should have higher protein than gain weight
-              expect(loseResults.macros!.proteinGrams).toBeGreaterThan(
-                gainResults.macros!.proteinGrams,
+              expect(loseResults.macros.proteinGrams).toBeGreaterThan(
+                gainResults.macros.proteinGrams,
               );
               done();
             },
@@ -506,7 +506,7 @@ describe('CalorieApiService', () => {
           service.calculateCalories(gainWeightData).subscribe({
             next: (gainResults) => {
               // Gain weight should have higher fat than lose weight
-              expect(gainResults.macros!.fatGrams).toBeGreaterThan(loseResults.macros!.fatGrams);
+              expect(gainResults.macros.fatGrams).toBeGreaterThan(loseResults.macros.fatGrams);
               done();
             },
             error: done.fail,
@@ -530,8 +530,8 @@ describe('CalorieApiService', () => {
       service.calculateCalories(extremeData).subscribe({
         next: (results) => {
           expect(results.macros).toBeDefined();
-          expect(results.macros!.carbsGrams).toBeGreaterThanOrEqual(0);
-          expect(results.macros!.proteinGrams).toBeGreaterThanOrEqual(120 * 1.4); // Min 1.4g/kg
+          expect(results.macros.carbsGrams).toBeGreaterThanOrEqual(0);
+          expect(results.macros.proteinGrams).toBeGreaterThanOrEqual(120 * 1.4); // Min 1.4g/kg
           done();
         },
         error: done.fail,
@@ -550,7 +550,7 @@ describe('CalorieApiService', () => {
 
       service.calculateCalories(testData).subscribe({
         next: (results) => {
-          const fatCalories = results.macros!.fatGrams * 9;
+          const fatCalories = results.macros.fatGrams * 9;
           const fatPercentage = (fatCalories / results.targetCalories) * 100;
 
           expect(fatPercentage).toBeGreaterThanOrEqual(20);
@@ -581,9 +581,9 @@ describe('CalorieApiService', () => {
         next: (result) => {
           expect(result).toBeDefined();
           expect(result!.results.macros).toBeDefined();
-          expect(result!.results.macros!.proteinGrams).toBeGreaterThan(0);
-          expect(result!.results.macros!.fatGrams).toBeGreaterThan(0);
-          expect(result!.results.macros!.carbsGrams).toBeGreaterThan(0);
+          expect(result!.results.macros.proteinGrams).toBeGreaterThan(0);
+          expect(result!.results.macros.fatGrams).toBeGreaterThan(0);
+          expect(result!.results.macros.carbsGrams).toBeGreaterThan(0);
 
           // Should save updated result with macros
           expect(localStorageSpy.setItem).toHaveBeenCalled();

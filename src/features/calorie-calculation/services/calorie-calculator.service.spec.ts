@@ -8,6 +8,7 @@ import type {
   BasicData,
   CalorieCalculationData,
   CalorieResults,
+  Macronutrients,
 } from '../models/calorie-data.types';
 
 describe('CalorieCalculatorService', () => {
@@ -27,11 +28,18 @@ describe('CalorieCalculatorService', () => {
     goal: 'maintain_weight',
   };
 
+  const mockMacronutrients: Macronutrients = {
+    proteinGrams: 128,
+    fatGrams: 80,
+    carbsGrams: 279,
+  };
+
   const mockCalorieResults: CalorieResults = {
     bmr: 1800,
     tdee: 2790,
     targetCalories: 2790,
     formula: 'mifflin',
+    macros: mockMacronutrients,
   };
 
   beforeEach(() => {
@@ -327,6 +335,7 @@ describe('CalorieCalculatorService', () => {
           tdee: 3150.456,
           targetCalories: 3623.024,
           formula: 'mifflin',
+          macros: mockMacronutrients,
         };
 
         apiServiceSpy.calculateCalories.and.returnValue(of(complexResults));

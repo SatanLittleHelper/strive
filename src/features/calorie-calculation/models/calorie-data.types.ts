@@ -117,7 +117,7 @@ export interface CalorieResults {
   tdee: number;
   targetCalories: number;
   formula: 'mifflin' | 'harris';
-  macros?: Macronutrients;
+  macros: Macronutrients;
 }
 
 export interface CalorieCalculationData extends BasicData, ActivityData {}
