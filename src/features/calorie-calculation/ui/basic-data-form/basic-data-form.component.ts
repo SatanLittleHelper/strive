@@ -4,7 +4,12 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { TuiButton, TuiTextfield } from '@taiga-ui/core';
 import { TuiInputNumber } from '@taiga-ui/kit';
 
-import { type BasicData, GenderOptions, type Gender } from '@/features/calorie-calculation';
+import {
+  type BasicData,
+  GenderOptions,
+  type Gender,
+  DEFAULT_BASIC_DATA,
+} from '@/features/calorie-calculation';
 import { generateSelectOptions, SelectFieldComponent } from '@/shared';
 
 import type { OnInit } from '@angular/core';
@@ -25,18 +30,18 @@ export class BasicDataFormComponent implements OnInit {
   protected readonly genderOptions = computed(() => generateSelectOptions(GenderOptions));
 
   readonly form = new FormGroup({
-    gender: new FormControl<Gender | null>(null, [Validators.required]),
-    age: new FormControl<number | null>(null, [
+    gender: new FormControl<Gender | null>(DEFAULT_BASIC_DATA.gender, [Validators.required]),
+    age: new FormControl<number | null>(DEFAULT_BASIC_DATA.age, [
       Validators.required,
       Validators.min(10),
       Validators.max(120),
     ]),
-    height: new FormControl<number | null>(null, [
+    height: new FormControl<number | null>(DEFAULT_BASIC_DATA.height, [
       Validators.required,
       Validators.min(100),
       Validators.max(250),
     ]),
-    weight: new FormControl<number | null>(null, [
+    weight: new FormControl<number | null>(DEFAULT_BASIC_DATA.weight, [
       Validators.required,
       Validators.min(30),
       Validators.max(300),

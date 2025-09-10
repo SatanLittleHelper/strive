@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule, NgControl } from '@angular/forms';
+import { ActivityGoalFormComponent, DEFAULT_ACTIVITY_DATA } from '@/features/calorie-calculation';
 import { configureZonelessTestingModule } from '@/test-setup';
-import { ActivityGoalFormComponent } from './activity-goal-form.component';
 import type { ComponentFixture } from '@angular/core/testing';
 
 // Mock NgControl
@@ -13,6 +13,7 @@ class MockNgControl extends NgControl {
 describe('ActivityGoalFormComponent', () => {
   let component: ActivityGoalFormComponent;
   let fixture: ComponentFixture<ActivityGoalFormComponent>;
+  let mockData: { activityLevel: 'moderately_active'; goal: 'maintain_weight' };
 
   beforeEach((): void => {
     configureZonelessTestingModule({
@@ -27,31 +28,33 @@ describe('ActivityGoalFormComponent', () => {
 
     fixture = TestBed.createComponent(ActivityGoalFormComponent);
     component = fixture.componentInstance;
+
+    mockData = {
+      activityLevel: 'moderately_active' as const,
+      goal: 'maintain_weight' as const,
+    };
   });
 
   it('should create', (): void => {
     expect(component).toBeTruthy();
   });
 
-  it('should initialize form with initial data when provided', (): void => {
-    const mockData = {
-      activityLevel: 'moderate',
-      goal: 'maintain',
-    };
+  it('should initialize form with default values', (): void => {
+    fixture.detectChanges();
 
+    expect(component.form.get('activityLevel')?.value).toBe(DEFAULT_ACTIVITY_DATA.activityLevel);
+    expect(component.form.get('goal')?.value).toBe(DEFAULT_ACTIVITY_DATA.goal);
+  });
+
+  it('should initialize form with initial data when provided', (): void => {
     fixture.componentRef.setInput('initialData', mockData);
     fixture.detectChanges();
 
-    expect(component.form.get('activityLevel')?.value).toBe('moderate');
-    expect(component.form.get('goal')?.value).toBe('maintain');
+    expect(component.form.get('activityLevel')?.value).toBe('moderately_active');
+    expect(component.form.get('goal')?.value).toBe('maintain_weight');
   });
 
   it('should emit dataSubmitted when form is valid', (): void => {
-    const mockData = {
-      activityLevel: 'moderate',
-      goal: 'maintain',
-    };
-
     fixture.detectChanges();
 
     component.form.patchValue(mockData);
@@ -85,7 +88,7 @@ describe('ActivityGoalFormComponent', () => {
     const activityLevelControl = component.form.get('activityLevel');
     const goalControl = component.form.get('goal');
 
-    expect(activityLevelControl?.hasError('required')).toBeTruthy();
-    expect(goalControl?.hasError('required')).toBeTruthy();
+    expect(activityLevelControl?.hasError('required')).toBeFalsy();
+    expect(goalControl?.hasError('required')).toBeFalsy();
   });
 });

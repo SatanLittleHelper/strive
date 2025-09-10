@@ -3,7 +3,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TuiButton } from '@taiga-ui/core';
 
-import { type ActivityData, ActivityLevel, Goal } from '@/features/calorie-calculation';
+import {
+  type ActivityData,
+  ActivityLevelOptions,
+  GoalOptions,
+  DEFAULT_ACTIVITY_DATA,
+} from '@/features/calorie-calculation';
 import { generateSelectOptions, SelectFieldComponent } from '@/shared';
 
 import type { OnInit } from '@angular/core';
@@ -20,12 +25,16 @@ export class ActivityGoalFormComponent implements OnInit {
   readonly dataSubmitted = output<ActivityData>();
   readonly dataChanged = output<void>();
 
-  protected readonly activityLevelOptions = computed(() => generateSelectOptions(ActivityLevel));
-  protected readonly goalOptions = computed(() => generateSelectOptions(Goal));
+  protected readonly activityLevelOptions = computed(() =>
+    generateSelectOptions(ActivityLevelOptions),
+  );
+  protected readonly goalOptions = computed(() => generateSelectOptions(GoalOptions));
 
   readonly form = new FormGroup({
-    activityLevel: new FormControl<string | null>(null, [Validators.required]),
-    goal: new FormControl<string | null>(null, [Validators.required]),
+    activityLevel: new FormControl<string | null>(DEFAULT_ACTIVITY_DATA.activityLevel, [
+      Validators.required,
+    ]),
+    goal: new FormControl<string | null>(DEFAULT_ACTIVITY_DATA.goal, [Validators.required]),
   });
 
   constructor() {

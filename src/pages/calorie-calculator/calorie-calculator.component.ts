@@ -34,6 +34,7 @@ import { StepComponent } from './ui/step';
 export class CalorieCalculatorComponent {
   private readonly calorieService = inject(CalorieCalculatorService);
   private readonly formStateService = inject(CalorieFormStateService);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly isLoading = this.calorieService.isLoading;
   protected readonly caloriesResults = this.calorieService.caloriesResults;
@@ -77,7 +78,7 @@ export class CalorieCalculatorComponent {
 
     this.calorieService
       .fetchCalculateCalories(calculationData)
-      .pipe(takeUntilDestroyed(inject(DestroyRef)))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         this.formStateService.setCurrentStep(2);
       });

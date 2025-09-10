@@ -7,63 +7,77 @@ export const Gender = {
 
 export const GenderOptions: SelectOptionsRecord = {
   MALE: {
-    value: 'male',
+    value: Gender.MALE,
     label: 'Male',
   },
   FEMALE: {
-    value: 'female',
+    value: Gender.FEMALE,
     label: 'Female',
   },
 };
 
-export const ActivityLevel: SelectOptionsRecord<{ multiplier: number }> = {
+export const ActivityLevel = {
+  SEDENTARY: 'sedentary',
+  LIGHTLY_ACTIVE: 'lightly_active',
+  MODERATELY_ACTIVE: 'moderately_active',
+  VERY_ACTIVE: 'very_active',
+  EXTREMELY_ACTIVE: 'extremely_active',
+} as const;
+
+export const ActivityLevelOptions: SelectOptionsRecord<{ multiplier: number }> = {
   SEDENTARY: {
-    value: 'sedentary',
+    value: ActivityLevel.SEDENTARY,
     label: 'Sedentary',
     description: 'Little or no exercise',
     multiplier: 1.2,
   },
   LIGHTLY_ACTIVE: {
-    value: 'lightly_active',
+    value: ActivityLevel.LIGHTLY_ACTIVE,
     label: 'Lightly Active',
     description: 'Light exercise 1-3 days/week',
     multiplier: 1.375,
   },
   MODERATELY_ACTIVE: {
-    value: 'moderately_active',
+    value: ActivityLevel.MODERATELY_ACTIVE,
     label: 'Moderately Active',
     description: 'Moderate exercise 3-5 days/week',
     multiplier: 1.55,
   },
   VERY_ACTIVE: {
-    value: 'very_active',
+    value: ActivityLevel.VERY_ACTIVE,
     label: 'Very Active',
     description: 'Hard exercise 6-7 days/week',
     multiplier: 1.725,
   },
   EXTREMELY_ACTIVE: {
-    value: 'extremely_active',
+    value: ActivityLevel.EXTREMELY_ACTIVE,
     label: 'Extremely Active',
     description: 'Very hard exercise, physical job',
     multiplier: 1.9,
   },
 };
 
-export const Goal: SelectOptionsRecord<{ percentageModifier: number }> = {
+export const Goal = {
+  LOSE_WEIGHT: 'lose_weight',
+  MAINTAIN_WEIGHT: 'maintain_weight',
+  GAIN_WEIGHT: 'gain_weight',
+} as const;
+
+export const GoalOptions: SelectOptionsRecord<{ percentageModifier: number }> = {
   LOSE_WEIGHT: {
-    value: 'lose_weight',
+    value: Goal.LOSE_WEIGHT,
     label: 'Lose Weight',
     description: 'Create a calorie deficit',
     percentageModifier: -20,
   },
   MAINTAIN_WEIGHT: {
-    value: 'maintain_weight',
+    value: Goal.MAINTAIN_WEIGHT,
     label: 'Maintain Weight',
     description: 'Keep current weight',
     percentageModifier: 0,
   },
   GAIN_WEIGHT: {
-    value: 'gain_weight',
+    value: Goal.GAIN_WEIGHT,
     label: 'Gain Weight',
     description: 'Create a calorie surplus',
     percentageModifier: 15,
@@ -71,8 +85,8 @@ export const Goal: SelectOptionsRecord<{ percentageModifier: number }> = {
 };
 
 export type Gender = (typeof Gender)[keyof typeof Gender];
-export type ActivityLevelValue = (typeof ActivityLevel)[keyof typeof ActivityLevel]['value'];
-export type GoalValue = (typeof Goal)[keyof typeof Goal]['value'];
+export type ActivityLevel = (typeof ActivityLevel)[keyof typeof ActivityLevel];
+export type Goal = (typeof Goal)[keyof typeof Goal];
 
 export interface BasicData {
   gender: Gender;
@@ -82,8 +96,8 @@ export interface BasicData {
 }
 
 export interface ActivityData {
-  activityLevel: ActivityLevelValue;
-  goal: GoalValue;
+  activityLevel: ActivityLevel;
+  goal: Goal;
 }
 
 export interface CalorieResults {
@@ -101,3 +115,15 @@ export interface StoredCalculation {
   results: CalorieResults;
   timestamp: string;
 }
+
+export const DEFAULT_BASIC_DATA: BasicData = {
+  gender: Gender.MALE,
+  age: 35,
+  height: 175,
+  weight: 80,
+};
+
+export const DEFAULT_ACTIVITY_DATA: ActivityData = {
+  activityLevel: ActivityLevel.MODERATELY_ACTIVE,
+  goal: Goal.LOSE_WEIGHT,
+};
