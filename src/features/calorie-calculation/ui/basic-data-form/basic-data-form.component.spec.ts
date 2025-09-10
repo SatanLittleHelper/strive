@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
-import { Gender } from '@/features/calorie-calculation';
+import { Gender, DEFAULT_BASIC_DATA } from '@/features/calorie-calculation';
 import type { BasicData } from '@/features/calorie-calculation';
 import { configureZonelessTestingModule } from '@/test-setup';
 import { BasicDataFormComponent } from './basic-data-form.component';
@@ -9,13 +9,7 @@ import type { ComponentFixture } from '@angular/core/testing';
 describe('BasicDataFormComponent', () => {
   let component: BasicDataFormComponent;
   let fixture: ComponentFixture<BasicDataFormComponent>;
-
-  const mockBasicData: BasicData = {
-    gender: Gender.MALE,
-    age: 30,
-    height: 180,
-    weight: 80,
-  };
+  let mockBasicData: BasicData;
 
   beforeEach((): void => {
     configureZonelessTestingModule({
@@ -24,10 +18,26 @@ describe('BasicDataFormComponent', () => {
 
     fixture = TestBed.createComponent(BasicDataFormComponent);
     component = fixture.componentInstance;
+
+    mockBasicData = {
+      gender: Gender.MALE,
+      age: 30,
+      height: 180,
+      weight: 80,
+    };
   });
 
   it('should create', (): void => {
     expect(component).toBeTruthy();
+  });
+
+  it('should initialize form with default values', (): void => {
+    fixture.detectChanges();
+
+    expect(component.form.get('age')?.value).toBe(DEFAULT_BASIC_DATA.age);
+    expect(component.form.get('gender')?.value).toBe(DEFAULT_BASIC_DATA.gender);
+    expect(component.form.get('height')?.value).toBe(DEFAULT_BASIC_DATA.height);
+    expect(component.form.get('weight')?.value).toBe(DEFAULT_BASIC_DATA.weight);
   });
 
   it('should initialize form with initial data when provided', (): void => {
@@ -68,19 +78,5 @@ describe('BasicDataFormComponent', () => {
     expect(component.form.get('gender')).toBeTruthy();
     expect(component.form.get('height')).toBeTruthy();
     expect(component.form.get('weight')).toBeTruthy();
-  });
-
-  it('should validate required fields', (): void => {
-    fixture.detectChanges();
-
-    const ageControl = component.form.get('age');
-    const genderControl = component.form.get('gender');
-    const heightControl = component.form.get('height');
-    const weightControl = component.form.get('weight');
-
-    expect(ageControl?.hasError('required')).toBeTruthy();
-    expect(genderControl?.hasError('required')).toBeTruthy();
-    expect(heightControl?.hasError('required')).toBeTruthy();
-    expect(weightControl?.hasError('required')).toBeTruthy();
   });
 });

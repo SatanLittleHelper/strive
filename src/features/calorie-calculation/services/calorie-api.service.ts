@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import { from } from 'rxjs';
-import { ActivityLevel, Goal } from '../models/calorie-data.types';
+import { ActivityLevelOptions, GoalOptions } from '../models/calorie-data.types';
 import type {
   BasicData,
   CalorieCalculationData,
   CalorieResults,
-  ActivityLevelValue,
-  GoalValue,
+  ActivityLevel,
+  Goal,
 } from '../models/calorie-data.types';
 import type { Observable } from 'rxjs';
 
@@ -65,16 +65,16 @@ export class CalorieApiService {
     return gender === 'male' ? baseBMR + 5 : baseBMR - 161;
   }
 
-  private calculateTDEE(bmr: number, activityLevel: ActivityLevelValue): number {
-    const activityOption = Object.values(ActivityLevel).find(
+  private calculateTDEE(bmr: number, activityLevel: ActivityLevel): number {
+    const activityOption = Object.values(ActivityLevelOptions).find(
       (option) => option.value === activityLevel,
     );
     const multiplier = activityOption?.multiplier ?? 1.2;
     return Math.round(bmr * multiplier);
   }
 
-  private calculateTargetCalories(tdee: number, goal: GoalValue): number {
-    const goalOption = Object.values(Goal).find((option) => option.value === goal);
+  private calculateTargetCalories(tdee: number, goal: Goal): number {
+    const goalOption = Object.values(GoalOptions).find((option) => option.value === goal);
     const percentageModifier = goalOption?.percentageModifier ?? 0;
     const modifier = (tdee * percentageModifier) / 100;
     return Math.round(tdee + modifier);

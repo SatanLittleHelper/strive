@@ -5,6 +5,8 @@ import type { BasicData, ActivityData } from '../models/calorie-data.types';
 
 describe('CalorieFormStateService', () => {
   let service: CalorieFormStateService;
+  let mockBasicData: BasicData;
+  let mockActivityData: ActivityData;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -12,6 +14,18 @@ describe('CalorieFormStateService', () => {
     });
     configureZonelessTestingModule();
     service = TestBed.inject(CalorieFormStateService);
+
+    mockBasicData = {
+      age: 25,
+      gender: 'male',
+      height: 180,
+      weight: 75,
+    };
+
+    mockActivityData = {
+      activityLevel: 'moderately_active',
+      goal: 'maintain_weight',
+    };
   });
 
   it('should be created', () => {
@@ -36,16 +50,9 @@ describe('CalorieFormStateService', () => {
 
   describe('setBasicData', () => {
     it('should set basic data and move to step 1', () => {
-      const basicData: BasicData = {
-        age: 25,
-        gender: 'male',
-        height: 180,
-        weight: 75,
-      };
+      service.setBasicData(mockBasicData);
 
-      service.setBasicData(basicData);
-
-      expect(service.basicData()).toEqual(basicData);
+      expect(service.basicData()).toEqual(mockBasicData);
       expect(service.currentStep()).toBe(1);
       expect(service.hasDataChanges()).toBe(false);
     });
@@ -53,14 +60,9 @@ describe('CalorieFormStateService', () => {
 
   describe('setActivityData', () => {
     it('should set activity data', () => {
-      const activityData: ActivityData = {
-        activityLevel: 'moderate',
-        goal: 'maintain',
-      };
+      service.setActivityData(mockActivityData);
 
-      service.setActivityData(activityData);
-
-      expect(service.activityData()).toEqual(activityData);
+      expect(service.activityData()).toEqual(mockActivityData);
       expect(service.hasDataChanges()).toBe(false);
     });
   });
@@ -74,19 +76,8 @@ describe('CalorieFormStateService', () => {
 
   describe('resetForm', () => {
     it('should reset all form data', () => {
-      const basicData: BasicData = {
-        age: 25,
-        gender: 'male',
-        height: 180,
-        weight: 75,
-      };
-      const activityData: ActivityData = {
-        activityLevel: 'moderate',
-        goal: 'maintain',
-      };
-
-      service.setBasicData(basicData);
-      service.setActivityData(activityData);
+      service.setBasicData(mockBasicData);
+      service.setActivityData(mockActivityData);
       service.resetForm();
 
       expect(service.currentStep()).toBe(0);
@@ -102,14 +93,7 @@ describe('CalorieFormStateService', () => {
     });
 
     it('should return false when basic data is set', () => {
-      const basicData: BasicData = {
-        age: 25,
-        gender: 'male',
-        height: 180,
-        weight: 75,
-      };
-
-      service.setBasicData(basicData);
+      service.setBasicData(mockBasicData);
       expect(service.isActivityTabDisabled()).toBe(false);
     });
   });
@@ -120,31 +104,13 @@ describe('CalorieFormStateService', () => {
     });
 
     it('should return true when activity data is null', () => {
-      const basicData: BasicData = {
-        age: 25,
-        gender: 'male',
-        height: 180,
-        weight: 75,
-      };
-
-      service.setBasicData(basicData);
+      service.setBasicData(mockBasicData);
       expect(service.isResultsTabDisabled()).toBe(true);
     });
 
     it('should return false when both data are set', () => {
-      const basicData: BasicData = {
-        age: 25,
-        gender: 'male',
-        height: 180,
-        weight: 75,
-      };
-      const activityData: ActivityData = {
-        activityLevel: 'moderate',
-        goal: 'maintain',
-      };
-
-      service.setBasicData(basicData);
-      service.setActivityData(activityData);
+      service.setBasicData(mockBasicData);
+      service.setActivityData(mockActivityData);
       expect(service.isResultsTabDisabled()).toBe(false);
     });
   });
