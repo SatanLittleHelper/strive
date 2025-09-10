@@ -32,4 +32,32 @@
   &__tdee {
     color: var(--tui-text-02);
   }
+
+  &__macros {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--tui-base-03);
+
+    &-title {
+      margin: 0 0 0.5rem;
+      font-size: 0.875rem;
+      color: var(--tui-text-01);
+    }
+
+    &-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+  }
+
+  &__macro-item {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+
+    font-size: 0.75rem;
+    color: var(--tui-text-02);
+
+    background: var(--tui-base-02);
+  }
 }

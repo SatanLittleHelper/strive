@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import type { CalorieResults } from '@/features/calorie-calculation';
+import type { CalorieResults, Macronutrients } from '@/features/calorie-calculation';
 import { configureZonelessTestingModule } from '@/test-setup';
 import { ResultsDisplayComponent } from './results-display.component';
 import type { ComponentFixture } from '@angular/core/testing';
@@ -8,11 +8,18 @@ describe('ResultsDisplayComponent', () => {
   let component: ResultsDisplayComponent;
   let fixture: ComponentFixture<ResultsDisplayComponent>;
 
+  const mockMacronutrients: Macronutrients = {
+    proteinGrams: 120,
+    fatGrams: 80,
+    carbsGrams: 200,
+  };
+
   const mockResults: CalorieResults = {
     bmr: 1800,
     tdee: 2200,
     targetCalories: 2000,
     formula: 'mifflin',
+    macros: mockMacronutrients,
   };
 
   beforeEach((): void => {
@@ -54,5 +61,37 @@ describe('ResultsDisplayComponent', () => {
     component.onRecalculate();
 
     expect(component.recalculate.emit).toHaveBeenCalled();
+  });
+
+  describe('Macronutrients display', () => {
+    it('should display macronutrients', (): void => {
+      fixture.componentRef.setInput('results', mockResults);
+      fixture.detectChanges();
+
+      const results = component.results();
+      expect(results?.macros).toBeDefined();
+      expect(results?.macros?.proteinGrams).toBe(120);
+      expect(results?.macros?.fatGrams).toBe(80);
+      expect(results?.macros?.carbsGrams).toBe(200);
+    });
+
+    it('should calculate macro calories correctly', (): void => {
+      fixture.componentRef.setInput('results', mockResults);
+      fixture.detectChanges();
+
+      const proteinCalories = component.getMacroCalories(mockMacronutrients, 'proteinGrams');
+      const fatCalories = component.getMacroCalories(mockMacronutrients, 'fatGrams');
+      const carbsCalories = component.getMacroCalories(mockMacronutrients, 'carbsGrams');
+
+      expect(proteinCalories).toBe(120 * 4); // 480
+      expect(fatCalories).toBe(80 * 9); // 720
+      expect(carbsCalories).toBe(200 * 4); // 800
+    });
+
+    it('should have correct MACRO_KCAL_PER_GRAM constant', (): void => {
+      expect(component.MACRO_KCAL_PER_GRAM.protein).toBe(4);
+      expect(component.MACRO_KCAL_PER_GRAM.fat).toBe(9);
+      expect(component.MACRO_KCAL_PER_GRAM.carbs).toBe(4);
+    });
   });
 });

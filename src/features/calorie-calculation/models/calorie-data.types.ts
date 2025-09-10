@@ -100,11 +100,24 @@ export interface ActivityData {
   goal: Goal;
 }
 
+export interface Macronutrients {
+  proteinGrams: number;
+  fatGrams: number;
+  carbsGrams: number;
+}
+
+export const MACRO_KCAL_PER_GRAM = {
+  protein: 4,
+  fat: 9,
+  carbs: 4,
+} as const;
+
 export interface CalorieResults {
   bmr: number;
   tdee: number;
   targetCalories: number;
   formula: 'mifflin' | 'harris';
+  macros: Macronutrients;
 }
 
 export interface CalorieCalculationData extends BasicData, ActivityData {}
