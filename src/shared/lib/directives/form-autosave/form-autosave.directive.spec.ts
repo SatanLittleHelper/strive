@@ -57,7 +57,10 @@ describe('FormAutosaveDirective', () => {
 
     fixture.detectChanges();
 
-    spyOn(directive, 'getFormGroup' as never).and.returnValue(component.form);
+    spyOn(
+      directive as unknown as { getFormGroup: () => FormGroup },
+      'getFormGroup',
+    ).and.returnValue(component.form);
   });
 
   describe('Initialization', () => {
@@ -175,7 +178,9 @@ describe('FormAutosaveDirective', () => {
 
   describe('Error Handling', () => {
     it('should handle when no FormGroup is found', () => {
-      (directive as never).getFormGroup = jasmine.createSpy().and.returnValue(null);
+      (directive as unknown as { getFormGroup: () => FormGroup | null }).getFormGroup = jasmine
+        .createSpy()
+        .and.returnValue(null);
 
       expect(() => directive['initializeFormAutosave']()).not.toThrow();
     });
