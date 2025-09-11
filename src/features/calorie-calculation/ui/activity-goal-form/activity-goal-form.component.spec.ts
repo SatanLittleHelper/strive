@@ -94,7 +94,6 @@ describe('ActivityGoalFormComponent', () => {
   it('should throw error when form data is invalid in onSubmit', (): void => {
     fixture.detectChanges();
 
-    // Mock getRawValue to return invalid data (missing required fields)
     spyOn(component.form, 'getRawValue').and.returnValue({ someOtherField: 'value' } as unknown as {
       activityLevel: string | null;
       goal: string | null;

@@ -24,9 +24,11 @@ macro: improve back-layout component and fix FSD boundaries
 
 Before making any commit, you MUST complete ALL of the following steps:
 
-### 1. ✅ Remove Unnecessary Comments
-- Delete all unnecessary comments from code
+### 1. ✅ Remove Unnecessary Comments ⚠️ CRITICAL STEP
+- **MANDATORY**: Delete ALL unnecessary comments from code before commit
+- Use `grep -r "^\s*//" src/` to find all comments in changed files
 - Keep only essential documentation comments
+- **This step is often forgotten but is required!**
 
 ### 2. ✅ Fix Linter Errors
 - Run `npm run lint` and fix all errors
