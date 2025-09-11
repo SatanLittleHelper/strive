@@ -78,24 +78,5 @@ describe('ResultsDisplayComponent', () => {
       expect(results?.macros?.fatGrams).toBe(80);
       expect(results?.macros?.carbsGrams).toBe(200);
     });
-
-    it('should calculate macro calories correctly', (): void => {
-      fixture.componentRef.setInput('results', mockResults);
-      fixture.detectChanges();
-
-      const proteinCalories = component.getMacroCalories(mockMacronutrients, 'proteinGrams');
-      const fatCalories = component.getMacroCalories(mockMacronutrients, 'fatGrams');
-      const carbsCalories = component.getMacroCalories(mockMacronutrients, 'carbsGrams');
-
-      expect(proteinCalories).toBe(120 * 4); // 480
-      expect(fatCalories).toBe(80 * 9); // 720
-      expect(carbsCalories).toBe(200 * 4); // 800
-    });
-
-    it('should have correct MACRO_KCAL_PER_GRAM constant', (): void => {
-      expect(component.MACRO_KCAL_PER_GRAM.protein).toBe(4);
-      expect(component.MACRO_KCAL_PER_GRAM.fat).toBe(9);
-      expect(component.MACRO_KCAL_PER_GRAM.carbs).toBe(4);
-    });
   });
 });

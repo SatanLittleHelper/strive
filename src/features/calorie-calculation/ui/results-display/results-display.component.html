@@ -3,26 +3,26 @@
 		<app-section-block>
 			<app-result-item
 				label="Target Calories"
-				[value]="results.targetCalories + ' kcal/day'"
+				[value]="targetCaloriesValue"
 				description="Recommended daily calorie intake for your goal"
 				[isHighlighted]="true"
 			/>
 		</app-section-block>
 
 		<app-section-block title="Macronutrients">
-			<app-macronutrients-display [macros]="results.macros" />
+			<app-macronutrients-display [macros]="macrosValue" />
 		</app-section-block>
 
 		<app-section-block title="Additional Information">
 			<app-result-item
 				label="BMR (Basal Metabolic Rate)"
-				[value]="results.bmr + ' kcal/day'"
+				[value]="bmrValue"
 				description="Calories your body needs at rest"
 			/>
 
 			<app-result-item
 				label="TDEE (Total Daily Energy Expenditure)"
-				[value]="results.tdee + ' kcal/day'"
+				[value]="tdeeValue"
 				description="Total calories needed with activity level"
 			/>
 		</app-section-block>

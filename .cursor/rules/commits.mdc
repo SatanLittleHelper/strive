@@ -20,9 +20,32 @@ macro: improve back-layout component and fix FSD boundaries
 
 **Important**: Keep commit messages concise and descriptive. Focus on the main changes made, not detailed implementation steps.
 
+### Commit Message Quality Rules
+
+- **Be specific**: Describe WHAT was changed, not HOW
+- **Be meaningful**: Avoid vague terms like "improve", "fix", "update" without context
+- **Include component names**: Mention specific components, services, or features affected
+- **Focus on user impact**: What does this change do for the application?
+
+#### Good Examples:
+```
+macro: add value getters to results-display component
+macro: implement null handling in macronutrients-display component
+macro: remove unused getMacroCalories method from results-display
+```
+
+#### Bad Examples:
+```
+macro: improve code
+macro: fix issues
+macro: update components
+```
+
 ## Pre-commit Checklist
 
 Before making any commit, you MUST complete ALL of the following steps:
+
+> ⚠️ **CRITICAL REMINDER**: Steps 1 and 6 are often forgotten but are MANDATORY!
 
 ### 1. ✅ Remove Unnecessary Comments ⚠️ CRITICAL STEP
 - **MANDATORY**: Delete ALL unnecessary comments from code before commit
@@ -54,10 +77,11 @@ Before making any commit, you MUST complete ALL of the following steps:
 - No tests should be skipped or failing
 - Fix any broken tests before committing
 
-### 6. ✅ Update Project Structure Documentation
-- Update `.cursor/rules/project-structure.mdc` if project structure changed
+### 6. ✅ Update Project Structure Documentation ⚠️ CRITICAL STEP
+- **MANDATORY**: Update `.cursor/rules/project-structure.mdc` if project structure changed
 - Add new components, services, or features to documentation
 - Keep architecture documentation current
+- **This step is often forgotten but is required!**
 
 ## Important Notes
 

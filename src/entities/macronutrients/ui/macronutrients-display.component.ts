@@ -8,20 +8,34 @@ import type { Macronutrients } from '../model/index.js';
   styleUrl: './macronutrients-display.component.scss',
 })
 export class MacronutrientsDisplayComponent {
-  readonly macros = input.required<Macronutrients>();
+  readonly macros = input<Macronutrients | null>(null);
+
+  private getMacroValue(
+    getter: (macros: Macronutrients) => { grams: number; percentage: number },
+  ): string {
+    const macros = this.macros();
+    const values = macros ? getter(macros) : { grams: 0, percentage: 0 };
+    return `${values.grams}g (${values.percentage}%)`;
+  }
 
   get proteinValue(): string {
-    const macros = this.macros();
-    return `${macros.proteinGrams}g (${macros.proteinPercentage}%)`;
+    return this.getMacroValue((macros) => ({
+      grams: macros.proteinGrams,
+      percentage: macros.proteinPercentage,
+    }));
   }
 
   get fatValue(): string {
-    const macros = this.macros();
-    return `${macros.fatGrams}g (${macros.fatPercentage}%)`;
+    return this.getMacroValue((macros) => ({
+      grams: macros.fatGrams,
+      percentage: macros.fatPercentage,
+    }));
   }
 
   get carbsValue(): string {
-    const macros = this.macros();
-    return `${macros.carbsGrams}g (${macros.carbsPercentage}%)`;
+    return this.getMacroValue((macros) => ({
+      grams: macros.carbsGrams,
+      percentage: macros.carbsPercentage,
+    }));
   }
 }
