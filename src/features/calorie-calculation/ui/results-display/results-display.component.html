@@ -1,47 +1,42 @@
 <div class="results-display">
-  @if (results(); as results) {
-    <div class="results-display__header">
-      <h2 class="results-display__header-title">Your Calorie Results</h2>
-      <p class="results-display__header-subtitle">Based on Mifflin-St Jeor formula</p>
-    </div>
+	@if (results(); as results) {
+		<app-section-block>
+			<app-result-item
+				label="Target Calories"
+				[value]="targetCaloriesValue"
+				description="Recommended daily calorie intake for your goal"
+				[isHighlighted]="true"
+			/>
+		</app-section-block>
 
-    <div class="results-display__content">
-      <app-result-item
-        label="BMR (Basal Metabolic Rate)"
-        [value]="results.bmr + ' kcal/day'"
-        description="Calories your body needs at rest"
-      />
+		<app-section-block title="Macronutrients">
+			<app-macronutrients-display [macros]="macrosValue" />
+		</app-section-block>
 
-      <app-result-item
-        label="TDEE (Total Daily Energy Expenditure)"
-        [value]="results.tdee + ' kcal/day'"
-        description="Total calories needed with activity level"
-      />
+		<app-section-block title="Additional Information">
+			<app-result-item
+				label="BMR (Basal Metabolic Rate)"
+				[value]="bmrValue"
+				description="Calories your body needs at rest"
+			/>
 
-      <app-result-item
-        label="Target Calories"
-        [value]="results.targetCalories + ' kcal/day'"
-        description="Recommended daily calorie intake for your goal"
-        [isHighlighted]="true"
-      />
-    </div>
+			<app-result-item
+				label="TDEE (Total Daily Energy Expenditure)"
+				[value]="tdeeValue"
+				description="Total calories needed with activity level"
+			/>
+		</app-section-block>
 
-    <div class="results-display__actions">
-      <button
-        tuiButton
-        appearance="secondary"
-        (click)="onRecalculate()"
-      >
-        Calculate Again
-      </button>
-    </div>
-  } @else {
-    <div class="results-display__empty">
-      <div class="results-display__empty-icon">📊</div>
-      <h3 class="results-display__empty-title">No Results Yet</h3>
-      <p class="results-display__empty-description">
-        Complete the previous steps to see your calorie calculations
-      </p>
-    </div>
-  }
+		<div class="results-display__actions">
+			<button tuiButton appearance="secondary" (click)="onRecalculate()">Calculate Again</button>
+		</div>
+	} @else {
+		<div class="results-display__empty">
+			<div class="results-display__empty-icon">📊</div>
+			<h3 class="results-display__empty-title">No Results Yet</h3>
+			<p class="results-display__empty-description">
+				Complete the previous steps to see your calorie calculations
+			</p>
+		</div>
+	}
 </div>

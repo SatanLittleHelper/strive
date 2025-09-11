@@ -8,15 +8,16 @@ import {
   ActivityLevelOptions,
   GoalOptions,
   DEFAULT_ACTIVITY_DATA,
+  isActivityData,
 } from '@/features/calorie-calculation';
-import { generateSelectOptions, SelectFieldComponent } from '@/shared';
+import { generateSelectOptions, SelectFieldComponent, SectionBlockComponent } from '@/shared';
 
 import type { OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-activity-goal-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, TuiButton, SelectFieldComponent],
+  imports: [ReactiveFormsModule, TuiButton, SelectFieldComponent, SectionBlockComponent],
   templateUrl: './activity-goal-form.component.html',
   styleUrl: './activity-goal-form.component.scss',
 })
@@ -52,7 +53,13 @@ export class ActivityGoalFormComponent implements OnInit {
 
   onSubmit(): void {
     if (this.form.valid) {
-      this.dataSubmitted.emit(this.form.getRawValue() as ActivityData);
+      const formValue = this.form.getRawValue();
+
+      if (!isActivityData(formValue)) {
+        throw new Error('Form data is not valid ActivityData');
+      }
+
+      this.dataSubmitted.emit(formValue);
     }
   }
 }

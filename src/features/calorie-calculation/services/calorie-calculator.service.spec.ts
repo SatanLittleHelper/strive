@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
+import type { Macronutrients } from '@/entities/macronutrients';
 import { configureZonelessTestingModule } from '@/test-setup';
 import { CalorieApiService } from './calorie-api.service';
 import { CalorieCalculatorService } from './calorie-calculator.service';
@@ -27,11 +28,21 @@ describe('CalorieCalculatorService', () => {
     goal: 'maintain_weight',
   };
 
+  const mockMacronutrients: Macronutrients = {
+    proteinGrams: 128,
+    fatGrams: 80,
+    carbsGrams: 279,
+    proteinPercentage: 25.0,
+    fatPercentage: 35.0,
+    carbsPercentage: 40.0,
+  };
+
   const mockCalorieResults: CalorieResults = {
     bmr: 1800,
     tdee: 2790,
     targetCalories: 2790,
     formula: 'mifflin',
+    macros: mockMacronutrients,
   };
 
   beforeEach(() => {
@@ -327,6 +338,7 @@ describe('CalorieCalculatorService', () => {
           tdee: 3150.456,
           targetCalories: 3623.024,
           formula: 'mifflin',
+          macros: mockMacronutrients,
         };
 
         apiServiceSpy.calculateCalories.and.returnValue(of(complexResults));

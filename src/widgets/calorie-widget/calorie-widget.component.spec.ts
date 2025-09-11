@@ -2,6 +2,7 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
+import type { Macronutrients } from '@/entities/macronutrients';
 import { CalorieCalculatorService } from '@/features/calorie-calculation';
 import { configureZonelessTestingModule } from '@/test-setup';
 import { CalorieWidgetComponent } from './calorie-widget.component';
@@ -13,10 +14,20 @@ describe('CalorieWidgetComponent', () => {
   let routerSpy: jasmine.SpyObj<Router>;
   let calorieServiceSpy: jasmine.SpyObj<CalorieCalculatorService>;
 
+  const mockMacronutrients: Macronutrients = {
+    proteinGrams: 120,
+    fatGrams: 80,
+    carbsGrams: 200,
+    proteinPercentage: 25.0,
+    fatPercentage: 35.0,
+    carbsPercentage: 40.0,
+  };
+
   const mockCaloriesResults = {
     targetCalories: 2000,
     tdee: 2200,
     formula: 'mifflin' as const,
+    macros: mockMacronutrients,
   };
 
   beforeEach(() => {
@@ -59,11 +70,9 @@ describe('CalorieWidgetComponent', () => {
     fixture.detectChanges();
 
     const targetElement = fixture.nativeElement.querySelector('.calorie-widget__target');
-    const tdeeElement = fixture.nativeElement.querySelector('.calorie-widget__tdee');
     const button = fixture.nativeElement.querySelector('button');
 
     expect(targetElement.textContent).toContain('2000');
-    expect(tdeeElement.textContent).toContain('2200');
     expect(button.textContent.trim()).toBe('Recalculate');
     expect(button.disabled).toBeFalsy();
   });
@@ -108,5 +117,29 @@ describe('CalorieWidgetComponent', () => {
     button.click();
 
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/calorie-calculator']);
+  });
+
+  describe('Macronutrients display', () => {
+    it('should display macronutrients', () => {
+      fixture.detectChanges();
+
+      const macronutrientsDisplay = fixture.nativeElement.querySelector(
+        'app-macronutrients-display',
+      );
+
+      expect(macronutrientsDisplay).toBeTruthy();
+    });
+
+    it('should display correct macro values', () => {
+      fixture.detectChanges();
+
+      const macronutrientsDisplay = fixture.nativeElement.querySelector(
+        'app-macronutrients-display',
+      );
+
+      expect(macronutrientsDisplay.textContent).toContain('120g (25%)');
+      expect(macronutrientsDisplay.textContent).toContain('80g (35%)');
+      expect(macronutrientsDisplay.textContent).toContain('200g (40%)');
+    });
   });
 });

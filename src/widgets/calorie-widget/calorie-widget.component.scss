@@ -1,35 +1,24 @@
 .calorie-widget {
   &__title {
-    margin-bottom: 1rem;
-    font-size: 1.125rem;
-    font-weight: 500;
-    color: var(--tui-text-01);
+    margin-bottom: var(--space-md);
   }
-  
+
+  &__results {
+    margin-bottom: 1rem;
+  }
+
+  &__target {
+    margin-bottom: var(--space-md);
+
+    &-value {
+      font-weight: 700;
+      color: var(--color-primary);
+    }
+  }
+
   &__description {
     margin-bottom: 1rem;
     line-height: 1.5;
-    color: var(--tui-text-02);
-  }
-  
-  &__results {
-    margin-bottom: 1rem;
-    
-    &-item {
-      margin-bottom: 0.5rem;
-      color: var(--tui-text-01);
-      
-      &:last-child {
-        margin-bottom: 0;
-      }
-    }
-  }
-  
-  &__target {
-    font-size: 1.125rem;
-  }
-  
-  &__tdee {
     color: var(--tui-text-02);
   }
 }

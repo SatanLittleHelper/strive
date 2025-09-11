@@ -28,6 +28,16 @@
   --tui-link: var(--color-accent);
   --tui-focus: var(--color-primary);
   --tui-background-base: var(--color-surface);
-  --tui-background-elevation-2: var(--color-background)
+  --tui-background-elevation-2: var(--color-background);
+  --tui-background-neutral-1: var(--color-neutral-bg);
+  --tui-background-neutral-1-hover: var(--color-neutral-bg-hover);
+  --tui-text-tertiary: var(--color-text-tertiary);
+
+  /* Font sizes for labels */
+  --tui-font-text-s: 1rem;
+
+  [tuiLabel] {
+    gap: var(--space-sm);
+  }
 }
 

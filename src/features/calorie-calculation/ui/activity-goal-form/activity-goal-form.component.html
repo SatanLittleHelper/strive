@@ -1,32 +1,34 @@
-<form [formGroup]="form" (ngSubmit)="onSubmit()" class="activity-goal-form">
-  <div class="activity-goal-form__field">
-    <app-select-field
-      [options]="activityLevelOptions()"
-      [label]="'Activity Level'"
-      [placeholder]="'Select activity level'"
-      [required]="true"
-      formControlName="activityLevel"
-    />
-  </div>
+<app-section-block>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="activity-goal-form">
+    <div class="activity-goal-form__field">
+      <app-select-field
+        [options]="activityLevelOptions()"
+        [label]="'Activity Level'"
+        [placeholder]="'Select activity level'"
+        [required]="true"
+        formControlName="activityLevel"
+      />
+    </div>
 
-  <div class="activity-goal-form__field">
-    <app-select-field
-      [options]="goalOptions()"
-      [label]="'Goal'"
-      [placeholder]="'Select goal'"
-      [required]="true"
-      formControlName="goal"
-    />
-  </div>
+    <div class="activity-goal-form__field">
+      <app-select-field
+        [options]="goalOptions()"
+        [label]="'Goal'"
+        [placeholder]="'Select goal'"
+        [required]="true"
+        formControlName="goal"
+      />
+    </div>
 
-  <div class="activity-goal-form__actions">
-    <button
-      tuiButton
-      type="submit"
-      [disabled]="form.invalid"
-      appearance="primary"
-    >
-      Calculate Calories
-    </button>
-  </div>
-</form>
+    <div class="activity-goal-form__actions">
+      <button
+        tuiButton
+        type="submit"
+        [disabled]="form.invalid"
+        appearance="primary"
+      >
+        Calculate Calories
+      </button>
+    </div>
+  </form>
+</app-section-block>

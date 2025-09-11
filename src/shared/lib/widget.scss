@@ -1,0 +1,7 @@
+/* Global widget base styles */
+.widget {
+  padding: var(--space-md);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}

@@ -1,0 +1,11 @@
+.section-block {
+  &__title {
+    margin-bottom: var(--space-md);
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+}

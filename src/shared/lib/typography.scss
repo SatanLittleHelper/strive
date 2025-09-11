@@ -2,6 +2,18 @@
 
 html {
   font-size: 100%;
+  
+  @media (width <= 767px) {
+    font-size: 87.5%; /* 14px base for mobile */
+  }
+  
+  @media (width >= 768px) {
+    font-size: 100%; /* 16px base for tablet */
+  }
+  
+  @media (width >= 1024px) {
+    font-size: 100%; /* 16px base for desktop */
+  }
 }
 
 body {
@@ -17,7 +29,6 @@ h3,
 h4,
 h5,
 h6 {
-  margin-bottom: var(--space-md);
   font-weight: var(--font-weight-bold);
   line-height: var(--line-height-tight);
 }
@@ -86,7 +97,6 @@ h6 {
 }
 
 p {
-  margin-bottom: var(--space-md);
   font-size: var(--font-size-body-mobile);
   line-height: var(--line-height-base);
 
@@ -119,6 +129,36 @@ small,
 
   @media (width >= 1024px) {
     font-size: 1.375rem;
+  }
+}
+
+/* Button text scaling */
+button,
+.btn {
+  font-size: var(--font-size-sm);
+
+  @media (width >= 768px) {
+    font-size: var(--font-size-md);
+  }
+}
+
+/* Small button text */
+button[data-size="s"],
+.btn--small {
+  font-size: var(--font-size-xs);
+
+  @media (width >= 768px) {
+    font-size: var(--font-size-sm);
+  }
+}
+
+/* Large button text */
+button[data-size="l"],
+.btn--large {
+  font-size: var(--font-size-md);
+
+  @media (width >= 768px) {
+    font-size: var(--font-size-lg);
   }
 }
 

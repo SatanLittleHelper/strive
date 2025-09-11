@@ -79,4 +79,19 @@ describe('BasicDataFormComponent', () => {
     expect(component.form.get('height')).toBeTruthy();
     expect(component.form.get('weight')).toBeTruthy();
   });
+
+  it('should throw error when form data is invalid in onSubmit', (): void => {
+    fixture.detectChanges();
+
+    spyOn(component.form, 'getRawValue').and.returnValue({ someOtherField: 'value' } as unknown as {
+      gender: 'male' | 'female' | null;
+      age: number | null;
+      height: number | null;
+      weight: number | null;
+    });
+
+    expect(() => {
+      component.onSubmit();
+    }).toThrowError('Form data is not valid BasicData');
+  });
 });

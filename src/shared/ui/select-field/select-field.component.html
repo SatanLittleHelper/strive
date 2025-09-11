@@ -1,35 +1,34 @@
-<div class="select-field">
-  @if (label(); as labelText) {
-    <label class="select-field__label" for="select-field-input">
-      {{ labelText }}
-      @if (required()) {
-        <span class="select-field__required">*</span>
+  <label tuiLabel class="select-field__label" for="select-field-input">
+    <div>
+      @if (label(); as labelText) {
+        {{ labelText }}
+        @if (required()) {
+          <span class="select-field__required">*</span>
+        }
       }
-    </label>
-  }
-
-  <tui-textfield
-    tuiChevron
-  >
-    <input
-      id="select-field-input"
-      tuiSelect
-      [placeholder]="placeholder()"
-      [ngModel]="selectedOption()"
-      [disabled]="disabled()"
-    />
-    <tui-data-list *tuiTextfieldDropdown>
-      @for (option of options(); track option.value) {
-        <button
-          new
-          tuiOption
-          type="button"
-          [value]="option"
-          (click)="onOptionSelect(option)"
-        >
-          {{ option.description ? option.label + ' (' + option.description + ')' : option.label }}
-        </button>
-      }
-    </tui-data-list>
-  </tui-textfield>
-</div>
+    </div>
+    <tui-textfield
+      tuiChevron
+    >
+      <input
+        id="select-field-input"
+        tuiSelect
+        [placeholder]="placeholder()"
+        [ngModel]="selectedOption()"
+        [disabled]="disabled()"
+      />
+      <tui-data-list *tuiTextfieldDropdown>
+        @for (option of options(); track option.value) {
+          <button
+            new
+            tuiOption
+            type="button"
+            [value]="option"
+            (click)="onOptionSelect(option)"
+          >
+            {{ option.description ? option.label + ' (' + option.description + ')' : option.label }}
+          </button>
+        }
+      </tui-data-list>
+    </tui-textfield>
+  </label>

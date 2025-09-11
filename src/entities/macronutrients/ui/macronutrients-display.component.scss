@@ -1,0 +1,29 @@
+.macronutrients-display {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+
+  padding: 0.75rem;
+  border: 1px solid var(--tui-base-03);
+  border-radius: var(--tui-radius-m);
+
+  background: var(--tui-base-02);
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--tui-text-02);
+  }
+
+  &__value {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--tui-text-01);
+  }
+}

@@ -4,7 +4,6 @@ import { ActivityGoalFormComponent, DEFAULT_ACTIVITY_DATA } from '@/features/cal
 import { configureZonelessTestingModule } from '@/test-setup';
 import type { ComponentFixture } from '@angular/core/testing';
 
-// Mock NgControl
 class MockNgControl extends NgControl {
   control = new FormControl();
   viewToModelUpdate(): void {}
@@ -90,5 +89,18 @@ describe('ActivityGoalFormComponent', () => {
 
     expect(activityLevelControl?.hasError('required')).toBeFalsy();
     expect(goalControl?.hasError('required')).toBeFalsy();
+  });
+
+  it('should throw error when form data is invalid in onSubmit', (): void => {
+    fixture.detectChanges();
+
+    spyOn(component.form, 'getRawValue').and.returnValue({ someOtherField: 'value' } as unknown as {
+      activityLevel: string | null;
+      goal: string | null;
+    });
+
+    expect(() => {
+      component.onSubmit();
+    }).toThrowError('Form data is not valid ActivityData');
   });
 });

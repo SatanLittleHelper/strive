@@ -37,16 +37,12 @@ describe('NavigationComponent', () => {
   });
 
   it('should call themeService.toggleTheme when toggleTheme is called', (): void => {
-    component.toggleTheme();
+    (component as unknown as { toggleTheme: () => void }).toggleTheme();
     expect(themeService.toggleTheme).toHaveBeenCalled();
   });
 
-  it('should return themeService.isDark result when isDark is called', (): void => {
-    themeService.isDark.and.returnValue(true);
-    expect(component.isDark()).toBe(true);
-
-    themeService.isDark.and.returnValue(false);
-    expect(component.isDark()).toBe(false);
+  it('should return themeService.isDark signal when isDark is accessed', (): void => {
+    expect((component as unknown as { isDark: unknown }).isDark).toBe(themeService.isDark);
   });
 
   it('should render navigation structure correctly', (): void => {

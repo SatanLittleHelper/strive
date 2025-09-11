@@ -8,13 +8,14 @@ import type {
   CalorieCalculationData,
 } from '@/features/calorie-calculation';
 import {
+  isBasicData,
   CalorieCalculatorService,
   CalorieFormStateService,
   ActivityGoalFormComponent,
   BasicDataFormComponent,
   ResultsDisplayComponent,
 } from '@/features/calorie-calculation';
-import { StepNavigationComponent, type StepConfig } from '@/shared';
+import { StepNavigationComponent, BackLayoutComponent, type StepConfig } from '@/shared';
 import { StepComponent } from './ui/step';
 
 @Component({
@@ -23,6 +24,7 @@ import { StepComponent } from './ui/step';
   imports: [
     CommonModule,
     StepNavigationComponent,
+    BackLayoutComponent,
     StepComponent,
     BasicDataFormComponent,
     ActivityGoalFormComponent,
@@ -71,8 +73,13 @@ export class CalorieCalculatorComponent {
   protected onActivityDataSubmitted(data: ActivityData): void {
     this.formStateService.setActivityData(data);
 
+    const basicData = this.basicData();
+    if (!basicData || !isBasicData(basicData)) {
+      throw new Error('Basic data is required and must be valid for calculation');
+    }
+
     const calculationData: CalorieCalculationData = {
-      ...this.basicData()!,
+      ...basicData,
       ...data,
     };
 
