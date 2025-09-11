@@ -1,5 +1,11 @@
 <app-section-block>
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="basic-data-form">
+  <form 
+    [formGroup]="form" 
+    (ngSubmit)="onSubmit()" 
+    appFormAutosave
+    formAutosaveKey="calorie-calculator-basic"
+    class="basic-data-form"
+  >
     <div class="basic-data-form__field">
       <app-select-field
         [options]="genderOptions()"

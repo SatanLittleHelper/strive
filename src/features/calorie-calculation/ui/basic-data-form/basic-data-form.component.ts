@@ -11,7 +11,12 @@ import {
   DEFAULT_BASIC_DATA,
   isBasicData,
 } from '@/features/calorie-calculation';
-import { generateSelectOptions, SelectFieldComponent, SectionBlockComponent } from '@/shared';
+import {
+  generateSelectOptions,
+  SelectFieldComponent,
+  SectionBlockComponent,
+  FormAutosaveDirective,
+} from '@/shared';
 
 import type { OnInit } from '@angular/core';
 
@@ -25,6 +30,7 @@ import type { OnInit } from '@angular/core';
     TuiTextfield,
     SelectFieldComponent,
     SectionBlockComponent,
+    FormAutosaveDirective,
   ],
 
   templateUrl: './basic-data-form.component.html',

@@ -52,6 +52,7 @@ describe('CalorieCalculatorComponent', () => {
         'setCurrentStep',
         'markDataAsChanged',
         'resetForm',
+        'resetFormData',
         'isActivityTabDisabled',
         'isResultsTabDisabled',
       ],
@@ -92,6 +93,11 @@ describe('CalorieCalculatorComponent', () => {
     expect(calorieServiceSpy.fetchCaloriesResult).toHaveBeenCalledTimes(1);
   });
 
+  it('should reset form when component is destroyed', (): void => {
+    fixture.destroy();
+    expect(formStateServiceSpy.resetForm).toHaveBeenCalledTimes(1);
+  });
+
   describe('service delegation', () => {
     it('should delegate form state operations to CalorieFormStateService', (): void => {
       const basicData = { age: 25, gender: 'male' as const, height: 180, weight: 75 };
@@ -103,7 +109,8 @@ describe('CalorieCalculatorComponent', () => {
 
       expect(formStateServiceSpy.setBasicData).toHaveBeenCalledWith(basicData);
       expect(formStateServiceSpy.markDataAsChanged).toHaveBeenCalledTimes(1);
-      expect(formStateServiceSpy.resetForm).toHaveBeenCalledTimes(1);
+      expect(formStateServiceSpy.resetFormData).toHaveBeenCalledTimes(1);
+      expect(formStateServiceSpy.setCurrentStep).toHaveBeenCalledWith(0);
       expect(formStateServiceSpy.setCurrentStep).toHaveBeenCalledWith(2);
     });
   });

@@ -17,6 +17,7 @@ import {
 } from '@/features/calorie-calculation';
 import { StepNavigationComponent, BackLayoutComponent, type StepConfig } from '@/shared';
 import { StepComponent } from './ui/step';
+import type { OnDestroy } from '@angular/core';
 
 @Component({
   selector: 'app-calorie-calculator',
@@ -33,7 +34,7 @@ import { StepComponent } from './ui/step';
   templateUrl: './calorie-calculator.component.html',
   styleUrl: './calorie-calculator.component.scss',
 })
-export class CalorieCalculatorComponent {
+export class CalorieCalculatorComponent implements OnDestroy {
   private readonly calorieService = inject(CalorieCalculatorService);
   private readonly formStateService = inject(CalorieFormStateService);
   private readonly destroyRef = inject(DestroyRef);
@@ -92,10 +93,15 @@ export class CalorieCalculatorComponent {
   }
 
   protected onRecalculate(): void {
-    this.formStateService.resetForm();
+    this.formStateService.resetFormData();
+    this.formStateService.setCurrentStep(0);
   }
 
   protected onTabClick(index: number): void {
     this.formStateService.setCurrentStep(index);
+  }
+
+  ngOnDestroy(): void {
+    this.formStateService.resetForm();
   }
 }

@@ -5,6 +5,12 @@ alwaysApply: true
 ---
 
 You are an expert in TypeScript, Angular, and scalable web application development. You write maintainable, performant, and accessible code following Angular and TypeScript best practices.
+
+## ⚠️ CRITICAL: Template Binding Syntax
+**ALWAYS use correct binding syntax in templates:**
+- Static strings: `property="value"` (NO square brackets)
+- Dynamic values: `[property]="expression"` (WITH square brackets)
+- Examples: `formAutosaveKey="custom-key"` ✅, `[formAutosaveKey]="'custom-key'"` ❌
 ## TypeScript Best Practices
 - Use strict type checking
 - Prefer type inference when the type is obvious
@@ -18,7 +24,7 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Use `NgOptimizedImage` for all static images.
   - `NgOptimizedImage` does not work for inline base64 images.
 
-## Template Syntax Rules
+## Template Syntax Rules ⚠️ CRITICAL
 - **Without square brackets** `property="string"` - for static string values
 - **With square brackets** `[property]="expression"` - for dynamic values and expressions
 - **Examples:**
@@ -26,6 +32,8 @@ You are an expert in TypeScript, Angular, and scalable web application developme
   - `[value]="dynamicValue"` ✅ (dynamic value)
   - `[isHighlighted]="true"` ✅ (boolean value)
   - `[label]="'Static Text'"` ❌ (unnecessary binding for static string)
+  - `formAutosaveKey="custom-key"` ✅ (static string)
+  - `[formAutosaveKey]="'custom-key'"` ❌ (unnecessary binding for static string)
 ## Components
 - Keep components small and focused on a single responsibility
 - Use `input()` and `output()` functions instead of decorators

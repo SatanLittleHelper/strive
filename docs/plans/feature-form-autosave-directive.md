@@ -1,5 +1,11 @@
 # План реализации директивы автосохранения форм
 
+## Метаданные плана
+- Ветка: feature/form-autosave-directive
+- Имя файла: docs/plans/feature-form-autosave-directive.md
+- Дата: 2025-09-11
+- Статус: draft
+
 ## Описание фичи
 
 Директива для автоматического сохранения содержимого форм в localStorage с возможностью восстановления данных при перезагрузке страницы.
@@ -43,9 +49,9 @@ formAutosaveDebounce: number       // Задержка перед сохране
 
 ### Выходные события (outputs)
 ```typescript
-formAutosaveLoaded: EventEmitter<any>    // Событие загрузки данных из localStorage
-formAutosaveSaved: EventEmitter<any>     // Событие сохранения данных
-formAutosaveCleared: EventEmitter<void>  // Событие очистки данных
+formAutosaveLoaded: EventEmitter<Record<string, unknown>>    // Событие загрузки данных из localStorage
+formAutosaveSaved: EventEmitter<Record<string, unknown>>     // Событие сохранения данных
+formAutosaveCleared: EventEmitter<void>                      // Событие очистки данных
 ```
 
 ## 3. Алгоритм генерации хеша
@@ -69,25 +75,25 @@ formAutosaveCleared: EventEmitter<void>  // Событие очистки дан
 
 ### Базовое использование
 ```html
-<form [formGroup]="form" (ngSubmit)="onSubmit()" appFormAutosave>
-  <!-- поля формы -->
+<form [formGroup]="form" (ngSubmit)="onSubmit()" app-form-autosave>
+	<!-- поля формы -->
 </form>
 ```
 
 ### Расширенное использование
 ```html
 <form 
-  [formGroup]="form" 
-  (ngSubmit)="onSubmit()" 
-  appFormAutosave
-  [formAutosaveKey]="'calorie-calculator-basic'"
-  [formAutosaveDebounce]="1000"
-  [formAutosaveEnabled]="true"
-  (formAutosaveLoaded)="onDataLoaded($event)"
-  (formAutosaveSaved)="onDataSaved($event)"
-  (formAutosaveCleared)="onDataCleared()"
+	[formGroup]="form" 
+	(ngSubmit)="onSubmit()" 
+	app-form-autosave
+	[formAutosaveKey]="'calorie-calculator-basic'"
+	[formAutosaveDebounce]="1000"
+	[formAutosaveEnabled]="true"
+	(formAutosaveLoaded)="onDataLoaded($event)"
+	(formAutosaveSaved)="onDataSaved($event)"
+	(formAutosaveCleared)="onDataCleared()"
 >
-  <!-- поля формы -->
+	<!-- поля формы -->
 </form>
 ```
 
@@ -104,35 +110,35 @@ private generateFormHash(): string {
 
 #### 2. Storage сервис
 ```typescript
-private saveToStorage(key: string, data: any): void
-private loadFromStorage(key: string): any | null
+private saveToStorage(key: string, data: Record<string, unknown>): void
+private loadFromStorage(key: string): Record<string, unknown> | null
 private clearFromStorage(key: string): void
 ```
+Примечание: допускается вынесение работы с хранилищем в отдельный сервис уровня `shared/services` с `providedIn: 'root'`.
 
 #### 3. Debounce механизм
-```typescript
-private debounceSave = debounceTime(this.formAutosaveDebounce())
-```
+Подписка на `valueChanges` с использованием `debounceTime` внутри RxJS-пайплайна, без хранения оператора в поле.
 
 #### 4. Form value observer
 ```typescript
 private setupFormValueObserver(): void {
-  // Отслеживание изменений в форме
+	// Отслеживание изменений в форме с авто-отпиской
 }
 ```
 
 #### 5. Submit handler
 ```typescript
 private handleFormSubmit(): void {
-  // Очистка данных при сабмите
+	// Очистка данных при сабмите
 }
 ```
 
 ### Используемые Angular API
-- `@Directive` с `standalone: true`
+- `@Directive` с селектором в kebab-case: `[app-form-autosave]`
+- `host` объект в декораторе для обработки событий (например, `(submit)`)
 - `input()` и `output()` функции
 - `inject()` для внедрения зависимостей
-- `OnInit`, `OnDestroy` lifecycle hooks
+- `takeUntilDestroyed()` для авто-отписки от RxJS-подписок
 - `FormGroup` и `ReactiveFormsModule`
 
 ## 6. Обработка ошибок
@@ -140,12 +146,12 @@ private handleFormSubmit(): void {
 ### Безопасная работа с localStorage
 ```typescript
 private safeLocalStorageOperation<T>(operation: () => T): T | null {
-  try {
-    return operation();
-  } catch (error) {
-    console.warn('Form autosave localStorage error:', error);
-    return null;
-  }
+	try {
+		return operation();
+	} catch (error) {
+		console.warn('Form autosave localStorage error:', error);
+		return null;
+	}
 }
 ```
 
@@ -163,8 +169,7 @@ private safeLocalStorageOperation<T>(operation: () => T): T | null {
 
 ### Оптимизации
 - **Debounce** для предотвращения частых сохранений
-- **OnPush** change detection strategy
-- **Отписка от подписок** в `ngOnDestroy`
+- **Авто-отписка** через `takeUntilDestroyed()`
 - **Минимальное количество обращений** к localStorage
 
 ### Метрики производительности
@@ -204,9 +209,9 @@ describe('Debounce Mechanism', () => {
 ```
 
 ### Integration тесты
-- Тестирование с реальными формами в приложении
-- Проверка работы с `BasicDataFormComponent`
-- Проверка работы с `ActivityGoalFormComponent`
+- Использовать `configureZonelessTestingModule()`
+- Запуск только в headless режиме (`npm run test:ci`)
+- Проверка с реальными формами в приложении (критические сценарии)
 
 ## 9. Интеграция в проект
 
@@ -220,12 +225,12 @@ export * from './lib/directives/form-autosave';
 
 #### BasicDataFormComponent
 ```html
-<form [formGroup]="form" (ngSubmit)="onSubmit()" appFormAutosave>
+<form [formGroup]="form" (ngSubmit)="onSubmit()" app-form-autosave>
 ```
 
 #### ActivityGoalFormComponent
 ```html
-<form [formGroup]="form" (ngSubmit)="onSubmit()" appFormAutosave>
+<form [formGroup]="form" (ngSubmit)="onSubmit()" app-form-autosave>
 ```
 
 ### Миграция существующих форм
@@ -235,64 +240,27 @@ export * from './lib/directives/form-autosave';
 
 ## 10. Документация
 
-### JSDoc комментарии
-```typescript
-/**
- * Директива для автоматического сохранения данных формы в localStorage
- * 
- * @example
- * ```html
- * <form [formGroup]="form" appFormAutosave>
- *   <!-- поля формы -->
- * </form>
- * ```
- */
-@Directive({
-  selector: '[appFormAutosave]',
-  standalone: true,
-})
-export class FormAutosaveDirective {
-  // ...
-}
-```
-
-### Примеры использования
-- Базовое использование
-- Расширенная конфигурация
-- Обработка событий
-- Интеграция с существующими формами
-
-### API документация
-- Описание всех inputs/outputs
-- Примеры конфигурации
+### Документация в markdown
+- Примеры использования (базовый/расширенный)
+- Описание всех inputs/outputs и сценариев
 - Troubleshooting guide
 
-## 11. Этапы реализации
+## 11. Итерации и этапы реализации
 
-### Этап 1: Базовая структура
-- [ ] Создание файловой структуры
-- [ ] Базовая директива с inputs/outputs
+### Итерация 1 (MVP)
+- [ ] Файловая структура и базовая директива (inputs/outputs)
 - [ ] Генерация хеша формы
+- [ ] Подписка на `valueChanges` с `debounceTime` и сохранение
 
-### Этап 2: Storage функциональность
-- [ ] Методы работы с localStorage
-- [ ] Обработка ошибок
-- [ ] Безопасные операции
+### Итерация 2
+- [ ] Безопасные операции со storage и обработка ошибок
+- [ ] Загрузка сохранённых данных при инициализации
+- [ ] Очистка данных при сабмите
 
-### Этап 3: Form integration
-- [ ] Отслеживание изменений формы
-- [ ] Debounce механизм
-- [ ] Обработка сабмита
-
-### Этап 4: Тестирование
-- [ ] Unit тесты
-- [ ] Integration тесты
-- [ ] Performance тесты
-
-### Этап 5: Интеграция
-- [ ] Обновление публичного API
-- [ ] Интеграция с существующими формами
-- [ ] Документация
+### Итерация 3
+- [ ] Unit тесты и integration тесты (критические сценарии)
+- [ ] Обновление публичного API экспорта
+- [ ] Документация в markdown
 
 ## 12. Критерии готовности
 
@@ -305,14 +273,14 @@ export class FormAutosaveDirective {
 
 ### Нефункциональные требования
 - [ ] Производительность: время сохранения < 5мс
-- [ ] Покрытие тестами > 90%
-- [ ] Документация API
+- [ ] Покрытие тестами: 80% statements, 70% branches, 80% functions, 80% lines
+- [ ] Документация (markdown)
 - [ ] Совместимость с существующими формами
 
 ### Качество кода
-- [ ] Соответствие Angular best practices
-- [ ] Соответствие FSD архитектуре
-- [ ] ESLint без ошибок
+- [ ] Соответствие Angular best practices (standalone, signals, host bindings)
+- [ ] Соответствие FSD архитектуре и публичным API
+- [ ] ESLint без ошибок, успешный build
 - [ ] TypeScript strict mode
 
 ## 13. Риски и митигация
