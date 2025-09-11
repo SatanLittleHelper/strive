@@ -4,12 +4,14 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { TuiButton } from '@taiga-ui/core';
 
+import { MacronutrientsDisplayComponent } from '@/entities';
 import { CalorieCalculatorService } from '@/features/calorie-calculation';
+import { SectionBlockComponent } from '@/shared';
 
 @Component({
   selector: 'app-calorie-widget',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TuiButton],
+  imports: [CommonModule, TuiButton, MacronutrientsDisplayComponent, SectionBlockComponent],
   templateUrl: './calorie-widget.component.html',
   styleUrl: './calorie-widget.component.scss',
 })

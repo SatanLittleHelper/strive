@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
+import type { Macronutrients } from '@/entities/macronutrients';
 import { configureZonelessTestingModule } from '@/test-setup';
 import { CalorieApiService } from './calorie-api.service';
 import { CalorieCalculatorService } from './calorie-calculator.service';
@@ -8,7 +9,6 @@ import type {
   BasicData,
   CalorieCalculationData,
   CalorieResults,
-  Macronutrients,
 } from '../models/calorie-data.types';
 
 describe('CalorieCalculatorService', () => {
@@ -32,6 +32,9 @@ describe('CalorieCalculatorService', () => {
     proteinGrams: 128,
     fatGrams: 80,
     carbsGrams: 279,
+    proteinPercentage: 25.0,
+    fatPercentage: 35.0,
+    carbsPercentage: 40.0,
   };
 
   const mockCalorieResults: CalorieResults = {

@@ -1,49 +1,50 @@
-<div class="calorie-calculator">
-  <div class="calorie-calculator__container">
-    <h1 class="calorie-calculator__title">Calorie Calculator</h1>
+<app-back-layout backLink="/dashboard" title="Calorie Calculator">
+  <div class="calorie-calculator">
+    <div class="calorie-calculator__container">
 
-    @if (isLoading()) {
-      <div class="calorie-calculator__loading">
-        <p>Calculating calories...</p>
-      </div>
-    } @else {
-      <app-step-navigation
-        [steps]="stepsConfig()"
-        [activeStepIndex]="currentStep()"
-        (stepClick)="onTabClick($event)"
-      />
+      @if (isLoading()) {
+        <div class="calorie-calculator__loading">
+          <p>Calculating calories...</p>
+        </div>
+      } @else {
+        <app-step-navigation
+          [steps]="stepsConfig()"
+          [activeStepIndex]="currentStep()"
+          (stepClick)="onTabClick($event)"
+        />
 
-      <div class="calorie-calculator__content">
-        @switch (currentStep()) {
-          @case (0) {
-            <app-step title="Basic Information">
-              <app-basic-data-form
-                [initialData]="basicData()"
-                (dataSubmitted)="onBasicDataSubmitted($event)"
-                (dataChanged)="onDataChanged()"
-              />
-            </app-step>
-          }
-          @case (1) {
-            <app-step title="Activity Level & Goal">
-              <app-activity-goal-form
-                [initialData]="activityData()"
-                (dataSubmitted)="onActivityDataSubmitted($event)"
-                (dataChanged)="onDataChanged()"
-              />
-            </app-step>
-          }
-          @case (2) {
-            <app-step title="Your Results">
-                <app-results-display
-                  [results]="caloriesResults()"
-                  (recalculate)="onRecalculate()"
+        <div class="calorie-calculator__content">
+          @switch (currentStep()) {
+            @case (0) {
+              <app-step title="Basic Information">
+                <app-basic-data-form
+                  [initialData]="basicData()"
+                  (dataSubmitted)="onBasicDataSubmitted($event)"
+                  (dataChanged)="onDataChanged()"
                 />
-            </app-step>
+              </app-step>
+            }
+            @case (1) {
+              <app-step title="Activity Level & Goal">
+                <app-activity-goal-form
+                  [initialData]="activityData()"
+                  (dataSubmitted)="onActivityDataSubmitted($event)"
+                  (dataChanged)="onDataChanged()"
+                />
+              </app-step>
+            }
+            @case (2) {
+              <app-step title="Your Results">
+                  <app-results-display
+                    [results]="caloriesResults()"
+                    (recalculate)="onRecalculate()"
+                  />
+              </app-step>
+            }
           }
-        }
-      </div>
-    }
+        </div>
+      }
+    </div>
   </div>
-</div>
+</app-back-layout>
 

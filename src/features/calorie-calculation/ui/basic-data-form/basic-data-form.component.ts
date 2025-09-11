@@ -9,15 +9,23 @@ import {
   GenderOptions,
   type Gender,
   DEFAULT_BASIC_DATA,
+  isBasicData,
 } from '@/features/calorie-calculation';
-import { generateSelectOptions, SelectFieldComponent } from '@/shared';
+import { generateSelectOptions, SelectFieldComponent, SectionBlockComponent } from '@/shared';
 
 import type { OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-basic-data-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, TuiButton, TuiInputNumber, TuiTextfield, SelectFieldComponent],
+  imports: [
+    ReactiveFormsModule,
+    TuiButton,
+    TuiInputNumber,
+    TuiTextfield,
+    SelectFieldComponent,
+    SectionBlockComponent,
+  ],
 
   templateUrl: './basic-data-form.component.html',
   styleUrl: './basic-data-form.component.scss',
@@ -63,7 +71,13 @@ export class BasicDataFormComponent implements OnInit {
 
   onSubmit(): void {
     if (this.form.valid) {
-      this.dataSubmitted.emit(this.form.getRawValue() as BasicData);
+      const formValue = this.form.getRawValue();
+
+      if (!isBasicData(formValue)) {
+        throw new Error('Form data is not valid BasicData');
+      }
+
+      this.dataSubmitted.emit(formValue);
     }
   }
 }

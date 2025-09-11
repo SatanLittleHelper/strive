@@ -2,6 +2,7 @@
 @use './shared/lib/variables' as *;
 @use './shared/lib/typography' as *;
 @use './shared/lib/taiga-theme' as *;
+@use './shared/lib/widget' as *;
 
 html, body {
   overflow-x: hidden; // Убираем горизонтальный скролл

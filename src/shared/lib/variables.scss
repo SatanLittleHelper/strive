@@ -75,6 +75,9 @@
   --color-text-light: hsl(0deg 0% 98%);
   --color-border: hsl(215deg 16% 84%);
   --color-muted: hsl(215deg 20% 65%);
+  --color-text-tertiary: hsl(215deg 20% 45%);
+  --color-neutral-bg: rgb(0 0 0 / 10%);
+  --color-neutral-bg-hover: rgb(0 0 0 / 15%);
 
   color-scheme: light;
 }
@@ -92,6 +95,9 @@
   --color-text-light: hsl(0deg 0% 100%);
   --color-border: hsl(215deg 16% 24%);
   --color-muted: hsl(215deg 20% 65%);
+  --color-text-tertiary: hsl(215deg 20% 50%);
+  --color-neutral-bg: rgb(255 255 255 / 10%);
+  --color-neutral-bg-hover: rgb(255 255 255 / 15%);
 
   color-scheme: dark;
 }

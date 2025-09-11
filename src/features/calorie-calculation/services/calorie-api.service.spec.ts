@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import type { Macronutrients } from '@/entities/macronutrients';
 import { configureZonelessTestingModule } from '@/test-setup';
 import { CalorieApiService } from './calorie-api.service';
 import { Gender } from '../models/calorie-data.types';
@@ -6,39 +7,78 @@ import type {
   BasicData,
   CalorieCalculationData,
   CalorieResults,
-  Macronutrients,
 } from '../models/calorie-data.types';
 
 describe('CalorieApiService', () => {
   let service: CalorieApiService;
   let localStorageSpy: jasmine.SpyObj<Storage>;
 
-  const mockBasicData: BasicData = {
-    gender: Gender.MALE,
-    age: 30,
-    height: 180,
-    weight: 80,
-  };
+  const TEST_CONSTANTS = {
+    MALE_AGE: 30,
+    MALE_HEIGHT: 180,
+    MALE_WEIGHT: 80,
+    FEMALE_AGE: 25,
+    FEMALE_HEIGHT: 165,
+    FEMALE_WEIGHT: 60,
+    BMR: 1800,
+    TDEE: 2790,
+    TARGET_CALORIES: 2790,
+    PROTEIN_GRAMS: 128,
+    FAT_GRAMS: 80,
+    CARBS_GRAMS: 279,
+    PROTEIN_PERCENTAGE: 18.3,
+    FAT_PERCENTAGE: 25.8,
+    CARBS_PERCENTAGE: 40.0,
+    HIGH_WEIGHT: 120,
+    COMPLEX_AGE: 25,
+    COMPLEX_WEIGHT: 75.5,
+    COMPLEX_HEIGHT: 175.2,
+    COMPLEX_BMR: 1750.123,
+    COMPLEX_TDEE: 2712.456,
+    COMPLEX_TARGET_CALORIES: 2712.456,
+    CALORIE_TOLERANCE: 50,
+    PERCENTAGE_TOLERANCE_MIN: 99,
+    PERCENTAGE_TOLERANCE_MAX: 101,
+    MIN_PROTEIN_PER_KG: 1.4,
+    MIN_FAT_PERCENTAGE: 20,
+    MAX_FAT_PERCENTAGE: 35,
+  } as const;
 
-  const mockCalorieCalculationData: CalorieCalculationData = {
-    ...mockBasicData,
+  const createMockBasicData = (overrides: Partial<BasicData> = {}): BasicData => ({
+    gender: Gender.MALE,
+    age: TEST_CONSTANTS.MALE_AGE,
+    height: TEST_CONSTANTS.MALE_HEIGHT,
+    weight: TEST_CONSTANTS.MALE_WEIGHT,
+    ...overrides,
+  });
+
+  const createMockCalorieCalculationData = (
+    overrides: Partial<CalorieCalculationData> = {},
+  ): CalorieCalculationData => ({
+    ...createMockBasicData(),
     activityLevel: 'moderately_active',
     goal: 'maintain_weight',
-  };
+    ...overrides,
+  });
 
-  const mockMacronutrients: Macronutrients = {
-    proteinGrams: 128,
-    fatGrams: 80,
-    carbsGrams: 279,
-  };
+  const createMockMacronutrients = (overrides: Partial<Macronutrients> = {}): Macronutrients => ({
+    proteinGrams: TEST_CONSTANTS.PROTEIN_GRAMS,
+    fatGrams: TEST_CONSTANTS.FAT_GRAMS,
+    carbsGrams: TEST_CONSTANTS.CARBS_GRAMS,
+    proteinPercentage: TEST_CONSTANTS.PROTEIN_PERCENTAGE,
+    fatPercentage: TEST_CONSTANTS.FAT_PERCENTAGE,
+    carbsPercentage: TEST_CONSTANTS.CARBS_PERCENTAGE,
+    ...overrides,
+  });
 
-  const mockCalorieResults: CalorieResults = {
-    bmr: 1800,
-    tdee: 2790,
-    targetCalories: 2790,
+  const createMockCalorieResults = (overrides: Partial<CalorieResults> = {}): CalorieResults => ({
+    bmr: TEST_CONSTANTS.BMR,
+    tdee: TEST_CONSTANTS.TDEE,
+    targetCalories: TEST_CONSTANTS.TARGET_CALORIES,
     formula: 'mifflin',
-    macros: mockMacronutrients,
-  };
+    macros: createMockMacronutrients(),
+    ...overrides,
+  });
 
   beforeEach(() => {
     const localStorageMock = {
@@ -73,7 +113,8 @@ describe('CalorieApiService', () => {
 
   describe('calculateCalories', () => {
     it('should calculate calories, save to localStorage and handle different genders', (done) => {
-      service.calculateCalories(mockCalorieCalculationData).subscribe({
+      const testData = createMockCalorieCalculationData();
+      service.calculateCalories(testData).subscribe({
         next: (results) => {
           expect(results.formula).toBe('mifflin');
           expect(localStorageSpy.setItem).toHaveBeenCalledWith(
@@ -81,7 +122,7 @@ describe('CalorieApiService', () => {
             jasmine.any(String),
           );
 
-          const femaleData = { ...mockCalorieCalculationData, gender: Gender.FEMALE };
+          const femaleData = createMockCalorieCalculationData({ gender: Gender.FEMALE });
           service.calculateCalories(femaleData).subscribe({
             next: (femaleResults) => {
               expect(femaleResults.bmr).not.toBe(results.bmr);
@@ -97,7 +138,9 @@ describe('CalorieApiService', () => {
 
   describe('getCaloriesResult', () => {
     it('should return stored calculation when available', (done) => {
-      const storedData = { data: mockCalorieCalculationData, results: mockCalorieResults };
+      const testData = createMockCalorieCalculationData();
+      const testResults = createMockCalorieResults();
+      const storedData = { data: testData, results: testResults };
       localStorageSpy.getItem.and.returnValue(JSON.stringify(storedData));
 
       service.getCaloriesResult().subscribe({
@@ -138,16 +181,28 @@ describe('CalorieApiService', () => {
 
   describe('calculateBMRMifflin (private method)', () => {
     it('should calculate BMR correctly for both genders', () => {
+      const maleData = createMockBasicData();
+      const femaleData = createMockBasicData({ gender: Gender.FEMALE });
+
       const maleResult = (
         service as unknown as { calculateBMRMifflin: (data: BasicData) => number }
-      ).calculateBMRMifflin(mockBasicData);
-      const femaleData = { ...mockBasicData, gender: Gender.FEMALE };
+      ).calculateBMRMifflin(maleData);
       const femaleResult = (
         service as unknown as { calculateBMRMifflin: (data: BasicData) => number }
       ).calculateBMRMifflin(femaleData);
 
-      expect(maleResult).toBe(10 * 80 + 6.25 * 180 - 5 * 30 + 5);
-      expect(femaleResult).toBe(10 * 80 + 6.25 * 180 - 5 * 30 - 161);
+      expect(maleResult).toBe(
+        10 * TEST_CONSTANTS.MALE_WEIGHT +
+          6.25 * TEST_CONSTANTS.MALE_HEIGHT -
+          5 * TEST_CONSTANTS.MALE_AGE +
+          5,
+      );
+      expect(femaleResult).toBe(
+        10 * TEST_CONSTANTS.MALE_WEIGHT +
+          6.25 * TEST_CONSTANTS.MALE_HEIGHT -
+          5 * TEST_CONSTANTS.MALE_AGE -
+          161,
+      );
       expect(maleResult).not.toBe(femaleResult);
     });
   });
@@ -211,23 +266,18 @@ describe('CalorieApiService', () => {
         height: 165,
         weight: 60,
         activityLevel: 'lightly_active',
-        goal: 'lose_weight', // Явно указываем цель потери веса
+        goal: 'lose_weight',
       };
 
-      // Рассчитываем калории
       service.calculateCalories(testData).subscribe({
         next: (results) => {
-          // Проверяем, что targetCalories меньше TDEE для потери веса
           expect(results.targetCalories).toBeLessThan(results.tdee);
 
-          // Проверяем, что данные сохранены
           expect(localStorageSpy.setItem).toHaveBeenCalled();
 
-          // Теперь загружаем сохраненные данные
           const savedData = localStorageSpy.setItem.calls.mostRecent().args[1];
           const parsedData = JSON.parse(savedData);
 
-          // Проверяем, что цель сохранилась правильно
           expect(parsedData.data.goal).toBe('lose_weight');
           expect(parsedData.results.targetCalories).toBeLessThan(parsedData.results.tdee);
 
@@ -249,26 +299,22 @@ describe('CalorieApiService', () => {
         goal: 'maintain_weight',
       };
 
-      // Сначала рассчитываем для поддержания веса
       service.calculateCalories(baseData).subscribe({
         next: (maintainResults) => {
           expect(maintainResults.targetCalories).toBe(maintainResults.tdee);
 
-          // Теперь рассчитываем для потери веса
           const loseWeightData: CalorieCalculationData = { ...baseData, goal: 'lose_weight' };
           service.calculateCalories(loseWeightData).subscribe({
             next: (loseResults) => {
               expect(loseResults.targetCalories).toBeLessThan(loseResults.tdee);
-              expect(loseResults.targetCalories).toBe(Math.round(loseResults.tdee * 0.8)); // -20%
+              expect(loseResults.targetCalories).toBe(Math.round(loseResults.tdee * 0.8));
 
-              // Теперь рассчитываем для набора веса
               const gainWeightData: CalorieCalculationData = { ...baseData, goal: 'gain_weight' };
               service.calculateCalories(gainWeightData).subscribe({
                 next: (gainResults) => {
                   expect(gainResults.targetCalories).toBeGreaterThan(gainResults.tdee);
-                  expect(gainResults.targetCalories).toBe(Math.round(gainResults.tdee * 1.15)); // +15%
+                  expect(gainResults.targetCalories).toBe(Math.round(gainResults.tdee * 1.15));
 
-                  // Проверяем, что все три результата разные
                   expect(maintainResults.targetCalories).not.toBe(loseResults.targetCalories);
                   expect(maintainResults.targetCalories).not.toBe(gainResults.targetCalories);
                   expect(loseResults.targetCalories).not.toBe(gainResults.targetCalories);
@@ -292,27 +338,27 @@ describe('CalorieApiService', () => {
         service as unknown as {
           saveCalculation: (data: CalorieCalculationData, results: CalorieResults) => void;
         }
-      ).saveCalculation(mockCalorieCalculationData, mockCalorieResults);
+      ).saveCalculation(createMockCalorieCalculationData(), createMockCalorieResults());
 
       expect(localStorageSpy.setItem).toHaveBeenCalledWith(
         'calorie_calculation',
         JSON.stringify({
-          data: mockCalorieCalculationData,
-          results: mockCalorieResults,
+          data: createMockCalorieCalculationData(),
+          results: createMockCalorieResults(),
         }),
       );
     });
 
     it('should handle complex data structures', () => {
       const complexData = {
-        ...mockCalorieCalculationData,
+        ...createMockCalorieCalculationData(),
         age: 25,
         weight: 75.5,
         height: 175.2,
       };
 
       const complexResults = {
-        ...mockCalorieResults,
+        ...createMockCalorieResults(),
         bmr: 1750.123,
         tdee: 2712.456,
         targetCalories: 2712.456,
@@ -344,7 +390,6 @@ describe('CalorieApiService', () => {
         activityLevel: 'lightly_active' as const,
       };
 
-      // Тестируем все цели в одном тесте
       const goals = ['lose_weight', 'maintain_weight', 'gain_weight'] as const;
       let completedGoals = 0;
 
@@ -356,7 +401,6 @@ describe('CalorieApiService', () => {
             expect(results.formula).toBe('mifflin');
             expect(localStorageSpy.setItem).toHaveBeenCalled();
 
-            // Проверяем логику для каждой цели
             if (goal === 'lose_weight') {
               expect(results.targetCalories).toBeLessThan(results.tdee);
             } else if (goal === 'gain_weight') {
@@ -376,15 +420,13 @@ describe('CalorieApiService', () => {
     });
 
     it('should handle multiple calculations and storage', (done) => {
-      const firstData = { ...mockCalorieCalculationData, age: 30 };
-      const secondData = { ...mockCalorieCalculationData, age: 35 };
+      const firstData = { ...createMockCalorieCalculationData(), age: 30 };
+      const secondData = { ...createMockCalorieCalculationData(), age: 35 };
 
-      // Первый расчет
       service.calculateCalories(firstData).subscribe({
         next: (firstResults) => {
           expect(firstResults).toBeDefined();
 
-          // Второй расчет (перезаписывает первый)
           service.calculateCalories(secondData).subscribe({
             next: (secondResults) => {
               expect(secondResults).toBeDefined();
@@ -417,14 +459,23 @@ describe('CalorieApiService', () => {
           expect(results.macros.fatGrams).toBeGreaterThan(0);
           expect(results.macros.carbsGrams).toBeGreaterThan(0);
 
-          // Check that macronutrient calories approximately equal target calories
           const totalMacroCalories =
             results.macros.proteinGrams * 4 +
             results.macros.fatGrams * 9 +
             results.macros.carbsGrams * 4;
 
-          // Allow for rounding differences (±50 calories)
           expect(Math.abs(totalMacroCalories - results.targetCalories)).toBeLessThanOrEqual(50);
+
+          expect(results.macros.proteinPercentage).toBeGreaterThan(0);
+          expect(results.macros.fatPercentage).toBeGreaterThan(0);
+          expect(results.macros.carbsPercentage).toBeGreaterThan(0);
+
+          const totalPercentage =
+            results.macros.proteinPercentage +
+            results.macros.fatPercentage +
+            results.macros.carbsPercentage;
+          expect(totalPercentage).toBeGreaterThanOrEqual(99);
+          expect(totalPercentage).toBeLessThanOrEqual(101);
           done();
         },
         error: done.fail,
@@ -447,7 +498,6 @@ describe('CalorieApiService', () => {
         next: (sedentaryResults) => {
           service.calculateCalories(veryActiveData).subscribe({
             next: (activeResults) => {
-              // Very active should have higher protein than sedentary
               expect(activeResults.macros.proteinGrams).toBeGreaterThan(
                 sedentaryResults.macros.proteinGrams,
               );
@@ -476,7 +526,6 @@ describe('CalorieApiService', () => {
         next: (loseResults) => {
           service.calculateCalories(gainWeightData).subscribe({
             next: (gainResults) => {
-              // Lose weight should have higher protein than gain weight
               expect(loseResults.macros.proteinGrams).toBeGreaterThan(
                 gainResults.macros.proteinGrams,
               );
@@ -505,7 +554,6 @@ describe('CalorieApiService', () => {
         next: (loseResults) => {
           service.calculateCalories(gainWeightData).subscribe({
             next: (gainResults) => {
-              // Gain weight should have higher fat than lose weight
               expect(gainResults.macros.fatGrams).toBeGreaterThan(loseResults.macros.fatGrams);
               done();
             },
@@ -517,14 +565,13 @@ describe('CalorieApiService', () => {
     });
 
     it('should handle negative carbs by adjusting fat and protein', (done) => {
-      // Use extreme case that might cause negative carbs
       const extremeData: CalorieCalculationData = {
         gender: Gender.MALE,
         age: 30,
         height: 180,
-        weight: 120, // High weight
-        activityLevel: 'sedentary', // Low activity
-        goal: 'lose_weight', // Calorie deficit
+        weight: 120,
+        activityLevel: 'sedentary',
+        goal: 'lose_weight',
       };
 
       service.calculateCalories(extremeData).subscribe({
@@ -565,13 +612,12 @@ describe('CalorieApiService', () => {
   describe('Lazy migration', () => {
     it('should calculate macros for old stored data without macros', (done) => {
       const oldStoredData = {
-        data: mockCalorieCalculationData,
+        data: createMockCalorieCalculationData(),
         results: {
           bmr: 1800,
           tdee: 2790,
           targetCalories: 2790,
           formula: 'mifflin',
-          // No macros field
         },
       };
 
@@ -580,12 +626,18 @@ describe('CalorieApiService', () => {
       service.getCaloriesResult().subscribe({
         next: (result) => {
           expect(result).toBeDefined();
-          expect(result!.results.macros).toBeDefined();
-          expect(result!.results.macros.proteinGrams).toBeGreaterThan(0);
-          expect(result!.results.macros.fatGrams).toBeGreaterThan(0);
-          expect(result!.results.macros.carbsGrams).toBeGreaterThan(0);
+          if (!result) {
+            done.fail('Expected result to be defined, but got null');
+            return;
+          }
+          expect(result.results.macros).toBeDefined();
+          expect(result.results.macros.proteinGrams).toBeGreaterThan(0);
+          expect(result.results.macros.fatGrams).toBeGreaterThan(0);
+          expect(result.results.macros.carbsGrams).toBeGreaterThan(0);
+          expect(result.results.macros.proteinPercentage).toBeGreaterThan(0);
+          expect(result.results.macros.fatPercentage).toBeGreaterThan(0);
+          expect(result.results.macros.carbsPercentage).toBeGreaterThan(0);
 
-          // Should save updated result with macros
           expect(localStorageSpy.setItem).toHaveBeenCalled();
           done();
         },
@@ -595,8 +647,8 @@ describe('CalorieApiService', () => {
 
     it('should not modify data that already has macros', (done) => {
       const storedDataWithMacros = {
-        data: mockCalorieCalculationData,
-        results: mockCalorieResults,
+        data: createMockCalorieCalculationData(),
+        results: createMockCalorieResults(),
       };
 
       localStorageSpy.getItem.and.returnValue(JSON.stringify(storedDataWithMacros));
@@ -604,7 +656,6 @@ describe('CalorieApiService', () => {
       service.getCaloriesResult().subscribe({
         next: (result) => {
           expect(result).toEqual(storedDataWithMacros);
-          // Should not call setItem for data that already has macros
           expect(localStorageSpy.setItem).not.toHaveBeenCalled();
           done();
         },

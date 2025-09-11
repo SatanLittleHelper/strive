@@ -1,14 +1,16 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { TuiButton } from '@taiga-ui/core';
 
-import type { CalorieResults, Macronutrients } from '@/features/calorie-calculation';
+import { MacronutrientsDisplayComponent } from '@/entities';
+import type { Macronutrients } from '@/entities/macronutrients';
+import type { CalorieResults } from '@/features/calorie-calculation';
 import { MACRO_KCAL_PER_GRAM } from '@/features/calorie-calculation';
-import { ResultItemComponent } from '@/shared';
+import { ResultItemComponent, SectionBlockComponent } from '@/shared';
 
 @Component({
   selector: 'app-results-display',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TuiButton, ResultItemComponent],
+  imports: [TuiButton, ResultItemComponent, MacronutrientsDisplayComponent, SectionBlockComponent],
   templateUrl: './results-display.component.html',
   styleUrl: './results-display.component.scss',
 })

@@ -20,7 +20,8 @@ strive/
 │   │   ├── app.component.scss        # Root styles
 │   │   ├── app.component.spec.ts     # Root tests
 │   │   ├── app.config.ts             # App configuration & providers
-│   │   └── app.routes.ts             # Main routing
+│   │   ├── app.routes.ts             # Main routing
+│   │   └── layout/                   # Layout components
 │   │
 │   ├── pages/                        # Pages layer (FSD)
 │   │   ├── dashboard/                # Dashboard page
@@ -31,15 +32,19 @@ strive/
 │   │   │       ├── dashboard.component.html
 │   │   │       ├── dashboard.component.scss
 │   │   │       └── dashboard.component.spec.ts
-│   │   └── calorie-calculator/       # Calorie calculator page
-│   │       ├── calorie-calculator.routes.ts
-│   │       ├── index.ts
-│   │       ├── ui/                   # Step components
-│   │       │   └── step/
-│   │       ├── calorie-calculator.component.ts
-│   │       ├── calorie-calculator.component.html
-│   │       ├── calorie-calculator.component.scss
-│   │       └── calorie-calculator.component.spec.ts
+│   │   ├── calorie-calculator/       # Calorie calculator page
+│   │   │   ├── calorie-calculator.routes.ts
+│   │   │   ├── index.ts
+│   │   │   ├── ui/                   # Step components
+│   │   │   │   └── step/
+│   │   │   ├── calorie-calculator.component.ts
+│   │   │   ├── calorie-calculator.component.html
+│   │   │   ├── calorie-calculator.component.scss
+│   │   │   └── calorie-calculator.component.spec.ts
+│   │   └── macronutrients/           # Macronutrients page
+│   │       ├── index.ts              # Public API
+│   │       ├── ui/                   # Page components
+│   │       └── macronutrients.routes.ts
 │   │
 │   ├── widgets/                      # Widgets layer (FSD)
 │   │   ├── index.ts                  # Public API
@@ -50,32 +55,58 @@ strive/
 │   │   │       ├── next-workout-widget.component.html
 │   │   │       ├── next-workout-widget.component.scss
 │   │   │       └── next-workout-widget.component.spec.ts
-│   │   └── calorie-widget/           # Calorie widget with auto-loading
+│   │   ├── calorie-widget/           # Calorie widget with auto-loading
+│   │   │   ├── index.ts
+│   │   │   ├── calorie-widget.component.ts
+│   │   │   ├── calorie-widget.component.html
+│   │   │   ├── calorie-widget.component.scss
+│   │   │   └── calorie-widget.component.spec.ts
+│   │   └── macronutrients-widget/    # Macronutrients widget
 │   │       ├── index.ts
-│   │       ├── calorie-widget.component.ts
-│   │       ├── calorie-widget.component.html
-│   │       ├── calorie-widget.component.scss
-│   │       └── calorie-widget.component.spec.ts
+│   │       ├── macronutrients-widget.component.ts
+│   │       ├── macronutrients-widget.component.html
+│   │       ├── macronutrients-widget.component.scss
+│   │       └── macronutrients-widget.component.spec.ts
 │   │
 │   ├── features/                     # Features layer (FSD)
-│   │   └── calorie-calculation/      # Calorie calculation feature
+│   │   ├── calorie-calculation/      # Calorie calculation feature
+│   │   │   ├── index.ts              # Public API
+│   │   │   ├── models/               # Feature models
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── calorie-data.types.ts
+│   │   │   │   └── calorie-data.types.spec.ts
+│   │   │   ├── services/             # Feature services
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── calorie-api.service.ts
+│   │   │   │   ├── calorie-api.service.spec.ts
+│   │   │   │   ├── calorie-calculator.service.ts
+│   │   │   │   └── calorie-calculator.service.spec.ts
+│   │   │   └── ui/                   # Feature components
+│   │   │       ├── index.ts
+│   │   │       ├── basic-data-form/   # Basic data form
+│   │   │       ├── activity-goal-form/ # Activity goal form
+│   │   │       └── results-display/   # Results display
+│   │   └── macronutrients-calculation/ # Macronutrients calculation feature
 │   │       ├── index.ts              # Public API
 │   │       ├── models/               # Feature models
-│   │       │   ├── index.ts
-│   │       │   └── calorie-data.types.ts
 │   │       ├── services/             # Feature services
-│   │       │   ├── index.ts
-│   │       │   ├── calorie-api.service.ts
-│   │       │   ├── calorie-api.service.spec.ts
-│   │       │   ├── calorie-calculator.service.ts
-│   │       │   └── calorie-calculator.service.spec.ts
 │   │       └── ui/                   # Feature components
-│   │           ├── index.ts
-│   │           ├── basic-data-form/   # Basic data form
-│   │           ├── activity-goal-form/ # Activity goal form
-│   │           └── results-display/   # Results display
 │   │
 │   ├── entities/                     # Entities layer (FSD)
+│   │   ├── index.ts                  # Public API
+│   │   ├── calorie/                  # Calorie entity
+│   │   │   └── ui/                   # Calorie entity components
+│   │   ├── macronutrients/           # Macronutrients entity
+│   │   │   ├── index.ts              # Public API
+│   │   │   ├── model/                # Entity models
+│   │   │   │   ├── index.ts
+│   │   │   │   └── macronutrients.types.ts
+│   │   │   └── ui/                   # Entity components
+│   │   │       ├── index.ts
+│   │   │       ├── macronutrients-display.component.ts
+│   │   │       ├── macronutrients-display.component.html
+│   │   │       ├── macronutrients-display.component.scss
+│   │   │       └── macronutrients-display.component.spec.ts
 │   │   └── workout/                  # Workout entity
 │   │       ├── index.ts              # Public API
 │   │       ├── model/                # Entity models
@@ -91,7 +122,7 @@ strive/
 │   │   ├── lib/                      # Shared libraries
 │   │   │   ├── types/                # Shared types
 │   │   │   │   ├── index.ts
-│   │   │   └── select-option.types.ts
+│   │   │   │   └── select-option.types.ts
 │   │   │   ├── utils/                # Shared utilities
 │   │   │   │   ├── index.ts
 │   │   │   │   ├── select-options.utils.ts
@@ -99,7 +130,8 @@ strive/
 │   │   │   ├── variables.scss        # CSS design tokens
 │   │   │   ├── reset.scss            # CSS reset
 │   │   │   ├── typography.scss       # Typography scale
-│   │   │   └── taiga-theme.scss      # Taiga UI theme
+│   │   │   ├── taiga-theme.scss      # Taiga UI theme
+│   │   │   └── widget.scss           # Widget styles
 │   │   ├── services/                 # Shared services
 │   │   │   ├── telegram/             # Telegram integration
 │   │   │   │   ├── telegram.service.ts
@@ -108,12 +140,23 @@ strive/
 │   │   │       ├── theme.service.ts
 │   │   │       └── index.ts
 │   │   └── ui/                       # Shared UI components
+│   │       ├── back-layout/          # Back layout component with grid
+│   │       │   ├── index.ts
+│   │       │   ├── back-layout.component.ts
+│   │       │   ├── back-layout.component.html
+│   │       │   └── back-layout.component.scss
 │   │       ├── result-item/          # Result item component
 │   │       │   ├── index.ts
 │   │       │   ├── result-item.component.ts
 │   │       │   ├── result-item.component.html
 │   │       │   ├── result-item.component.scss
 │   │       │   └── result-item.component.spec.ts
+│   │       ├── section-block/        # Section block component
+│   │       │   ├── index.ts
+│   │       │   ├── section-block.component.ts
+│   │       │   ├── section-block.component.html
+│   │       │   ├── section-block.component.scss
+│   │       │   └── section-block.component.spec.ts
 │   │       ├── select-field/         # Select field component
 │   │       │   ├── index.ts
 │   │       │   ├── select-field.component.ts
@@ -257,6 +300,7 @@ The project uses comprehensive rules defined in `.cursor/rules/` directory to en
 - **Current pages**:
   - `dashboard/` - Main dashboard page with widgets
   - `calorie-calculator/` - Calorie calculation page with step-by-step form
+  - `macronutrients/` - Macronutrients calculation page
 
 ### 3. **Widgets Layer** (`/src/widgets/`)
 - **Purpose**: Complex UI blocks and composite components
@@ -264,6 +308,7 @@ The project uses comprehensive rules defined in `.cursor/rules/` directory to en
 - **Current widgets**:
   - `next-workout/` - Widget showing next scheduled workout
   - `calorie-widget/` - Widget displaying calorie calculation results with auto-loading from localStorage
+  - `macronutrients-widget/` - Widget displaying macronutrients calculation results
 
 ### 4. **Features Layer** (`/src/features/`)
 - **Purpose**: Business logic features (reusable across pages)
@@ -273,11 +318,17 @@ The project uses comprehensive rules defined in `.cursor/rules/` directory to en
     - Models: Data types and interfaces
     - Services: API integration and business logic
     - UI Components: Forms, displays, and step navigation
+  - `macronutrients-calculation/` - Macronutrients calculation feature with:
+    - Models: Data types and interfaces
+    - Services: API integration and business logic
+    - UI Components: Forms, displays, and step navigation
 
 ### 5. **Entities Layer** (`/src/entities/`)
 - **Purpose**: Business entities and domain models
 - **Can import**: shared only
 - **Current entities**:
+  - `calorie/` - Calorie entity with UI components
+  - `macronutrients/` - Macronutrients entity with model and UI components
   - `workout/` - Workout entity with model and UI components
 
 ### 6. **Shared Layer** (`/src/shared/`)
@@ -492,19 +543,26 @@ export const routes: Routes = [
 - **Shared UI components** and utilities
 - **Comprehensive project rules** for all development aspects
 - **Calorie widget auto-loading** - Widget automatically loads saved results from localStorage on initialization
+- **Macronutrients calculation feature** with complete implementation
+- **Macronutrients entity** with model and UI components
+- **Macronutrients widget** for displaying calculation results
+- **Layout components** (back-layout, bottom-nav, header)
+- **Section block component** for content organization
 
 ### 🚧 Ready for Development
-- Features layer (empty, ready for business logic)
-- Additional widgets
-- More entities
+- Additional features for workout management
+- More widgets for dashboard
 - Enhanced UI components
+- User profile entity
+- Progress tracking features
 
 ### 🎯 Potential Features
-- Calorie calculator feature
 - Workout planner feature
 - User profile entity
 - Progress tracking widgets
 - Settings page
+- Exercise library
+- Meal planning feature
 
 ## Development Commands
 
@@ -545,41 +603,6 @@ npm run format         # Format code
 - All routes currently redirect to `/dashboard`
 - Uses experimental zoneless change detection
 - PWA service worker configured
-- Telegram Web App integration ready
-- Strict FSD boundaries enforced by ESLint
-- All text in application should be in English
-
-## Deployment Configuration
-
-### GitHub Pages Deployment
-- **Automatic Deployment**: GitHub Actions workflow configured for automatic deployment
-- **Build Configuration**: Special `github-pages` configuration with proper base href
-- **Deployment Scripts**: `build:github` and `deploy` scripts available
-- **Documentation**: Complete deployment guide in `docs/DEPLOYMENT.md`
-
-### Build Configurations
-- **Production**: Standard production build for general deployment
-- **GitHub Pages**: Specialized build with `/strive/` base href for GitHub Pages
-- **Development**: Development build with source maps and no optimization
-
-### Deployment Files
-```
-.github/
-└── workflows/
-    └── deploy.yml              # GitHub Actions deployment workflow
-
-docs/
-└── DEPLOYMENT.md               # Deployment documentation and guide
-```
-
-### Key Deployment Features
-- **Automated Testing**: Tests run before deployment
-- **PWA Support**: Service Worker and PWA manifest included
-- **Telegram Integration**: Web App API integration maintained
-- **Asset Optimization**: Taiga UI icons and assets properly configured
-- **Rollback Support**: Easy rollback through GitHub Actions
-
-
 - Telegram Web App integration ready
 - Strict FSD boundaries enforced by ESLint
 - All text in application should be in English

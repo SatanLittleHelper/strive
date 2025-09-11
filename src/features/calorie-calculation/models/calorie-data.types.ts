@@ -1,3 +1,4 @@
+import type { Macronutrients } from '@/entities/macronutrients';
 import type { SelectOptionsRecord } from '@/shared';
 
 export const Gender = {
@@ -100,12 +101,6 @@ export interface ActivityData {
   goal: Goal;
 }
 
-export interface Macronutrients {
-  proteinGrams: number;
-  fatGrams: number;
-  carbsGrams: number;
-}
-
 export const MACRO_KCAL_PER_GRAM = {
   protein: 4,
   fat: 9,
@@ -140,3 +135,18 @@ export const DEFAULT_ACTIVITY_DATA: ActivityData = {
   activityLevel: ActivityLevel.MODERATELY_ACTIVE,
   goal: Goal.LOSE_WEIGHT,
 };
+
+export function isBasicData(value: unknown): value is BasicData {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'gender' in value &&
+    'age' in value &&
+    'height' in value &&
+    'weight' in value
+  );
+}
+
+export function isActivityData(value: unknown): value is ActivityData {
+  return typeof value === 'object' && value !== null && 'activityLevel' in value && 'goal' in value;
+}

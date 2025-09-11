@@ -1,0 +1,20 @@
+<div class="back-layout">
+  <button 
+    class="back-layout__back-button"
+    tuiButton 
+    appearance="secondary" 
+    size="s"
+    (click)="onBackClick()"
+  >
+    <tui-icon [icon]="'@tui.arrow-left'"></tui-icon>
+    Back
+  </button>
+  
+  @if (title()) {
+    <h1 class="back-layout__title">{{ title() }}</h1>
+  }
+  
+  <div class="back-layout__content">
+    <ng-content />
+  </div>
+</div>

@@ -1,15 +1,66 @@
 ---
-description: Правила коммита
+description: Commit message rules and pre-commit checklist for Strive project
 globs:
 alwaysApply: true
 ---
 
-Когда я тебя прошу сделать коммит, сначала ты должен для стейджед изменений: 
- 1. Удали все ненужные комментарии
- 2. проверить есть ли ошибки линтера и их исправить
- 3. Проверить собирается ли приложение и исправить ошибки, если они есть
- 4. Проверить все ли покрыто тестами согласно правилам проекта, если нет дописать тесты, запускай в хедлесс режиме
- 5. Проверить что все тысты проходят в приложении, пропускать какие-то тесты нельзя, даже если они не связанны с изменениями
- 6. Проверь изменения структуры проекта и внеси их в project-structure.mdc
+# Commit Rules & Pre-commit Checklist
 
-текст коммита толжен содержать название ветки, и краткое и лакночиное описание того что было сделано. Не нужно указывать информацию о результатах тестирования
+## Commit Message Format
+
+All commit messages must follow this format:
+```
+[branch-name]: brief summary of changes
+```
+
+### Examples:
+```
+macro: improve back-layout component and fix FSD boundaries
+```
+
+**Important**: Keep commit messages concise and descriptive. Focus on the main changes made, not detailed implementation steps.
+
+## Pre-commit Checklist
+
+Before making any commit, you MUST complete ALL of the following steps:
+
+### 1. ✅ Remove Unnecessary Comments
+- Delete all unnecessary comments from code
+- Keep only essential documentation comments
+
+### 2. ✅ Fix Linter Errors
+- Run `npm run lint` and fix all errors
+- Ensure all files pass linting rules
+- Fix TypeScript, Angular, and style linting issues
+
+### 3. ✅ Verify Application Build
+- Run `npm run build` and ensure successful compilation
+- Fix any build errors or warnings
+- Verify all imports and dependencies are correct
+
+### 4. ✅ Check Test Coverage
+- Run `npm run test:ci` to check test coverage
+- Ensure minimum coverage requirements are met:
+  - 80% statements
+  - 70% branches  
+  - 80% functions
+  - 80% lines
+- Add tests for new functionality if coverage is insufficient
+
+### 5. ✅ Verify All Tests Pass
+- All tests must pass in headless mode
+- No tests should be skipped or failing
+- Fix any broken tests before committing
+
+### 6. ✅ Update Project Structure Documentation
+- Update `.cursor/rules/project-structure.mdc` if project structure changed
+- Add new components, services, or features to documentation
+- Keep architecture documentation current
+
+## Important Notes
+
+- **Never commit with failing tests** - even if tests are unrelated to your changes
+- **Always run tests in headless mode** - use `npm run test:ci`
+- **Commit messages must be in English** and concise (max 3 lines)
+- **Include branch name** at the beginning of commit message
+- **Do not include test results** in commit message description

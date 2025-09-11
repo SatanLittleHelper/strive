@@ -4,7 +4,6 @@ import { ActivityGoalFormComponent, DEFAULT_ACTIVITY_DATA } from '@/features/cal
 import { configureZonelessTestingModule } from '@/test-setup';
 import type { ComponentFixture } from '@angular/core/testing';
 
-// Mock NgControl
 class MockNgControl extends NgControl {
   control = new FormControl();
   viewToModelUpdate(): void {}

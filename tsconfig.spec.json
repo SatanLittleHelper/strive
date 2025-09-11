@@ -9,10 +9,11 @@
     "paths": { 
       "@/*": ["*"],
       "@/features/*": ["features/*"],
+      "@/entities": ["entities/index"],
       "@/entities/*": ["entities/*"],
       "@/widgets/*": ["widgets/*"],
       "@/shared": ["shared/index"],
-      "@/test-setup": ["test-setup"]
+      "@/test-setup": ["test-setup.ts"]
     }
   },
   "include": ["src/**/*.spec.ts", "src/**/*.d.ts"],

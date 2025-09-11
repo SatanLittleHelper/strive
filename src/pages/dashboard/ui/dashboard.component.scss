@@ -1,6 +1,7 @@
 .dashboard {
   &__title {
     margin-bottom: 2rem;
+    margin-left: var(--space-md);
     color: var(--tui-text-01);
   }
   

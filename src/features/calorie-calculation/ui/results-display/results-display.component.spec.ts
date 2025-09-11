@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import type { CalorieResults, Macronutrients } from '@/features/calorie-calculation';
+import type { Macronutrients } from '@/entities/macronutrients';
+import type { CalorieResults } from '@/features/calorie-calculation';
 import { configureZonelessTestingModule } from '@/test-setup';
 import { ResultsDisplayComponent } from './results-display.component';
 import type { ComponentFixture } from '@angular/core/testing';
@@ -12,6 +13,9 @@ describe('ResultsDisplayComponent', () => {
     proteinGrams: 120,
     fatGrams: 80,
     carbsGrams: 200,
+    proteinPercentage: 25.0,
+    fatPercentage: 35.0,
+    carbsPercentage: 40.0,
   };
 
   const mockResults: CalorieResults = {

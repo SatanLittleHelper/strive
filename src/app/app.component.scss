@@ -17,7 +17,7 @@
   @media (width >= 768px) {
     padding-bottom: var(--space-lg);
   }
-  
+
   @media (width >= 1024px) {
     padding-bottom: var(--space-xl);
   }
@@ -31,12 +31,4 @@
   padding: var(--space-md);
 
   background: var(--tui-base-01);
-  
-  @media (width >= 768px) {
-    padding: var(--space-lg);
-  }
-  
-  @media (width >= 1024px) {
-    padding: var(--space-xl);
-  }
 }

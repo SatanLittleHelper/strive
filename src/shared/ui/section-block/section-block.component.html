@@ -1,0 +1,8 @@
+<div class="section-block">
+  @if (title(); as title) {
+    <h3 class="section-block__title">{{ title }}</h3>
+  }
+  <div class="section-block__content">
+    <ng-content />
+  </div>
+</div>

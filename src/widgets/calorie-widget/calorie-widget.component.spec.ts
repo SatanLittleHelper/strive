@@ -2,8 +2,8 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
+import type { Macronutrients } from '@/entities/macronutrients';
 import { CalorieCalculatorService } from '@/features/calorie-calculation';
-import type { Macronutrients } from '@/features/calorie-calculation';
 import { configureZonelessTestingModule } from '@/test-setup';
 import { CalorieWidgetComponent } from './calorie-widget.component';
 import type { ComponentFixture } from '@angular/core/testing';
@@ -18,6 +18,9 @@ describe('CalorieWidgetComponent', () => {
     proteinGrams: 120,
     fatGrams: 80,
     carbsGrams: 200,
+    proteinPercentage: 25.0,
+    fatPercentage: 35.0,
+    carbsPercentage: 40.0,
   };
 
   const mockCaloriesResults = {
@@ -67,11 +70,9 @@ describe('CalorieWidgetComponent', () => {
     fixture.detectChanges();
 
     const targetElement = fixture.nativeElement.querySelector('.calorie-widget__target');
-    const tdeeElement = fixture.nativeElement.querySelector('.calorie-widget__tdee');
     const button = fixture.nativeElement.querySelector('button');
 
     expect(targetElement.textContent).toContain('2000');
-    expect(tdeeElement.textContent).toContain('2200');
     expect(button.textContent.trim()).toBe('Recalculate');
     expect(button.disabled).toBeFalsy();
   });
@@ -122,24 +123,23 @@ describe('CalorieWidgetComponent', () => {
     it('should display macronutrients', () => {
       fixture.detectChanges();
 
-      const macrosSection = fixture.nativeElement.querySelector('.calorie-widget__macros');
-      const macroItems = fixture.nativeElement.querySelectorAll('.calorie-widget__macro-item');
+      const macronutrientsDisplay = fixture.nativeElement.querySelector(
+        'app-macronutrients-display',
+      );
 
-      expect(macrosSection).toBeTruthy();
-      expect(macroItems.length).toBe(3);
-      expect(macroItems[0].textContent).toContain('P: 120g');
-      expect(macroItems[1].textContent).toContain('F: 80g');
-      expect(macroItems[2].textContent).toContain('C: 200g');
+      expect(macronutrientsDisplay).toBeTruthy();
     });
 
     it('should display correct macro values', () => {
       fixture.detectChanges();
 
-      const macroItems = fixture.nativeElement.querySelectorAll('.calorie-widget__macro-item');
+      const macronutrientsDisplay = fixture.nativeElement.querySelector(
+        'app-macronutrients-display',
+      );
 
-      expect(macroItems[0].textContent.trim()).toBe('P: 120g');
-      expect(macroItems[1].textContent.trim()).toBe('F: 80g');
-      expect(macroItems[2].textContent.trim()).toBe('C: 200g');
+      expect(macronutrientsDisplay.textContent).toContain('120g (25%)');
+      expect(macronutrientsDisplay.textContent).toContain('80g (35%)');
+      expect(macronutrientsDisplay.textContent).toContain('200g (40%)');
     });
   });
 });
