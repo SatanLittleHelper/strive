@@ -87,6 +87,20 @@ describe('CalorieFormStateService', () => {
     });
   });
 
+  describe('resetFormData', () => {
+    it('should reset form data but keep current step', () => {
+      service.setBasicData(mockBasicData);
+      service.setActivityData(mockActivityData);
+      service.setCurrentStep(2);
+      service.resetFormData();
+
+      expect(service.currentStep()).toBe(2);
+      expect(service.basicData()).toBeNull();
+      expect(service.activityData()).toBeNull();
+      expect(service.hasDataChanges()).toBe(true);
+    });
+  });
+
   describe('isActivityTabDisabled', () => {
     it('should return true when basic data is null', () => {
       expect(service.isActivityTabDisabled()).toBe(true);

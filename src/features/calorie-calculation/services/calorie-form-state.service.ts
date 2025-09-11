@@ -39,6 +39,12 @@ export class CalorieFormStateService {
     this._hasDataChanges.set(true);
   }
 
+  resetFormData(): void {
+    this._basicData.set(null);
+    this._activityData.set(null);
+    this._hasDataChanges.set(true);
+  }
+
   isActivityTabDisabled(): boolean {
     return !this._basicData();
   }

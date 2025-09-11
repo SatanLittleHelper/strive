@@ -1,5 +1,11 @@
 <app-section-block>
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="activity-goal-form">
+  <form 
+    [formGroup]="form" 
+    (ngSubmit)="onSubmit()" 
+    appFormAutosave
+    formAutosaveKey="calorie-calculator-activity"
+    class="activity-goal-form"
+  >
     <div class="activity-goal-form__field">
       <app-select-field
         [options]="activityLevelOptions()"

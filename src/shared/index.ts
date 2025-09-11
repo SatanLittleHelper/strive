@@ -1,5 +1,6 @@
 export * from './lib/types';
 export * from './lib/utils';
+export * from './lib/directives/form-autosave';
 export * from './services/telegram';
 export * from './services/theme';
 export * from './ui/result-item';

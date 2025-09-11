@@ -10,14 +10,25 @@ import {
   DEFAULT_ACTIVITY_DATA,
   isActivityData,
 } from '@/features/calorie-calculation';
-import { generateSelectOptions, SelectFieldComponent, SectionBlockComponent } from '@/shared';
+import {
+  generateSelectOptions,
+  SelectFieldComponent,
+  SectionBlockComponent,
+  FormAutosaveDirective,
+} from '@/shared';
 
 import type { OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-activity-goal-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, TuiButton, SelectFieldComponent, SectionBlockComponent],
+  imports: [
+    ReactiveFormsModule,
+    TuiButton,
+    SelectFieldComponent,
+    SectionBlockComponent,
+    FormAutosaveDirective,
+  ],
   templateUrl: './activity-goal-form.component.html',
   styleUrl: './activity-goal-form.component.scss',
 })
