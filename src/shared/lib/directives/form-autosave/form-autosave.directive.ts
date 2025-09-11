@@ -92,7 +92,6 @@ export class FormAutosaveDirective implements OnInit {
   }
 
   private setupFormValueObserver(form: FormGroup): void {
-    debugger;
     if (!this.formAutosaveEnabled()) {
       return;
     }
