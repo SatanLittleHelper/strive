@@ -12,7 +12,6 @@ interface NavigationItem {
 
 @Component({
   selector: 'app-navigation',
-  standalone: true,
   imports: [RouterLink, RouterLinkActive, TuiButton, TuiIcon],
   templateUrl: './navigation.component.html',
   styleUrl: './navigation.component.scss',
@@ -34,11 +33,9 @@ export class NavigationComponent {
     },
   ];
 
-  public toggleTheme(): void {
+  protected readonly toggleTheme = (): void => {
     this.themeService.toggleTheme();
-  }
+  };
 
-  public isDark(): boolean {
-    return this.themeService.isDark();
-  }
+  protected readonly isDark = this.themeService.isDark;
 }

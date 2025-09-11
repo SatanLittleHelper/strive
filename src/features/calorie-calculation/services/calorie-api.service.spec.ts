@@ -585,6 +585,118 @@ describe('CalorieApiService', () => {
       });
     });
 
+    it('should adjust fat to minimum when carbs are negative and fat exceeds minimum', (done) => {
+      const extremeData: CalorieCalculationData = {
+        gender: Gender.MALE,
+        age: 30,
+        height: 180,
+        weight: 150, // Very high weight to trigger negative carbs
+        activityLevel: 'sedentary',
+        goal: 'lose_weight',
+      };
+
+      service.calculateCalories(extremeData).subscribe({
+        next: (results) => {
+          expect(results.macros).toBeDefined();
+          expect(results.macros.carbsGrams).toBeGreaterThanOrEqual(0);
+
+          const fatCalories = results.macros.fatGrams * 9;
+          const fatPercentage = (fatCalories / results.targetCalories) * 100;
+
+          expect(fatPercentage).toBeGreaterThanOrEqual(20); // MIN_FAT_PERCENTAGE
+          done();
+        },
+        error: done.fail,
+      });
+    });
+
+    it('should adjust protein to minimum when carbs are negative and protein exceeds minimum', (done) => {
+      const extremeData: CalorieCalculationData = {
+        gender: Gender.MALE,
+        age: 30,
+        height: 180,
+        weight: 200, // Very high weight to trigger negative carbs
+        activityLevel: 'very_active', // High activity for high protein
+        goal: 'gain_weight', // High protein goal
+      };
+
+      service.calculateCalories(extremeData).subscribe({
+        next: (results) => {
+          expect(results.macros).toBeDefined();
+          expect(results.macros.carbsGrams).toBeGreaterThanOrEqual(0);
+
+          const minProteinGrams = 200 * 1.4; // MIN_PROTEIN_PER_KG * weight
+          expect(results.macros.proteinGrams).toBeGreaterThanOrEqual(minProteinGrams);
+          done();
+        },
+        error: done.fail,
+      });
+    });
+
+    it('should test macronutrients calculation edge cases directly', () => {
+      const calculateMacronutrients = (
+        service as unknown as {
+          calculateMacronutrients: (
+            data: CalorieCalculationData,
+            targetCalories: number,
+          ) => Macronutrients;
+        }
+      ).calculateMacronutrients;
+
+      const extremeData: CalorieCalculationData = {
+        gender: Gender.MALE,
+        age: 30,
+        height: 180,
+        weight: 100, // High weight
+        activityLevel: 'very_active', // High activity for high protein
+        goal: 'gain_weight', // High protein goal
+      };
+
+      const lowCalories = 1000; // Very low calories to trigger negative carbs
+
+      const result = calculateMacronutrients(extremeData, lowCalories);
+
+      expect(result).toBeDefined();
+      expect(result.carbsGrams).toBeGreaterThanOrEqual(0);
+      expect(result.proteinGrams).toBeGreaterThanOrEqual(100 * 1.4); // MIN_PROTEIN_PER_KG
+
+      const fatCalories = result.fatGrams * 9;
+      const fatPercentage = (fatCalories / lowCalories) * 100;
+      expect(fatPercentage).toBeGreaterThanOrEqual(19); // Close to MIN_FAT_PERCENTAGE
+    });
+
+    it('should handle case when fat and protein are already at minimum levels', () => {
+      const calculateMacronutrients = (
+        service as unknown as {
+          calculateMacronutrients: (
+            data: CalorieCalculationData,
+            targetCalories: number,
+          ) => Macronutrients;
+        }
+      ).calculateMacronutrients;
+
+      const extremeData: CalorieCalculationData = {
+        gender: Gender.MALE,
+        age: 30,
+        height: 180,
+        weight: 50, // Lower weight
+        activityLevel: 'sedentary', // Lower activity for lower protein
+        goal: 'lose_weight', // Lower protein goal
+      };
+
+      const lowCalories = 800; // Very low calories to trigger negative carbs
+
+      const result = calculateMacronutrients(extremeData, lowCalories);
+
+      expect(result).toBeDefined();
+      expect(result.carbsGrams).toBeGreaterThanOrEqual(0);
+      expect(result.proteinGrams).toBeGreaterThanOrEqual(50 * 1.4); // MIN_PROTEIN_PER_KG
+
+      const fatCalories = result.fatGrams * 9;
+      const fatPercentage = (fatCalories / lowCalories) * 100;
+      expect(fatPercentage).toBeGreaterThanOrEqual(19); // Close to MIN_FAT_PERCENTAGE
+    });
+
     it('should maintain fat percentage within 20-35% of target calories', (done) => {
       const testData: CalorieCalculationData = {
         gender: Gender.MALE,

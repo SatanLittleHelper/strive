@@ -17,12 +17,10 @@ describe('MacronutrientsDisplayComponent', () => {
     carbsPercentage: 40.0,
   };
 
-  beforeEach(async () => {
+  beforeEach((): void => {
     configureZonelessTestingModule({
       imports: [MacronutrientsDisplayComponent],
     });
-
-    await TestBed.configureTestingModule({}).compileComponents();
 
     fixture = TestBed.createComponent(MacronutrientsDisplayComponent);
     component = fixture.componentInstance;

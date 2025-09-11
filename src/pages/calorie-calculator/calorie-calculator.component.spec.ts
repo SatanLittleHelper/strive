@@ -107,4 +107,37 @@ describe('CalorieCalculatorComponent', () => {
       expect(formStateServiceSpy.setCurrentStep).toHaveBeenCalledWith(2);
     });
   });
+
+  describe('error handling', () => {
+    it('should throw error when basicData is null in onActivityDataSubmitted', (): void => {
+      const activityData = {
+        activityLevel: 'moderately_active' as const,
+        goal: 'maintain_weight' as const,
+      };
+
+      expect(() => {
+        (
+          component as unknown as { onActivityDataSubmitted: (data: unknown) => void }
+        ).onActivityDataSubmitted(activityData);
+      }).toThrowError('Basic data is required and must be valid for calculation');
+    });
+
+    it('should throw error when basicData is invalid in onActivityDataSubmitted', (): void => {
+      const invalidBasicData = { age: 25, height: 180, weight: 75 }; // Missing gender field
+      (formStateServiceSpy.basicData as unknown as { set: (data: unknown) => void }).set(
+        invalidBasicData,
+      );
+
+      const activityData = {
+        activityLevel: 'moderately_active' as const,
+        goal: 'maintain_weight' as const,
+      };
+
+      expect(() => {
+        (
+          component as unknown as { onActivityDataSubmitted: (data: unknown) => void }
+        ).onActivityDataSubmitted(activityData);
+      }).toThrowError('Basic data is required and must be valid for calculation');
+    });
+  });
 });
