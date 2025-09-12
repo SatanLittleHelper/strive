@@ -15,9 +15,6 @@ import type { Observable } from 'rxjs';
 
 const AUTH_ENDPOINTS = ['/auth/login', '/auth/register', '/auth/refresh'] as const;
 
-let refreshInProgress = false;
-let pendingRequests: Array<() => void> = [];
-
 const createAuthenticatedRequest = (
   req: HttpRequest<unknown>,
   token: string,
@@ -31,15 +28,15 @@ const shouldSkipAuth = (req: HttpRequest<unknown>): boolean => {
   return AUTH_ENDPOINTS.some((endpoint) => req.url.includes(endpoint));
 };
 
+let refreshInProgress = false;
+let pendingRequests: Array<() => void> = [];
+
 const processPendingRequests = (): void => {
   pendingRequests.forEach((request) => request());
   pendingRequests = [];
 };
 
-const logout = (): void => {
-  const router = inject(Router);
-  const tokenStorage = inject(TokenStorageService);
-
+const logout = (router: Router, tokenStorage: TokenStorageService): void => {
   tokenStorage.clearTokens();
   void router.navigate(['/login']);
 };
@@ -47,6 +44,9 @@ const logout = (): void => {
 const handle401Error = (
   req: HttpRequest<unknown>,
   next: HttpHandlerFn,
+  tokenStorage: TokenStorageService,
+  authApi: AuthApiService,
+  router: Router,
 ): Observable<HttpEvent<unknown>> => {
   if (refreshInProgress) {
     return defer(() => {
@@ -60,12 +60,10 @@ const handle401Error = (
 
   refreshInProgress = true;
 
-  const tokenStorage = inject(TokenStorageService);
-  const authApi = inject(AuthApiService);
   const refreshToken = tokenStorage.getRefreshToken();
 
   if (!refreshToken) {
-    logout();
+    logout(router, tokenStorage);
     return throwError(() => new Error('No refresh token'));
   }
 
@@ -79,7 +77,7 @@ const handle401Error = (
     }),
     catchError((error) => {
       processPendingRequests();
-      logout();
+      logout(router, tokenStorage);
       return throwError(() => error);
     }),
     finalize(() => {
@@ -97,6 +95,8 @@ export const authInterceptor: HttpInterceptorFn = (
   }
 
   const tokenStorage = inject(TokenStorageService);
+  const authApi = inject(AuthApiService);
+  const router = inject(Router);
   const accessToken = tokenStorage.getAccessToken();
 
   if (accessToken) {
@@ -106,7 +106,7 @@ export const authInterceptor: HttpInterceptorFn = (
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
-        return handle401Error(req, next);
+        return handle401Error(req, next, tokenStorage, authApi, router);
       }
       return throwError(() => error);
     }),

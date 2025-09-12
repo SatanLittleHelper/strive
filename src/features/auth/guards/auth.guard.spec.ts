@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { configureZonelessTestingModule } from '@/test-setup';
 import { authGuard } from './auth.guard';
 import { AuthService } from '../services/auth.service';
+import type { Route, UrlSegment } from '@angular/router';
 
 describe('authGuard', () => {
   let authService: jasmine.SpyObj<AuthService>;
@@ -30,7 +31,7 @@ describe('authGuard', () => {
   it('should allow access when user is authenticated', () => {
     authService.isAuthenticated.and.returnValue(true);
 
-    const result = TestBed.runInInjectionContext(() => authGuard({} as any, []));
+    const result = TestBed.runInInjectionContext(() => authGuard({} as Route, [] as UrlSegment[]));
 
     expect(result).toBe(true);
     expect(router.navigate).not.toHaveBeenCalled();
@@ -39,7 +40,7 @@ describe('authGuard', () => {
   it('should redirect to login when user is not authenticated', () => {
     authService.isAuthenticated.and.returnValue(false);
 
-    const result = TestBed.runInInjectionContext(() => authGuard({} as any, []));
+    const result = TestBed.runInInjectionContext(() => authGuard({} as Route, [] as UrlSegment[]));
 
     expect(result).toBe(false);
     expect(router.navigate).toHaveBeenCalledWith(['/login']);
@@ -53,7 +54,7 @@ describe('authGuard', () => {
       configurable: true,
     });
 
-    TestBed.runInInjectionContext(() => authGuard({} as any, []));
+    void TestBed.runInInjectionContext(() => authGuard({} as Route, [] as UrlSegment[]));
 
     expect(sessionStorage.getItem('return_url')).toBe('/protected-page');
   });
@@ -66,7 +67,7 @@ describe('authGuard', () => {
       configurable: true,
     });
 
-    TestBed.runInInjectionContext(() => authGuard({} as any, []));
+    void TestBed.runInInjectionContext(() => authGuard({} as Route, [] as UrlSegment[]));
 
     expect(sessionStorage.getItem('return_url')).toBeNull();
   });
@@ -79,7 +80,7 @@ describe('authGuard', () => {
       configurable: true,
     });
 
-    TestBed.runInInjectionContext(() => authGuard({} as any, []));
+    void TestBed.runInInjectionContext(() => authGuard({} as Route, [] as UrlSegment[]));
 
     expect(sessionStorage.getItem('return_url')).toBeNull();
   });

@@ -21,7 +21,8 @@ export class AuthService {
 
   initFromStorage(): void {
     const accessToken = this.tokenStorage.getAccessToken();
-    this.isAuthenticated.set(!!accessToken);
+    const refreshToken = this.tokenStorage.getRefreshToken();
+    this.isAuthenticated.set(!!accessToken && !!refreshToken);
   }
 
   login$(body: LoginRequest): Observable<void> {

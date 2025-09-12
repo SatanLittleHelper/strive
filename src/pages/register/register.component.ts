@@ -46,23 +46,18 @@ export class RegisterComponent {
       },
       { validators: this.passwordMatchValidator },
     );
+
+    this.form.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.authService.clearError());
   }
 
-  private passwordMatchValidator(form: FormGroup): null {
+  private passwordMatchValidator(form: FormGroup): { [key: string]: unknown } | null {
     const password = form.get('password');
     const confirmPassword = form.get('confirmPassword');
 
-    if (password && confirmPassword) {
-      if (password.value !== confirmPassword.value) {
-        confirmPassword.setErrors({ passwordMismatch: true });
-      } else {
-        const errors = confirmPassword.errors;
-        if (errors && errors['passwordMismatch']) {
-          delete errors['passwordMismatch'];
-          const hasOtherErrors = Object.keys(errors).length > 0;
-          confirmPassword.setErrors(hasOtherErrors ? errors : null);
-        }
-      }
+    if (password && confirmPassword && password.value !== confirmPassword.value) {
+      return { passwordMismatch: true };
     }
 
     return null;

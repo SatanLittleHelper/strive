@@ -33,8 +33,19 @@ export class LoginComponent {
           Validators.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/),
         ],
       ],
-      password: ['', [Validators.required, Validators.minLength(8)]],
+      password: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(8),
+          Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d).{8,}$/),
+        ],
+      ],
     });
+
+    this.form.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.authService.clearError());
   }
 
   protected getLastError(): string | null {

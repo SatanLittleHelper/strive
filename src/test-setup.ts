@@ -1,9 +1,9 @@
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import type { Provider } from '@angular/core';
+import type { Provider, EnvironmentProviders } from '@angular/core';
 
 export function configureZonelessTestingModule(
-  config: { providers?: Provider[]; imports?: unknown[] } = {},
+  config: { providers?: Array<Provider | EnvironmentProviders>; imports?: unknown[] } = {},
 ): void {
   TestBed.configureTestingModule({
     ...config,

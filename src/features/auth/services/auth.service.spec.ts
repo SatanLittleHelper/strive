@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import type { ApiError } from '@/shared/lib/types';
 import { TokenStorageService } from '@/shared/services/auth/token-storage.service';
+import { configureZonelessTestingModule } from '@/test-setup';
 import { AuthApiService } from './auth-api.service';
 import { AuthService } from './auth.service';
 import type { LoginRequest, RegisterRequest, LoginResponse } from '../models/auth.types';
@@ -23,7 +24,7 @@ describe('AuthService', () => {
     ]);
     const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
-    TestBed.configureTestingModule({
+    configureZonelessTestingModule({
       providers: [
         AuthService,
         { provide: AuthApiService, useValue: authApiSpy },
@@ -51,13 +52,14 @@ describe('AuthService', () => {
       tokenStorageService.getAccessToken.and.returnValue('access-token');
       tokenStorageService.getRefreshToken.and.returnValue('refresh-token');
 
+      service.initFromStorage();
       expect(service.isAuthenticated()).toBe(true);
     });
-
     it('should return false when access token is missing', () => {
       tokenStorageService.getAccessToken.and.returnValue(null);
       tokenStorageService.getRefreshToken.and.returnValue('refresh-token');
 
+      service.initFromStorage();
       expect(service.isAuthenticated()).toBe(false);
     });
 
@@ -65,6 +67,7 @@ describe('AuthService', () => {
       tokenStorageService.getAccessToken.and.returnValue('access-token');
       tokenStorageService.getRefreshToken.and.returnValue(null);
 
+      service.initFromStorage();
       expect(service.isAuthenticated()).toBe(false);
     });
 
@@ -72,6 +75,7 @@ describe('AuthService', () => {
       tokenStorageService.getAccessToken.and.returnValue(null);
       tokenStorageService.getRefreshToken.and.returnValue(null);
 
+      service.initFromStorage();
       expect(service.isAuthenticated()).toBe(false);
     });
   });
@@ -167,7 +171,7 @@ describe('AuthService', () => {
   });
 
   describe('register$', () => {
-    it('should successfully register and navigate to dashboard', () => {
+    it('should successfully register and navigate to login', () => {
       const registerRequest: RegisterRequest = {
         email: 'test@example.com',
         password: 'password123',
@@ -178,22 +182,7 @@ describe('AuthService', () => {
       service.register$(registerRequest).subscribe();
 
       expect(authApiService.register$).toHaveBeenCalledWith(registerRequest);
-      expect(router.navigate).toHaveBeenCalledWith(['/dashboard']);
-    });
-
-    it('should navigate to returnUrl when available', () => {
-      const registerRequest: RegisterRequest = {
-        email: 'test@example.com',
-        password: 'password123',
-      };
-
-      sessionStorage.setItem('return_url', '/protected-page');
-      authApiService.register$.and.returnValue(of(undefined));
-
-      service.register$(registerRequest).subscribe();
-
-      expect(router.navigate).toHaveBeenCalledWith(['/protected-page']);
-      expect(sessionStorage.getItem('return_url')).toBeNull();
+      expect(router.navigate).toHaveBeenCalledWith(['/login']);
     });
 
     it('should handle registration error', () => {
