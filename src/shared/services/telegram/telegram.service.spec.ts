@@ -4,11 +4,9 @@ import { TelegramService } from './telegram.service';
 
 describe('TelegramService', () => {
   let service: TelegramService;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockWebApp: any;
 
   beforeEach((): void => {
-    // Simple mock for Telegram WebApp
     mockWebApp = {
       ready: jasmine.createSpy('ready'),
       expand: jasmine.createSpy('expand'),
@@ -18,7 +16,6 @@ describe('TelegramService', () => {
       platform: 'web',
     };
 
-    // Mock window.Telegram.WebApp
     Object.defineProperty(window, 'Telegram', {
       value: {
         WebApp: mockWebApp,

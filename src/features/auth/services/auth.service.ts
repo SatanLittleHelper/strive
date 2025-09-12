@@ -69,4 +69,8 @@ export class AuthService {
     this.isAuthenticated.set(false);
     void this.router.navigate(['/login']);
   }
+
+  clearError(): void {
+    this.error.set(null);
+  }
 }

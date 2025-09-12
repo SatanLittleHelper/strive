@@ -1,4 +1,4 @@
-import { authGuard } from '@/shared/services/auth';
+import { authGuard } from '@/features/auth';
 import type { Routes } from '@angular/router';
 
 export const routes: Routes = [

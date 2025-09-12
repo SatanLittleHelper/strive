@@ -6,7 +6,6 @@ describe('ThemeService', () => {
   let service: ThemeService;
 
   beforeEach((): void => {
-    // Mock matchMedia
     const matchMediaMock = jasmine.createSpy('matchMedia').and.returnValue({
       matches: false,
       addEventListener: jasmine.createSpy('addEventListener'),
@@ -17,7 +16,6 @@ describe('ThemeService', () => {
       writable: true,
     });
 
-    // Mock document.documentElement
     const documentElementMock = {
       setAttribute: jasmine.createSpy('setAttribute'),
     };

@@ -38,13 +38,11 @@ export class LoginComponent {
   }
 
   protected getLastError(): string | null {
-    // Backend error has priority
     const backendError = this.error();
     if (backendError) {
       return backendError;
     }
 
-    // Find first validation error in form controls
     const errorControl = Object.values(this.form.controls).find(
       (control) => control.touched && control.errors,
     );

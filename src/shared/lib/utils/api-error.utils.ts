@@ -5,7 +5,6 @@ import type { HttpErrorResponse } from '@angular/common/http';
 export function handleApiError(error: HttpErrorResponse): Observable<never> {
   const { error: apiErrorData, message } = error;
 
-  // Handle nested error structure: error.error.code and error.error.message
   const actualError = apiErrorData?.error || apiErrorData;
 
   const apiError: ApiError = {

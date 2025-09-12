@@ -56,7 +56,6 @@ export class RegisterComponent {
       if (password.value !== confirmPassword.value) {
         confirmPassword.setErrors({ passwordMismatch: true });
       } else {
-        // Очищаем только ошибку passwordMismatch, оставляя другие ошибки
         const errors = confirmPassword.errors;
         if (errors && errors['passwordMismatch']) {
           delete errors['passwordMismatch'];
@@ -70,13 +69,11 @@ export class RegisterComponent {
   }
 
   protected getLastError(): string | null {
-    // Backend error has priority
     const backendError = this.error();
     if (backendError) {
       return backendError;
     }
 
-    // Find first validation error in form controls
     const errorControl = Object.values(this.form.controls).find(
       (control) => control.touched && control.errors,
     );

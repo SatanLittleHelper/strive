@@ -1,4 +1,4 @@
-import { guestGuard } from '@/shared/services/auth';
+import { guestGuard } from '@/features/auth';
 import { RegisterComponent } from './register.component';
 import type { Routes } from '@angular/router';
 
