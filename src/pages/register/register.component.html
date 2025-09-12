@@ -1,0 +1,67 @@
+<div class="register">
+	<div class="register__container widget">
+		<h1 class="register__title widget__title">Register</h1>
+		
+		<form [formGroup]="form" (ngSubmit)="onSubmit()" class="register__form">
+			<div class="register__field">
+				<label tuiLabel class="register__field-label">Email
+					<tui-textfield>
+						<input
+							tuiTextfield
+							formControlName="email"
+							type="text"
+							placeholder="Enter email"
+							id="email"
+						/>
+					</tui-textfield>
+				</label>
+			</div>
+
+			<div class="register__field">
+				<label tuiLabel class="register__field-label">Password
+					<tui-textfield>
+						<input
+							tuiTextfield
+							formControlName="password"
+							type="password"
+							placeholder="Enter password (min 8 chars, letters and numbers)"
+							id="password"
+						/>
+					</tui-textfield>
+				</label>
+			</div>
+
+			<div class="register__field">
+				<label tuiLabel class="register__field-label">Confirm Password
+					<tui-textfield>
+						<input
+							tuiTextfield
+							formControlName="confirmPassword"
+							type="password"
+							placeholder="Confirm password"
+							id="confirmPassword"
+						/>
+					</tui-textfield>
+				</label>
+			</div>
+
+			@if (getLastError(); as lastError) {
+				<div class="register__error">{{ lastError }}</div>
+			}
+
+			<button
+				tuiButton
+				type="submit"
+				[disabled]="form.invalid || loading()"
+				class="register__submit"
+			>
+				{{ loading() ? 'Loading...' : 'Register' }}
+			</button>
+		</form>
+
+		<div class="register__footer">
+			<p>Already have an account?</p>
+			<a routerLink="/login" class="register__link">Login</a>
+		</div>
+	</div>
+</div>

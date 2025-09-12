@@ -1,7 +1,9 @@
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TuiRoot } from '@taiga-ui/core';
+import { AuthService } from '@/features/auth';
 import { TelegramService, ThemeService } from '@/shared';
 import { configureZonelessTestingModule } from '@/test-setup';
 import { AppComponent } from './app.component';
@@ -29,11 +31,19 @@ describe('AppComponent', () => {
       isDark: jasmine.createSpy('isDark').and.returnValue(false),
     });
 
+    const authServiceSpy = jasmine.createSpyObj('AuthService', ['initFromStorage'], {
+      isAuthenticated: jasmine.createSpy('isAuthenticated').and.returnValue(false),
+      loading: jasmine.createSpy('loading').and.returnValue(false),
+      error: jasmine.createSpy('error').and.returnValue(null),
+    });
+
     configureZonelessTestingModule({
       imports: [AppComponent, RouterTestingModule, MockTuiRootComponent],
       providers: [
+        provideHttpClientTesting(),
         { provide: TelegramService, useValue: telegramServiceSpy },
         { provide: ThemeService, useValue: themeServiceSpy },
+        { provide: AuthService, useValue: authServiceSpy },
         { provide: TuiRoot, useClass: MockTuiRootComponent },
       ],
     });

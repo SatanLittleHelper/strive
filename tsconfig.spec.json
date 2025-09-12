@@ -8,11 +8,13 @@
     "baseUrl": "./src",
     "paths": { 
       "@/*": ["*"],
+      "@/environments/*": ["environments/*"],
       "@/features/*": ["features/*"],
       "@/entities": ["entities/index"],
       "@/entities/*": ["entities/*"],
       "@/widgets/*": ["widgets/*"],
       "@/shared": ["shared/index"],
+      "@/shared/*": ["shared/*"],
       "@/test-setup": ["test-setup.ts"]
     }
   },
