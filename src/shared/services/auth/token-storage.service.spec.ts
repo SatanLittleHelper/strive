@@ -20,63 +20,40 @@ describe('TokenStorageService', () => {
   });
 
   describe('setTokens', () => {
-    it('should set access and refresh tokens in cookies', () => {
-      const accessToken = 'test-access-token';
-      const refreshToken = 'test-refresh-token';
+    it('should set tokens in cookies', () => {
+      service.setTokens('access-token', 'refresh-token');
 
-      service.setTokens(accessToken, refreshToken);
-
-      expect(document.cookie).toContain('access_token=test-access-token');
-      expect(document.cookie).toContain('refresh_token=test-refresh-token');
-    });
-
-    it('should set secure and SameSite attributes', () => {
-      const accessToken = 'test-access-token';
-      const refreshToken = 'test-refresh-token';
-
-      service.setTokens(accessToken, refreshToken);
-
-      expect(document.cookie).toContain('access_token=test-access-token');
-      expect(document.cookie).toContain('refresh_token=test-refresh-token');
+      expect(document.cookie).toContain('access_token=access-token');
+      expect(document.cookie).toContain('refresh_token=refresh-token');
     });
   });
 
   describe('getAccessToken', () => {
     it('should return access token from cookies', () => {
-      const accessToken = 'test-access-token';
-      service.setTokens(accessToken, 'refresh-token');
+      service.setTokens('test-token', 'refresh-token');
 
-      const result = service.getAccessToken();
-
-      expect(result).toBe(accessToken);
+      expect(service.getAccessToken()).toBe('test-token');
     });
 
-    it('should return null when no access token is set', () => {
-      const result = service.getAccessToken();
-
-      expect(result).toBeNull();
+    it('should return null when no token is set', () => {
+      expect(service.getAccessToken()).toBeNull();
     });
   });
 
   describe('getRefreshToken', () => {
     it('should return refresh token from cookies', () => {
-      const refreshToken = 'test-refresh-token';
-      service.setTokens('access-token', refreshToken);
+      service.setTokens('access-token', 'test-refresh');
 
-      const result = service.getRefreshToken();
-
-      expect(result).toBe(refreshToken);
+      expect(service.getRefreshToken()).toBe('test-refresh');
     });
 
-    it('should return null when no refresh token is set', () => {
-      const result = service.getRefreshToken();
-
-      expect(result).toBeNull();
+    it('should return null when no token is set', () => {
+      expect(service.getRefreshToken()).toBeNull();
     });
   });
 
   describe('clearTokens', () => {
-    it('should clear both access and refresh tokens', () => {
+    it('should clear both tokens', () => {
       service.setTokens('access-token', 'refresh-token');
 
       service.clearTokens();
