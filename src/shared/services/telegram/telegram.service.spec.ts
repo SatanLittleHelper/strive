@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { configureZonelessTestingModule } from '@/test-setup';
 import { TelegramService } from './telegram.service';
+import type { WebApp } from 'telegram-web-app';
 
 interface MockWebApp {
   ready: jasmine.Spy;
@@ -45,8 +46,7 @@ describe('TelegramService', () => {
 
   it('should return WebApp instance', (): void => {
     const webApp = service.webApp;
-    // @ts-expect-error - Mock object type mismatch is expected in tests
-    expect(webApp).toEqual(mockWebApp);
+    expect(webApp).toEqual(mockWebApp as unknown as WebApp);
   });
 
   it('should provide access to WebApp properties', (): void => {
