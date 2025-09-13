@@ -1,14 +1,22 @@
 import { TestBed } from '@angular/core/testing';
 import { configureZonelessTestingModule } from '@/test-setup';
 import { TelegramService } from './telegram.service';
+import type { WebApp } from 'telegram-web-app';
+
+interface MockWebApp {
+  ready: jasmine.Spy;
+  expand: jasmine.Spy;
+  close: jasmine.Spy;
+  initData: string;
+  version: string;
+  platform: string;
+}
 
 describe('TelegramService', () => {
   let service: TelegramService;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let mockWebApp: any;
+  let mockWebApp: MockWebApp;
 
   beforeEach((): void => {
-    // Simple mock for Telegram WebApp
     mockWebApp = {
       ready: jasmine.createSpy('ready'),
       expand: jasmine.createSpy('expand'),
@@ -18,7 +26,6 @@ describe('TelegramService', () => {
       platform: 'web',
     };
 
-    // Mock window.Telegram.WebApp
     Object.defineProperty(window, 'Telegram', {
       value: {
         WebApp: mockWebApp,
@@ -39,7 +46,7 @@ describe('TelegramService', () => {
 
   it('should return WebApp instance', (): void => {
     const webApp = service.webApp;
-    expect(webApp).toBe(mockWebApp);
+    expect(webApp).toEqual(mockWebApp as unknown as WebApp);
   });
 
   it('should provide access to WebApp properties', (): void => {

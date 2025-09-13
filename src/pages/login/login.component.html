@@ -1,0 +1,50 @@
+<div class="login">
+	<div class="login__container widget">
+		<h1 class="login__title widget__title">Login</h1>
+
+		<form [formGroup]="form" (ngSubmit)="onSubmit()" class="login__form">
+			<div class="login__field">
+				<label tuiLabel class="login__field-label"
+					>Email
+					<tui-textfield>
+						<input
+							tuiTextfield
+							formControlName="email"
+							type="text"
+							placeholder="Enter email"
+							id="email"
+						/>
+					</tui-textfield>
+				</label>
+			</div>
+
+			<div class="login__field">
+				<label tuiLabel class="login__field-label"
+					>Password
+					<tui-textfield>
+						<input
+							tuiTextfield
+							formControlName="password"
+							type="password"
+							placeholder="Enter password"
+							id="password"
+						/>
+					</tui-textfield>
+				</label>
+			</div>
+
+			@if (getLastError(); as lastError) {
+				<div class="login__error">{{ lastError }}</div>
+			}
+
+			<button tuiButton type="submit" [disabled]="form.invalid || loading()" class="login__submit">
+				{{ loading() ? 'Loading...' : 'Login' }}
+			</button>
+		</form>
+
+		<div class="login__footer">
+			<p>Don't have an account?</p>
+			<a routerLink="/register" class="login__link">Register</a>
+		</div>
+	</div>
+</div>

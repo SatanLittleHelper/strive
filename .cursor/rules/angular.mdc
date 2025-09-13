@@ -60,41 +60,70 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Use the `inject()` function instead of constructor injection
 
 ## RxJS Subscription Management
-- **Preferred approach**: Use `takeUntilDestroyed()` for automatic subscription cleanup
+- **CRITICAL RULE**: ALWAYS use `takeUntilDestroyed(this.destroyRef)` for consistency and safety
 - **Import**: `import { takeUntilDestroyed } from '@angular/core/rxjs-interop';`
-- **Usage patterns**:
-  - In constructor (injection context): `observable.pipe(takeUntilDestroyed()).subscribe()`
-  - In methods (non-injection context): `observable.pipe(takeUntilDestroyed(inject(DestroyRef))).subscribe()`
-- **Best practice**: Move subscriptions to constructor when possible
-- **Injection context explanation**:
-  - Constructor has automatic access to `DestroyRef` - no need to inject it
-  - Methods don't have injection context - must use `inject(DestroyRef)`
-- **Example with inject in method**:
+- **Required pattern**:
   ```typescript
-  someMethod(): void {
-    this.service.getData().pipe(
-      takeUntilDestroyed(inject(DestroyRef))
-    ).subscribe();
+  // In components and services
+  private readonly destroyRef = inject(DestroyRef);
+  
+  // Then use everywhere:
+  observable.pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+  ```
+- **Component example**:
+  ```typescript
+  @Component({...})
+  export class MyComponent {
+    private readonly destroyRef = inject(DestroyRef);
+    private readonly service = inject(MyService);
+    
+    constructor() {
+      this.service.getData().pipe(
+        takeUntilDestroyed(this.destroyRef)  // Always with parameter!
+      ).subscribe();
+    }
+    
+    onSubmit() {
+      this.service.postData().pipe(
+        takeUntilDestroyed(this.destroyRef)  // Always with parameter!
+      ).subscribe();
+    }
   }
   ```
-- **Form valueChanges example**:
+- **Service example**:
   ```typescript
-  constructor() {
-    this.form.valueChanges.pipe(
-      takeUntilDestroyed()  // No inject() needed in constructor
-    ).subscribe(() => {
-      this.dataChanged.emit();
-    });
+  @Injectable({ providedIn: 'root' })
+  export class MyService {
+    private readonly destroyRef = inject(DestroyRef);
+    private readonly http = inject(HttpClient);
+    
+    getData(): Observable<any> {
+      return this.http.get('/api').pipe(
+        takeUntilDestroyed(this.destroyRef)  // Always with parameter!
+      );
+    }
   }
   ```
-- **Service initialization example**:
+- **Why always with parameter**: Prevents NG0203 errors and ensures consistency across all contexts
+
+## API Error Handling
+- **CRITICAL RULE**: All API services MUST use `handleApiError` from shared utils
+- **Import**: `import { handleApiError } from '@/shared/lib/utils';`
+- **Required pattern**:
   ```typescript
-  constructor() {
-    this.service.fetchData().pipe(
-      takeUntilDestroyed()  // No inject() needed in constructor
-    ).subscribe();
-  }
+  // In all API services
+  import { handleApiError } from '@/shared/lib/utils';
+  
+  // For all HTTP requests:
+  this.http.get('/api/endpoint').pipe(
+    catchError(handleApiError)
+  );
   ```
+- **Benefits**:
+  - Consistent error handling across all APIs
+  - Structured `ApiError` with `code` and `message`
+  - Type-safe error processing
+  - Centralized error logic
 ## Common pitfalls
 - Control flow (`@if`):
   - You cannot use `as` expressions in `@else if (...)`. E.g. invalid code: `@else if (bla(); as x)`.

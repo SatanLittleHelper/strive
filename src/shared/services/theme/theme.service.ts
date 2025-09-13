@@ -41,9 +41,7 @@ export class ThemeService {
   private storeTheme(theme: Theme): void {
     try {
       localStorage.setItem(this.storageKey, theme);
-    } catch {
-      // ignore
-    }
+    } catch {}
   }
 
   private readStoredTheme(): Theme | null {

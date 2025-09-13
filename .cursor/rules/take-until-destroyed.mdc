@@ -1,0 +1,281 @@
+---
+alwaysApply: true
+---
+
+# Правила использования takeUntilDestroyed()
+
+## Обзор
+`takeUntilDestroyed()` в Angular имеет разные правила использования в зависимости от контекста выполнения.
+
+## Правила использования
+
+### 1. В КОНСТРУКТОРЕ компонента
+```typescript
+// ✅ ПРАВИЛЬНО - в конструкторе можно без параметров
+constructor() {
+  this.service.getData().pipe(
+    takeUntilDestroyed() // Работает в injection context
+  ).subscribe();
+}
+```
+
+### 2. В МЕТОДАХ компонента
+```typescript
+// ❌ НЕПРАВИЛЬНО - вне injection context
+onSubmit() {
+  this.service.getData().pipe(
+    takeUntilDestroyed() // Ошибка NG0203!
+  ).subscribe();
+}
+
+// ✅ ПРАВИЛЬНО - с inject(DestroyRef)
+export class MyComponent {
+  private readonly destroyRef = inject(DestroyRef);
+  
+  onSubmit() {
+    this.service.getData().pipe(
+      takeUntilDestroyed(this.destroyRef) // Работает
+    ).subscribe();
+  }
+}
+```
+
+### 3. В СЕРВИСАХ
+```typescript
+// ✅ ПРАВИЛЬНО - всегда с inject(DestroyRef)
+@Injectable({ providedIn: 'root' })
+export class MyService {
+  private readonly destroyRef = inject(DestroyRef);
+  
+  getData() {
+    return this.http.get('/api/data').pipe(
+      takeUntilDestroyed(this.destroyRef) // Всегда с параметром
+    );
+  }
+}
+```
+
+## Паттерны для компонентов
+
+### Рекомендуемый подход
+```typescript
+@Component({...})
+export class MyComponent {
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly service = inject(MyService);
+  
+  // В конструкторе - можно без параметров
+  constructor() {
+    this.service.getData().pipe(
+      takeUntilDestroyed() // Работает в injection context
+    ).subscribe();
+  }
+  
+  // В методах - обязательно с параметром
+  onSubmit() {
+    this.service.postData().pipe(
+      takeUntilDestroyed(this.destroyRef) // Обязательно
+    ).subscribe();
+  }
+}
+```
+
+## Паттерны для сервисов
+
+### Всегда с inject(DestroyRef)
+```typescript
+@Injectable({ providedIn: 'root' })
+export class MyService {
+  private readonly http = inject(HttpClient);
+  private readonly destroyRef = inject(DestroyRef);
+  
+  getData(): Observable<any> {
+    return this.http.get('/api/data').pipe(
+      takeUntilDestroyed(this.destroyRef) // Всегда с параметром
+    );
+  }
+}
+```
+
+## Ключевые принципы
+
+1. **Injection Context**: `takeUntilDestroyed()` без параметров работает только в injection context (конструктор, field initializer, factory function)
+
+2. **Методы компонентов**: Всегда нужен `takeUntilDestroyed(inject(DestroyRef))`
+
+3. **Сервисы**: Всегда нужен `inject(DestroyRef)` в поле класса
+
+4. **Консистентность**: Лучше всегда использовать `takeUntilDestroyed(this.destroyRef)` для единообразия
+
+## Частые ошибки
+
+```typescript
+// ❌ Ошибка NG0203 - вне injection context
+onClick() {
+  this.service.getData().pipe(
+    takeUntilDestroyed() // Не работает!
+  ).subscribe();
+}
+
+// ❌ Ошибка NG0203 - в сервисе без параметра
+@Injectable()
+export class Service {
+  getData() {
+    return this.http.get('/api').pipe(
+      takeUntilDestroyed() // Не работает в сервисах!
+    );
+  }
+}
+```
+
+## Лучшие практики
+
+1. **Всегда inject DestroyRef** в начале класса
+2. **Всегда используйте с параметром** для консистентности
+3. **Тестируйте** подписки на утечки памяти
+
+## Проверка
+
+Перед коммитом убедитесь:
+- [ ] Все `takeUntilDestroyed()` имеют параметр `this.destroyRef`
+- [ ] `DestroyRef` инжектирован в класс
+- [ ] Нет подписок без `takeUntilDestroyed()`
+- [ ] Тесты проходят без ошибок NG0203# Правила использования takeUntilDestroyed()
+
+## Обзор
+`takeUntilDestroyed()` в Angular имеет разные правила использования в зависимости от контекста выполнения.
+
+## Правила использования
+
+### 1. В КОНСТРУКТОРЕ компонента
+```typescript
+// ✅ ПРАВИЛЬНО - в конструкторе можно без параметров
+constructor() {
+  this.service.getData().pipe(
+    takeUntilDestroyed() // Работает в injection context
+  ).subscribe();
+}
+```
+
+### 2. В МЕТОДАХ компонента
+```typescript
+// ❌ НЕПРАВИЛЬНО - вне injection context
+onSubmit() {
+  this.service.getData().pipe(
+    takeUntilDestroyed() // Ошибка NG0203!
+  ).subscribe();
+}
+
+// ✅ ПРАВИЛЬНО - с inject(DestroyRef)
+export class MyComponent {
+  private readonly destroyRef = inject(DestroyRef);
+  
+  onSubmit() {
+    this.service.getData().pipe(
+      takeUntilDestroyed(this.destroyRef) // Работает
+    ).subscribe();
+  }
+}
+```
+
+### 3. В СЕРВИСАХ
+```typescript
+// ✅ ПРАВИЛЬНО - всегда с inject(DestroyRef)
+@Injectable({ providedIn: 'root' })
+export class MyService {
+  private readonly destroyRef = inject(DestroyRef);
+  
+  getData() {
+    return this.http.get('/api/data').pipe(
+      takeUntilDestroyed(this.destroyRef) // Всегда с параметром
+    );
+  }
+}
+```
+
+## Паттерны для компонентов
+
+### Рекомендуемый подход
+```typescript
+@Component({...})
+export class MyComponent {
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly service = inject(MyService);
+  
+  // В конструкторе - можно без параметров
+  constructor() {
+    this.service.getData().pipe(
+      takeUntilDestroyed() // Работает в injection context
+    ).subscribe();
+  }
+  
+  // В методах - обязательно с параметром
+  onSubmit() {
+    this.service.postData().pipe(
+      takeUntilDestroyed(this.destroyRef) // Обязательно
+    ).subscribe();
+  }
+}
+```
+
+## Паттерны для сервисов
+
+### Всегда с inject(DestroyRef)
+```typescript
+@Injectable({ providedIn: 'root' })
+export class MyService {
+  private readonly http = inject(HttpClient);
+  private readonly destroyRef = inject(DestroyRef);
+  
+  getData(): Observable<any> {
+    return this.http.get('/api/data').pipe(
+      takeUntilDestroyed(this.destroyRef) // Всегда с параметром
+    );
+  }
+}
+```
+
+## Ключевые принципы
+
+1. **Injection Context**: `takeUntilDestroyed()` без параметров работает только в injection context (конструктор, field initializer, factory function)
+
+2. **Методы компонентов**: Всегда нужен `takeUntilDestroyed(inject(DestroyRef))`
+
+3. **Сервисы**: Всегда нужен `inject(DestroyRef)` в поле класса
+
+4. **Консистентность**: Лучше всегда использовать `takeUntilDestroyed(this.destroyRef)` для единообразия
+
+## Частые ошибки
+
+```typescript
+// ❌ Ошибка NG0203 - вне injection context
+onClick() {
+  this.service.getData().pipe(
+    takeUntilDestroyed() // Не работает!
+  ).subscribe();
+}
+
+// ❌ Ошибка NG0203 - в сервисе без параметра
+@Injectable()
+export class Service {
+  getData() {
+    return this.http.get('/api').pipe(
+      takeUntilDestroyed() // Не работает в сервисах!
+    );
+  }
+}
+```
+
+## Лучшие практики
+
+1. **Всегда inject DestroyRef** в начале класса
+2. **Всегда используйте с параметром** для консистентности
+3. **Тестируйте** подписки на утечки памяти
+
+## Проверка
+
+Перед коммитом убедитесь:
+- [ ] Все `takeUntilDestroyed()` имеют параметр `this.destroyRef`
+- [ ] `DestroyRef` инжектирован в класс
+- [ ] Нет подписок без `takeUntilDestroyed()`
+- [ ] Тесты проходят без ошибок NG0203
