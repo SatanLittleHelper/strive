@@ -13,7 +13,7 @@ import type {
 } from '@angular/common/http';
 import type { Observable } from 'rxjs';
 
-const AUTH_ENDPOINTS = ['/auth/login', '/auth/register', '/auth/refresh'] as const;
+const AUTH_ENDPOINTS = ['/v1/auth/login', '/v1/auth/register', '/v1/auth/refresh'] as const;
 
 const createAuthenticatedRequest = (
   req: HttpRequest<unknown>,
@@ -25,16 +25,42 @@ const createAuthenticatedRequest = (
 };
 
 const shouldSkipAuth = (req: HttpRequest<unknown>): boolean => {
-  return AUTH_ENDPOINTS.some((endpoint) => req.url.includes(endpoint));
+  return AUTH_ENDPOINTS.some((endpoint) => req.url.endsWith(endpoint));
 };
 
-let refreshInProgress = false;
-let pendingRequests: Array<() => void> = [];
+class TokenRefreshManager {
+  private refreshInProgress = false;
+  private pendingRequests: Array<(accessToken: string) => void> = [];
+  private static instance: TokenRefreshManager;
 
-const processPendingRequests = (): void => {
-  pendingRequests.forEach((request) => request());
-  pendingRequests = [];
-};
+  static getInstance(): TokenRefreshManager {
+    if (!TokenRefreshManager.instance) {
+      TokenRefreshManager.instance = new TokenRefreshManager();
+    }
+    return TokenRefreshManager.instance;
+  }
+
+  get isRefreshInProgress(): boolean {
+    return this.refreshInProgress;
+  }
+
+  setRefreshInProgress(value: boolean): void {
+    this.refreshInProgress = value;
+  }
+
+  addPendingRequest(request: (accessToken: string) => void): void {
+    this.pendingRequests.push(request);
+  }
+
+  processPendingRequests(newAccessToken: string): void {
+    this.pendingRequests.forEach((request) => request(newAccessToken));
+    this.pendingRequests = [];
+  }
+
+  clearPendingRequests(): void {
+    this.pendingRequests = [];
+  }
+}
 
 const logout = (router: Router, tokenStorage: TokenStorageService): void => {
   tokenStorage.clearTokens();
@@ -48,21 +74,25 @@ const handle401Error = (
   authApi: AuthApiService,
   router: Router,
 ): Observable<HttpEvent<unknown>> => {
-  if (refreshInProgress) {
+  const refreshManager = TokenRefreshManager.getInstance();
+
+  if (refreshManager.isRefreshInProgress) {
     return defer(() => {
       return new Promise<Observable<HttpEvent<unknown>>>((resolve) => {
-        pendingRequests.push(() => {
-          resolve(next(req));
+        refreshManager.addPendingRequest((newAccessToken: string) => {
+          const newReq = createAuthenticatedRequest(req, newAccessToken);
+          resolve(next(newReq));
         });
       });
     }).pipe(switchMap((observable) => observable));
   }
 
-  refreshInProgress = true;
+  refreshManager.setRefreshInProgress(true);
 
   const refreshToken = tokenStorage.getRefreshToken();
 
   if (!refreshToken) {
+    refreshManager.setRefreshInProgress(false);
     logout(router, tokenStorage);
     return throwError(() => new Error('No refresh token'));
   }
@@ -70,18 +100,18 @@ const handle401Error = (
   return authApi.refresh$(refreshToken).pipe(
     switchMap((response: RefreshResponse) => {
       tokenStorage.setTokens(response.access_token, refreshToken);
-      processPendingRequests();
+      refreshManager.processPendingRequests(response.access_token);
 
       const newReq = createAuthenticatedRequest(req, response.access_token);
       return next(newReq);
     }),
     catchError((error) => {
-      processPendingRequests();
+      refreshManager.clearPendingRequests();
       logout(router, tokenStorage);
       return throwError(() => error);
     }),
     finalize(() => {
-      refreshInProgress = false;
+      refreshManager.setRefreshInProgress(false);
     }),
   );
 };

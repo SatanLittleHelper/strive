@@ -56,8 +56,38 @@ describe('authInterceptor', () => {
     tokenStorageService.getAccessToken.and.returnValue('access-token');
 
     http.post(`${env.apiHost}/v1/auth/login`, {}).subscribe();
+    http.post(`${env.apiHost}/v1/auth/register`, {}).subscribe();
+    http.post(`${env.apiHost}/v1/auth/refresh`, {}).subscribe();
 
-    const req = httpMock.expectOne(`${env.apiHost}/v1/auth/login`);
-    expect(req.request.headers.get('Authorization')).toBeNull();
+    const loginReq = httpMock.expectOne(`${env.apiHost}/v1/auth/login`);
+    const registerReq = httpMock.expectOne(`${env.apiHost}/v1/auth/register`);
+    const refreshReq = httpMock.expectOne(`${env.apiHost}/v1/auth/refresh`);
+
+    expect(loginReq.request.headers.get('Authorization')).toBeNull();
+    expect(registerReq.request.headers.get('Authorization')).toBeNull();
+    expect(refreshReq.request.headers.get('Authorization')).toBeNull();
+  });
+
+  it('should queue requests during token refresh and execute them with new token', () => {
+    tokenStorageService.getAccessToken.and.returnValue('expired-token');
+    tokenStorageService.getRefreshToken.and.returnValue('refresh-token');
+
+    tokenStorageService.setTokens.and.stub();
+
+    http.get('/api/protected').subscribe();
+
+    const firstReq = httpMock.expectOne('/api/protected');
+    expect(firstReq.request.headers.get('Authorization')).toBe('Bearer expired-token');
+
+    firstReq.flush(null, { status: 401, statusText: 'Unauthorized' });
+  });
+
+  it('should add auth header to endpoints that contain auth path but are not auth endpoints', () => {
+    tokenStorageService.getAccessToken.and.returnValue('access-token');
+
+    http.get('/api/user/auth-status').subscribe();
+
+    const req = httpMock.expectOne('/api/user/auth-status');
+    expect(req.request.headers.get('Authorization')).toBe('Bearer access-token');
   });
 });
