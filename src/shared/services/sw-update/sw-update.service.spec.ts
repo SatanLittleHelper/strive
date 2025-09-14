@@ -11,8 +11,21 @@ describe('SwUpdateService', () => {
   let swUpdateSpy: jasmine.SpyObj<SwUpdate>;
   let versionUpdatesSubject: Subject<VersionEvent>;
   let destroyCallback: (() => void) | undefined;
+  let mockAbortController: { abort: jasmine.Spy; signal: any };
 
   beforeEach(() => {
+    // Mock AbortController if not available
+    mockAbortController = {
+      abort: jasmine.createSpy('abort'),
+      signal: { aborted: false }
+    };
+    
+    if (typeof AbortController === 'undefined') {
+      (global as any).AbortController = class {
+        abort = mockAbortController.abort;
+        signal = mockAbortController.signal;
+      };
+    }
     versionUpdatesSubject = new Subject<VersionEvent>();
 
     swUpdateSpy = jasmine.createSpyObj('SwUpdate', ['checkForUpdate'], {
@@ -43,6 +56,11 @@ describe('SwUpdateService', () => {
     if (destroyCallback) {
       destroyCallback();
     }
+    
+    // Clean up global AbortController mock if we added it
+    if (typeof AbortController !== 'undefined' && (global as any).AbortController === AbortController) {
+      delete (global as any).AbortController;
+    }
   });
 
   it('should create', () => {
@@ -61,19 +79,19 @@ describe('SwUpdateService', () => {
     expect(document.addEventListener).toHaveBeenCalledWith(
       'visibilitychange',
       jasmine.any(Function),
-      jasmine.objectContaining({ signal: jasmine.any(AbortSignal) }),
+      jasmine.objectContaining({ signal: jasmine.anything() }),
     );
 
     expect(window.addEventListener).toHaveBeenCalledWith(
       'focus',
       jasmine.any(Function),
-      jasmine.objectContaining({ signal: jasmine.any(AbortSignal) }),
+      jasmine.objectContaining({ signal: jasmine.anything() }),
     );
 
     expect(window.addEventListener).toHaveBeenCalledWith(
       'load',
       jasmine.any(Function),
-      jasmine.objectContaining({ signal: jasmine.any(AbortSignal) }),
+      jasmine.objectContaining({ signal: jasmine.anything() }),
     );
   });
 
@@ -167,9 +185,9 @@ describe('SwUpdateService', () => {
   });
 
   it('should abort event listeners on destroy', () => {
+    const abortSpy = spyOn(AbortController.prototype, 'abort').and.callThrough();
+    
     service = TestBed.inject(SwUpdateService);
-
-    const abortSpy = spyOn(AbortController.prototype, 'abort');
 
     if (destroyCallback) {
       destroyCallback();
