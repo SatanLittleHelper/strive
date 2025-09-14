@@ -4,6 +4,7 @@ import { TuiRoot } from '@taiga-ui/core';
 
 import { AuthService } from '@/features/auth';
 import { TelegramService, NavigationComponent } from '@/shared';
+import { SwUpdateService } from '@/shared/services/sw-update';
 import type { OnInit } from '@angular/core';
 
 @Component({
@@ -16,6 +17,7 @@ import type { OnInit } from '@angular/core';
 export class AppComponent implements OnInit {
   private readonly telegramService = inject(TelegramService);
   private readonly authService = inject(AuthService);
+  private readonly swUpdateService = inject(SwUpdateService);
 
   ngOnInit(): void {
     this.telegramService.webApp.ready();

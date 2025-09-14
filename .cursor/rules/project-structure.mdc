@@ -188,6 +188,13 @@ strive/
 │   ├── commits.mdc                   # Commit message rules
 │   └── project-structure.mdc         # This file
 │
+├── docs/                             # Documentation
+│   ├── DEPLOYMENT.md                 # Deployment guide
+│   └── PWA-ICONS.md                  # PWA icons management guide
+│
+├── scripts/                          # Build and utility scripts
+│   └── generate-pwa-icons.cjs        # PWA icon generation script
+│
 ├── angular.json                      # Angular CLI config
 ├── tsconfig.json                     # TypeScript config
 ├── eslint.config.mjs                 # ESLint with FSD boundaries

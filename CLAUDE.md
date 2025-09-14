@@ -203,6 +203,30 @@ src/pages/[page-name]/
 
 For detailed routing rules, see `.cursor/rules/project-structure.mdc`.
 
+## PWA Icons Management
+
+The project includes a comprehensive PWA icon generation system:
+
+### Icon Generation Script
+- **Command**: `npm run generate:icons`
+- **Source**: `public/icons/logo.svg`
+- **Output**: Multiple PNG icons for different devices and platforms
+- **Script**: `scripts/generate-pwa-icons.cjs`
+
+### Generated Icons
+- Favicon (32x32)
+- iOS icons (120x120, 152x152, 167x167, 180x180)
+- Android icons (72x72, 96x96, 128x128, 144x144, 192x192, 256x256, 384x384, 512x512)
+- Maskable icon for Android adaptive icons (512x512 with padding)
+
+### How to Update Icons
+1. Replace `public/icons/logo.svg` with your logo
+2. Run `npm run generate:icons`
+3. Test on real devices
+4. Commit the generated icons
+
+For detailed instructions, see [PWA Icons Guide](docs/PWA-ICONS.md).
+
 ## Taiga UI Best Practices
 
 ### Select Components with Computed Signals
