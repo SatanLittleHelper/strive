@@ -61,19 +61,19 @@ describe('SwUpdateService', () => {
     expect(document.addEventListener).toHaveBeenCalledWith(
       'visibilitychange',
       jasmine.any(Function),
-      jasmine.objectContaining({ signal: jasmine.any(AbortSignal) })
+      jasmine.objectContaining({ signal: jasmine.any(AbortSignal) }),
     );
 
     expect(window.addEventListener).toHaveBeenCalledWith(
       'focus',
       jasmine.any(Function),
-      jasmine.objectContaining({ signal: jasmine.any(AbortSignal) })
+      jasmine.objectContaining({ signal: jasmine.any(AbortSignal) }),
     );
 
     expect(window.addEventListener).toHaveBeenCalledWith(
       'load',
       jasmine.any(Function),
-      jasmine.objectContaining({ signal: jasmine.any(AbortSignal) })
+      jasmine.objectContaining({ signal: jasmine.any(AbortSignal) }),
     );
   });
 
@@ -96,7 +96,7 @@ describe('SwUpdateService', () => {
 
     const visibilityChangeHandler = (document.addEventListener as jasmine.Spy).calls
       .allArgs()
-      .find(args => args[0] === 'visibilitychange')[1];
+      .find((args) => args[0] === 'visibilitychange')[1];
 
     Object.defineProperty(document, 'hidden', {
       configurable: true,
@@ -114,7 +114,7 @@ describe('SwUpdateService', () => {
 
     const visibilityChangeHandler = (document.addEventListener as jasmine.Spy).calls
       .allArgs()
-      .find(args => args[0] === 'visibilitychange')[1];
+      .find((args) => args[0] === 'visibilitychange')[1];
 
     Object.defineProperty(document, 'hidden', {
       configurable: true,
