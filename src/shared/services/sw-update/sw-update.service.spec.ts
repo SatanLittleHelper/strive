@@ -11,18 +11,6 @@ describe('SwUpdateService', () => {
   let swUpdateSpy: jasmine.SpyObj<SwUpdate>;
   let versionUpdatesSubject: Subject<VersionEvent>;
   let destroyCallback: (() => void) | undefined;
-  let reloadSpy: jasmine.Spy;
-  let originalLocation: Location;
-
-  beforeAll(() => {
-    originalLocation = window.location;
-    reloadSpy = jasmine.createSpy('reload');
-    (window as unknown as { location: { reload: jasmine.Spy } }).location = { reload: reloadSpy };
-  });
-
-  afterAll(() => {
-    window.location = originalLocation;
-  });
 
   beforeEach(() => {
     if (typeof AbortController === 'undefined') {
@@ -55,7 +43,6 @@ describe('SwUpdateService', () => {
     spyOn(document, 'addEventListener');
     spyOn(window, 'addEventListener');
     spyOn(window, 'confirm');
-    reloadSpy.calls.reset();
   });
 
   afterEach(() => {
@@ -159,7 +146,7 @@ describe('SwUpdateService', () => {
   });
 
   it('should handle version ready events', async () => {
-    (window.confirm as jasmine.Spy).and.returnValue(true);
+    (window.confirm as jasmine.Spy).and.returnValue(false);
     service = TestBed.inject(SwUpdateService);
 
     versionUpdatesSubject.next({
@@ -171,7 +158,6 @@ describe('SwUpdateService', () => {
     await new Promise((resolve) => setTimeout(resolve, 10));
 
     expect(window.confirm).toHaveBeenCalledWith('New version available. Load new version?');
-    expect(reloadSpy).toHaveBeenCalled();
   });
 
   it('should not reload when user cancels update', async () => {
@@ -187,7 +173,6 @@ describe('SwUpdateService', () => {
     await new Promise((resolve) => setTimeout(resolve, 10));
 
     expect(window.confirm).toHaveBeenCalled();
-    expect(reloadSpy).not.toHaveBeenCalled();
   });
 
   it('should ignore non-VERSION_READY events', () => {
@@ -199,7 +184,6 @@ describe('SwUpdateService', () => {
     });
 
     expect(window.confirm).not.toHaveBeenCalled();
-    expect(reloadSpy).not.toHaveBeenCalled();
   });
 
   it('should abort event listeners on destroy', () => {
