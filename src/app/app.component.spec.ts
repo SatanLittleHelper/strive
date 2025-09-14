@@ -37,7 +37,7 @@ describe('AppComponent', () => {
       error: jasmine.createSpy('error').and.returnValue(null),
     });
 
-    const swUpdateServiceSpy = jasmine.createSpyObj('SwUpdateService', [], {});
+    const swUpdateServiceSpy = jasmine.createSpyObj('SwUpdateService', ['checkForUpdate']);
 
     configureZonelessTestingModule({
       imports: [AppComponent, RouterTestingModule, MockTuiRootComponent],
