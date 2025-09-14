@@ -1,5 +1,69 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
-  <rect width="512" height="512" rx="100" fill="#3B82F6"/>
-  <path d="M256 120c-49.6 0-90 40.4-90 90v10c0 11 9 20 20 20s20-9 20-20v-10c0-27.6 22.4-50 50-50s50 22.4 50 50v10c0 11 9 20 20 20s20-9 20-20v-10c0-49.6-40.4-90-90-90z" fill="white"/>
-  <path d="M186 240c-11 0-20 9-20 20v92c0 49.6 40.4 90 90 90s90-40.4 90-90v-92c0-11-9-20-20-20H186zm120 40v72c0 27.6-22.4 50-50 50s-50-22.4-50-50v-72h100z" fill="white"/>
+  <defs>
+    <!-- Background gradient -->
+    <radialGradient id="bgGrad" cx="50%" cy="30%" r="80%">
+      <stop offset="0%" style="stop-color:hsl(268deg 75% 55%);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:hsl(268deg 85% 35%);stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Simple metal gradient -->
+    <linearGradient id="metalGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#F1F5F9;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#CBD5E1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#94A3B8;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background with gradient -->
+  <rect width="512" height="512" rx="100" fill="url(#bgGrad)"/>
+  
+  <!-- Large background S with red color -->
+  <text x="256" y="380" text-anchor="middle" fill="hsl(0deg 72% 51%)" font-family="Arial, sans-serif" font-size="400" font-weight="900" opacity="0.4">S</text>
+  
+  <!-- Adjustable dumbbell with metal handle -->
+  <g stroke="none">
+    <!-- Left weight stack (side view of round plates) -->
+    <rect x="5" y="130" width="20" height="252" rx="10" fill="#1A202C"/>
+    <rect x="25" y="110" width="26" height="292" rx="13" fill="#2D3748"/>
+    <rect x="51" y="85" width="36" height="342" rx="18" fill="#1A202C"/>
+    <rect x="87" y="110" width="26" height="292" rx="13" fill="#2D3748"/>
+    <rect x="113" y="130" width="20" height="252" rx="10" fill="#1A202C"/>
+    
+    <!-- Metal handle bar -->
+    <rect x="133" y="244" width="246" height="24" fill="url(#metalGrad)"/>
+    
+    <!-- Handle grip texture -->
+    <g opacity="0.5">
+      <rect x="145" y="250" width="1" height="12" fill="#64748B"/>
+      <rect x="155" y="250" width="1" height="12" fill="#64748B"/>
+      <rect x="165" y="250" width="1" height="12" fill="#64748B"/>
+      <rect x="175" y="250" width="1" height="12" fill="#64748B"/>
+      <rect x="185" y="250" width="1" height="12" fill="#64748B"/>
+      <rect x="195" y="250" width="1" height="12" fill="#64748B"/>
+      <rect x="205" y="250" width="1" height="12" fill="#64748B"/>
+      <rect x="215" y="250" width="1" height="12" fill="#64748B"/>
+      <rect x="225" y="250" width="1" height="12" fill="#64748B"/>
+      <rect x="235" y="250" width="1" height="12" fill="#64748B"/>
+      <rect x="245" y="250" width="1" height="12" fill="#64748B"/>
+      <rect x="255" y="250" width="1" height="12" fill="#64748B"/>
+      <rect x="265" y="250" width="1" height="12" fill="#64748B"/>
+      <rect x="275" y="250" width="1" height="12" fill="#64748B"/>
+      <rect x="285" y="250" width="1" height="12" fill="#64748B"/>
+      <rect x="295" y="250" width="1" height="12" fill="#64748B"/>
+      <rect x="305" y="250" width="1" height="12" fill="#64748B"/>
+      <rect x="315" y="250" width="1" height="12" fill="#64748B"/>
+      <rect x="325" y="250" width="1" height="12" fill="#64748B"/>
+      <rect x="335" y="250" width="1" height="12" fill="#64748B"/>
+      <rect x="345" y="250" width="1" height="12" fill="#64748B"/>
+      <rect x="355" y="250" width="1" height="12" fill="#64748B"/>
+      <rect x="365" y="250" width="1" height="12" fill="#64748B"/>
+    </g>
+    
+    <!-- Right weight stack (side view of round plates) -->
+    <rect x="379" y="130" width="20" height="252" rx="10" fill="#1A202C"/>
+    <rect x="399" y="110" width="26" height="292" rx="13" fill="#2D3748"/>
+    <rect x="425" y="85" width="36" height="342" rx="18" fill="#1A202C"/>
+    <rect x="461" y="110" width="26" height="292" rx="13" fill="#2D3748"/>
+    <rect x="487" y="130" width="20" height="252" rx="10" fill="#1A202C"/>
+  </g>
 </svg>
