@@ -22,7 +22,8 @@
     {
       "src": "./icons/icon-120x120.png",
       "sizes": "120x120",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "./icons/icon-128x128.png",
@@ -37,17 +38,20 @@
     {
       "src": "./icons/icon-152x152.png",
       "sizes": "152x152",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "./icons/icon-167x167.png",
       "sizes": "167x167",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "./icons/icon-180x180.png",
+      "src": "./icons/apple-touch-icon.png",
       "sizes": "180x180",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "./icons/icon-192x192.png",
