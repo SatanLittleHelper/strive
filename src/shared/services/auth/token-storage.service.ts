@@ -35,7 +35,6 @@ export class TokenStorageService {
   }
 
   setTokens(accessToken: string, refreshToken: string): void {
-    debugger;
     const accessTokenExpiration = getTokenExpirationSeconds(accessToken) ?? 900; // fallback to 15 minutes
     const refreshTokenExpiration = getTokenExpirationSeconds(refreshToken) ?? 7 * 24 * 60 * 60; // fallback to 7 days
 

@@ -1,4 +1,4 @@
 export const env = {
   production: true,
-  apiHost: 'https://api.strive.com/api',
+  apiHost: 'https://strive-api-zjtl.onrender.com/api',
 };
