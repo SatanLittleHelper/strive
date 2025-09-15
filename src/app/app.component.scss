@@ -4,7 +4,6 @@
 
   width: 100%;
   height: 100vh;
-  height: 100dvh; 
 
   background: var(--tui-base-01);
   
@@ -21,33 +20,35 @@
 }
 
 .app-container {
-  position: relative;
-
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template: 
+    "main" 1fr "nav" 80px / 1fr;
 
   width: 100%;
-  height: 100%;
-
+  height: 100vh;
+  
   @media (width >= 768px) {
-    padding-bottom: var(--space-lg);
+    grid-template-areas: 
+      "nav"
+      "main";
+    grid-template-rows: 60px 1fr;
   }
 
-  @media (width >= 1024px) {
-    padding-bottom: var(--space-xl);
+  @supports (height: 100dvh) {
+    height: 100dvh;
   }
 }
 
 .main-content {
   overflow: hidden auto;
-  flex: 1;
+  grid-area: main;
 
   min-height: 0;
   padding: var(--space-md);
 
   background: var(--tui-base-01);
+}
 
-  @media (width <= 767px) {
-    padding-bottom: calc(88px + var(--space-md));
-  }
+.app-navigation {
+  grid-area: nav;
 }
