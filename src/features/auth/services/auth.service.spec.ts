@@ -15,7 +15,7 @@ describe('AuthService', () => {
   let router: jasmine.SpyObj<Router>;
 
   beforeEach(() => {
-    const authApiSpy = jasmine.createSpyObj('AuthApiService', ['login$', 'register$']);
+    const authApiSpy = jasmine.createSpyObj('AuthApiService', ['login$', 'register$', 'refresh$']);
     const tokenStorageSpy = jasmine.createSpyObj('TokenStorageService', [
       'setTokens',
       'getAccessToken',
@@ -220,6 +220,207 @@ describe('AuthService', () => {
       service.clearError();
 
       expect(service.error()).toBeNull();
+    });
+  });
+
+  describe('isTokenExpired (private method)', () => {
+    it('should return true when token is null', () => {
+      const result = (
+        service as unknown as { isTokenExpired: (token: string | null) => boolean }
+      ).isTokenExpired(null);
+      expect(result).toBe(true);
+    });
+
+    it('should return true when token is empty string', () => {
+      const result = (
+        service as unknown as { isTokenExpired: (token: string | null) => boolean }
+      ).isTokenExpired('');
+      expect(result).toBe(true);
+    });
+
+    it('should return true when token cannot be decoded', () => {
+      const result = (
+        service as unknown as { isTokenExpired: (token: string | null) => boolean }
+      ).isTokenExpired('invalid-token');
+      expect(result).toBe(true);
+    });
+
+    it('should return true when token is expired', () => {
+      const expiredTime = Math.floor(Date.now() / 1000) - 3600;
+      const expiredToken = `header.${btoa(JSON.stringify({ exp: expiredTime }))}.signature`;
+
+      const result = (
+        service as unknown as { isTokenExpired: (token: string | null) => boolean }
+      ).isTokenExpired(expiredToken);
+      expect(result).toBe(true);
+    });
+
+    it('should return false when token is valid and not expired', () => {
+      const futureTime = Math.floor(Date.now() / 1000) + 3600;
+      const validToken = `header.${btoa(JSON.stringify({ exp: futureTime }))}.signature`;
+
+      const result = (
+        service as unknown as { isTokenExpired: (token: string | null) => boolean }
+      ).isTokenExpired(validToken);
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('refreshTokenSync', () => {
+    it('should successfully refresh token and return true', async () => {
+      const refreshResponse = {
+        access_token: 'new-access-token',
+        expires_in: 3600,
+        token_type: 'Bearer' as const,
+      };
+
+      tokenStorageService.getRefreshToken.and.returnValue('refresh-token');
+      authApiService.refresh$.and.returnValue(of(refreshResponse));
+
+      const result = await service.refreshTokenSync();
+
+      expect(result).toBe(true);
+      expect(authApiService.refresh$).toHaveBeenCalledWith('refresh-token');
+      expect(tokenStorageService.setTokens).toHaveBeenCalledWith(
+        'new-access-token',
+        'refresh-token',
+      );
+      expect(service.isAuthenticated()).toBe(true);
+    });
+
+    it('should logout and return false when refresh token is missing', async () => {
+      tokenStorageService.getRefreshToken.and.returnValue(null);
+      spyOn(service, 'logout');
+
+      const result = await service.refreshTokenSync();
+
+      expect(result).toBe(false);
+      expect(service.logout).toHaveBeenCalled();
+      expect(authApiService.refresh$).not.toHaveBeenCalled();
+    });
+
+    it('should logout and return false when refresh fails', async () => {
+      tokenStorageService.getRefreshToken.and.returnValue('refresh-token');
+      authApiService.refresh$.and.returnValue(throwError(() => new Error('Refresh failed')));
+      spyOn(service, 'logout');
+
+      const result = await service.refreshTokenSync();
+
+      expect(result).toBe(false);
+      expect(service.logout).toHaveBeenCalled();
+      expect(authApiService.refresh$).toHaveBeenCalledWith('refresh-token');
+    });
+  });
+
+  describe('isAuthenticatedAndValid', () => {
+    it('should return false when both tokens are missing', async () => {
+      tokenStorageService.getAccessToken.and.returnValue(null);
+      tokenStorageService.getRefreshToken.and.returnValue(null);
+
+      const result = await service.isAuthenticatedAndValid();
+
+      expect(result).toBe(false);
+    });
+
+    it('should return true when only access token exists and is valid', async () => {
+      const futureTime = Math.floor(Date.now() / 1000) + 3600;
+      const validToken = `header.${btoa(JSON.stringify({ exp: futureTime }))}.signature`;
+
+      tokenStorageService.getAccessToken.and.returnValue(validToken);
+      tokenStorageService.getRefreshToken.and.returnValue(null);
+
+      const result = await service.isAuthenticatedAndValid();
+
+      expect(result).toBe(true);
+    });
+
+    it('should return true when only refresh token exists and is valid', async () => {
+      const futureTime = Math.floor(Date.now() / 1000) + 3600;
+      const validRefreshToken = `header.${btoa(JSON.stringify({ exp: futureTime }))}.signature`;
+      const refreshResponse = {
+        access_token: 'new-access-token',
+        expires_in: 3600,
+        token_type: 'Bearer' as const,
+      };
+
+      tokenStorageService.getAccessToken.and.returnValue(null);
+      tokenStorageService.getRefreshToken.and.returnValue(validRefreshToken);
+      authApiService.refresh$.and.returnValue(of(refreshResponse));
+
+      const result = await service.isAuthenticatedAndValid();
+
+      expect(result).toBe(true);
+      expect(authApiService.refresh$).toHaveBeenCalledWith(validRefreshToken);
+    });
+
+    it('should return true when both tokens exist and access token is valid', async () => {
+      const futureTime = Math.floor(Date.now() / 1000) + 3600;
+      const validToken = `header.${btoa(JSON.stringify({ exp: futureTime }))}.signature`;
+
+      tokenStorageService.getAccessToken.and.returnValue(validToken);
+      tokenStorageService.getRefreshToken.and.returnValue('refresh-token');
+
+      const result = await service.isAuthenticatedAndValid();
+
+      expect(result).toBe(true);
+    });
+
+    it('should refresh token when access token is expired but refresh token is valid', async () => {
+      const expiredTime = Math.floor(Date.now() / 1000) - 3600;
+      const expiredAccessToken = `header.${btoa(JSON.stringify({ exp: expiredTime }))}.signature`;
+      const futureTime = Math.floor(Date.now() / 1000) + 3600;
+      const validRefreshToken = `header.${btoa(JSON.stringify({ exp: futureTime }))}.signature`;
+      const refreshResponse = {
+        access_token: 'new-access-token',
+        expires_in: 3600,
+        token_type: 'Bearer' as const,
+      };
+
+      tokenStorageService.getAccessToken.and.returnValue(expiredAccessToken);
+      tokenStorageService.getRefreshToken.and.returnValue(validRefreshToken);
+      authApiService.refresh$.and.returnValue(of(refreshResponse));
+
+      const result = await service.isAuthenticatedAndValid();
+
+      expect(result).toBe(true);
+      expect(authApiService.refresh$).toHaveBeenCalledWith(validRefreshToken);
+      expect(tokenStorageService.setTokens).toHaveBeenCalledWith(
+        'new-access-token',
+        validRefreshToken,
+      );
+    });
+
+    it('should logout and return false when both tokens are expired', async () => {
+      const expiredTime = Math.floor(Date.now() / 1000) - 3600;
+      const expiredAccessToken = `header.${btoa(JSON.stringify({ exp: expiredTime }))}.signature`;
+      const expiredRefreshToken = `header.${btoa(JSON.stringify({ exp: expiredTime }))}.signature`;
+
+      tokenStorageService.getAccessToken.and.returnValue(expiredAccessToken);
+      tokenStorageService.getRefreshToken.and.returnValue(expiredRefreshToken);
+      spyOn(service, 'logout');
+
+      const result = await service.isAuthenticatedAndValid();
+
+      expect(result).toBe(false);
+      expect(service.logout).toHaveBeenCalled();
+      expect(authApiService.refresh$).not.toHaveBeenCalled();
+    });
+
+    it('should return false when refresh fails', async () => {
+      const expiredTime = Math.floor(Date.now() / 1000) - 3600;
+      const expiredAccessToken = `header.${btoa(JSON.stringify({ exp: expiredTime }))}.signature`;
+      const futureTime = Math.floor(Date.now() / 1000) + 3600;
+      const validRefreshToken = `header.${btoa(JSON.stringify({ exp: futureTime }))}.signature`;
+
+      tokenStorageService.getAccessToken.and.returnValue(expiredAccessToken);
+      tokenStorageService.getRefreshToken.and.returnValue(validRefreshToken);
+      authApiService.refresh$.and.returnValue(throwError(() => new Error('Refresh failed')));
+      spyOn(service, 'logout');
+
+      const result = await service.isAuthenticatedAndValid();
+
+      expect(result).toBe(false);
+      expect(service.logout).toHaveBeenCalled();
     });
   });
 });
