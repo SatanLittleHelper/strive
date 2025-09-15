@@ -36,6 +36,15 @@ export class ThemeService {
 
   private applyTheme(theme: Theme): void {
     document.documentElement.setAttribute('tuiTheme', theme);
+    this.updateThemeColor(theme);
+  }
+
+  private updateThemeColor(theme: Theme): void {
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) {
+      const color = theme === 'dark' ? '#0f172a' : '#ffffff';
+      themeColorMeta.setAttribute('content', color);
+    }
   }
 
   private storeTheme(theme: Theme): void {
