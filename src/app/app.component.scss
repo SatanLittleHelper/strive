@@ -31,4 +31,8 @@
   padding: var(--space-md);
 
   background: var(--tui-base-01);
+
+  @media (width <= 767px) {
+    padding-bottom: calc(88px + var(--space-md));
+  }
 }
