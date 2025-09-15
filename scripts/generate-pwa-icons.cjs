@@ -20,7 +20,7 @@ const ICON_SIZES = [
   { size: 512, name: 'icon-512x512-maskable', maskable: true, description: 'Android Maskable' }
 ];
 
-const THEME_COLOR = { r: 59, g: 130, b: 246, alpha: 1 };
+const THEME_COLOR = { r: 139, g: 92, b: 246, alpha: 1 };
 
 const INPUT_SVG = path.join(__dirname, '..', 'public', 'icons', 'logo.svg');
 const OUTPUT_DIR = path.join(__dirname, '..', 'public', 'icons');
