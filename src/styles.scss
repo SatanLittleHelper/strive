@@ -12,11 +12,8 @@ html, body {
 }
 
 body {
-  padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
-
   font-family: var(--font-family-base);
   color: var(--color-text);
-
   background: var(--color-background);
 }
 
