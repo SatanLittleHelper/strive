@@ -1,17 +1,17 @@
 import { inject, Injectable, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
-import { tap, catchError, of, finalize, map, firstValueFrom } from 'rxjs';
-import type { ApiError } from '@/shared/lib/types';
-import { getTokenExpirationSeconds } from '@/shared/lib/utils';
-import { TokenStorageService } from '@/shared/services/auth/token-storage.service';
-import { AuthApiService } from './auth-api.service';
+import { tap, catchError, of, finalize, map, firstValueFrom, timeout } from 'rxjs';
+import { AuthApiService } from '@/features/auth';
 import type {
   LoginRequest,
   RegisterRequest,
   LoginResponse,
   RefreshResponse,
-} from '../models/auth.types';
+} from '@/features/auth';
+import type { ApiError } from '@/shared/lib/types';
+import { getTokenExpirationSeconds } from '@/shared/lib/utils';
+import { TokenStorageService } from '@/shared/services/auth/token-storage.service';
 import type { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
@@ -24,6 +24,7 @@ export class AuthService {
   readonly isAuthenticated = signal(false);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+  readonly isRefreshingTokens = signal(false);
 
   initFromStorage(): void {
     const accessToken = this.tokenStorage.getAccessToken();
@@ -82,6 +83,12 @@ export class AuthService {
   }
 
   async refreshTokenSync(): Promise<boolean> {
+    if (this.isRefreshingTokens()) {
+      return false;
+    }
+
+    this.isRefreshingTokens.set(true);
+
     try {
       const refreshToken = this.tokenStorage.getRefreshToken();
 
@@ -90,7 +97,9 @@ export class AuthService {
         return false;
       }
 
-      const response: RefreshResponse = await firstValueFrom(this.authApi.refresh$(refreshToken));
+      const response: RefreshResponse = await firstValueFrom(
+        this.authApi.refresh$(refreshToken).pipe(timeout(10000)),
+      );
 
       this.tokenStorage.setTokens(response.access_token, refreshToken);
       this.isAuthenticated.set(true);
@@ -99,6 +108,8 @@ export class AuthService {
     } catch {
       this.logout();
       return false;
+    } finally {
+      this.isRefreshingTokens.set(false);
     }
   }
 
@@ -115,11 +126,20 @@ export class AuthService {
     }
 
     if (refreshToken && !this.isTokenExpired(refreshToken)) {
-      return this.refreshTokenSync();
+      this.refreshTokensInBackground();
+      return true;
     }
 
     this.logout();
     return false;
+  }
+
+  private refreshTokensInBackground(): void {
+    if (this.isRefreshingTokens()) {
+      return;
+    }
+
+    this.refreshTokenSync().catch(() => {});
   }
 
   private isTokenExpired(token: string | null): boolean {
