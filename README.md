@@ -2,6 +2,22 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.15.
 
+## Quick Start
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm start
+
+# Build for production
+npm run build
+
+# Generate PWA icons
+npm run generate:icons
+```
+
 ## Development server
 
 To start a local development server, run:
@@ -53,6 +69,16 @@ ng e2e
 ```
 
 Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+
+## PWA Icons
+
+This project includes PWA (Progressive Web App) support with a comprehensive icon set. To update the app icons:
+
+1. Replace the logo file at `public/icons/logo.svg`
+2. Run `npm run generate:icons`
+3. Commit the generated icons
+
+For detailed instructions, see [PWA Icons Guide](docs/PWA-ICONS.md).
 
 ## Additional Resources
 

@@ -79,6 +79,17 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "local": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/env.ts",
+                  "with": "src/environments/env.local.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -91,6 +102,9 @@
             },
             "development": {
               "buildTarget": "Strive:build:development"
+            },
+            "local": {
+              "buildTarget": "Strive:build:local"
             }
           },
           "defaultConfiguration": "development"

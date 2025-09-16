@@ -3,6 +3,7 @@ export * from './lib/utils';
 export * from './lib/directives/form-autosave';
 export * from './services/telegram';
 export * from './services/theme';
+export * from './services/sw-update';
 export * from './ui/result-item';
 export * from './ui/step-navigation';
 export * from './ui/select-field';

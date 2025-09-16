@@ -1,11 +1,17 @@
 import { inject, Injectable, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
-import { tap, catchError, of, finalize, map } from 'rxjs';
+import { tap, catchError, of, finalize, map, firstValueFrom } from 'rxjs';
 import type { ApiError } from '@/shared/lib/types';
+import { getTokenExpirationSeconds } from '@/shared/lib/utils';
 import { TokenStorageService } from '@/shared/services/auth/token-storage.service';
 import { AuthApiService } from './auth-api.service';
-import type { LoginRequest, RegisterRequest, LoginResponse } from '../models/auth.types';
+import type {
+  LoginRequest,
+  RegisterRequest,
+  LoginResponse,
+  RefreshResponse,
+} from '../models/auth.types';
 import type { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
@@ -73,5 +79,60 @@ export class AuthService {
 
   clearError(): void {
     this.error.set(null);
+  }
+
+  async refreshTokenSync(): Promise<boolean> {
+    try {
+      const refreshToken = this.tokenStorage.getRefreshToken();
+
+      if (!refreshToken) {
+        this.logout();
+        return false;
+      }
+
+      const response: RefreshResponse = await firstValueFrom(this.authApi.refresh$(refreshToken));
+
+      this.tokenStorage.setTokens(response.access_token, refreshToken);
+      this.isAuthenticated.set(true);
+
+      return true;
+    } catch {
+      this.logout();
+      return false;
+    }
+  }
+
+  async isAuthenticatedAndValid(): Promise<boolean> {
+    const accessToken = this.tokenStorage.getAccessToken();
+    const refreshToken = this.tokenStorage.getRefreshToken();
+
+    if (!accessToken && !refreshToken) {
+      return false;
+    }
+
+    if (accessToken && !this.isTokenExpired(accessToken)) {
+      return true;
+    }
+
+    if (refreshToken && !this.isTokenExpired(refreshToken)) {
+      return this.refreshTokenSync();
+    }
+
+    this.logout();
+    return false;
+  }
+
+  private isTokenExpired(token: string | null): boolean {
+    if (!token) {
+      return true;
+    }
+
+    const expirationSeconds = getTokenExpirationSeconds(token);
+
+    if (expirationSeconds === null) {
+      return true;
+    }
+
+    return expirationSeconds <= 0;
   }
 }

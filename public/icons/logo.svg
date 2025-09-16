@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <!-- Purple gradient background -->
+    <radialGradient id="bgGradient" cx="0.3" cy="0.2" r="1.2">
+      <stop offset="0%" style="stop-color:#A855F7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6B21A8;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Orange gradient for letter -->
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FDBA74;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#EA580C;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Glass highlight gradient -->
+    <linearGradient id="glassHighlight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.4);stop-opacity:1" />
+      <stop offset="50%" style="stop-color:rgba(255,255,255,0.1);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgba(255,255,255,0);stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background with gradient -->
+  <rect width="512" height="512" rx="100" fill="url(#bgGradient)"/>
+  
+  <!-- Glass highlight overlay -->
+  <rect width="512" height="256" rx="100" fill="url(#glassHighlight)"/>
+  
+  <!-- Subtle inner shadow for depth -->
+  <rect width="512" height="512" rx="100" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="2" stroke-dasharray="none"/>
+  
+  <!-- Orange letter S with gradient -->
+  <text x="256" y="256" text-anchor="middle" fill="url(#textGradient)" font-family="Arial, sans-serif" font-size="550" font-weight="bold" dominant-baseline="central" filter="drop-shadow(0 8px 16px rgba(0,0,0,0.3))">S</text>
+  
+  <!-- Glass shine effect -->
+  <ellipse cx="210" cy="80" rx="70" ry="25" fill="rgba(255,255,255,0.25)" transform="rotate(-15 210 80)"/>
+</svg>
