@@ -19,6 +19,7 @@
 @media (display-mode: standalone) {
   :host {
     height: 100vh;
+    padding-bottom: env(safe-area-inset-bottom, 0);
     background: var(--color-surface);
   }
 }
@@ -59,4 +60,8 @@
 
 .app-navigation {
   grid-area: nav;
+  
+  @media (display-mode: standalone) {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
 }

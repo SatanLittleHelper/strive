@@ -3,8 +3,8 @@
 	align-items: center;
 	justify-content: center;
 
-	min-height: 100vh;
-	padding: 1rem;
+	min-height: 100%;
+	padding: var(--space-md);
 
 	&__container {
 		width: 100%;
@@ -12,11 +12,11 @@
 	}
 
 	&__title {
-		margin: 0 0 2rem;
+		margin: 0 0 var(--space-lg);
 
-		font-size: 2rem;
-		font-weight: 600;
-		color: var(--tui-text-01);
+		font-size: var(--font-size-xl);
+		font-weight: var(--font-weight-bold);
+		color: var(--color-text);
 		text-align: center;
 	}
 
@@ -33,38 +33,38 @@
 	}
 
 	&__field-label {
-		font-weight: 500;
-		color: var(--tui-text-01);
+		font-weight: var(--font-weight-bold);
+		color: var(--color-text);
 	}
 
 	&__error {
-		padding: 0.5rem;
-		border-radius: 4px;
+		padding: var(--space-sm);
+		border-radius: var(--radius-sm);
 
-		font-size: 0.875rem;
-		color: var(--tui-error-fill);
+		font-size: var(--font-size-sm);
+		color: var(--color-error);
 		text-align: center;
 
-		background: var(--tui-error-bg);
+		background: var(--color-neutral-bg);
 	}
 
 	&__submit {
 		width: 100%;
-		margin-top: 1rem;
+		margin-top: var(--space-md);
 	}
 
 	&__footer {
-		margin-top: 2rem;
+		margin-top: var(--space-lg);
 		text-align: center;
 
 		p {
-			margin: 0 0 0.5rem;
-			color: var(--tui-text-02);
+			margin: 0 0 var(--space-sm);
+			color: var(--color-text-tertiary);
 		}
 	}
 
 	&__link {
-		color: var(--tui-primary);
+		color: var(--color-primary);
 		text-decoration: none;
 
 		&:hover {
