@@ -10,6 +10,32 @@ This document defines testing standards and patterns for the Strive project, bas
 - **Never use** standard `TestBed.configureTestingModule()` directly
 - **Import pattern**: `import { configureZonelessTestingModule } from '@/test-setup';`
 
+### Type Safety Rules
+- **NEVER use `any` type** in tests - это приведет к отрезанию пальцев! 🔪
+- **Always use proper type assertions** with `unknown` and specific interfaces
+- **Example**: `(service as unknown as { methodName: () => void }).methodName()`
+
+#### Type Assertion Examples
+```typescript
+// ✅ Correct - proper type assertion
+const serviceWithMethod = service as unknown as { 
+  privateMethod: () => void;
+  anotherMethod: (param: string) => boolean;
+};
+
+serviceWithMethod.privateMethod();
+serviceWithMethod.anotherMethod('test');
+
+// ❌ Wrong - using any (PALM CUTTING OFF! 🔪)
+(service as any).privateMethod();
+
+// ✅ Correct - for spyOn
+spyOn(service as unknown as { methodName: () => void }, 'methodName');
+
+// ❌ Wrong - using any in spyOn
+spyOn(service as any, 'methodName');
+```
+
 ### Test Configuration
 ```typescript
 // ✅ Correct - using zoneless testing module
