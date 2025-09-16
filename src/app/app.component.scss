@@ -20,7 +20,6 @@
   :host {
     height: 100vh;
     padding-top: env(safe-area-inset-top, 0);
-    padding-bottom: calc(env(safe-area-inset-top) * -1px);
     background: var(--color-surface);
   }
 }
@@ -45,7 +44,7 @@
   }
 
   @supports (height: 100dvh) {
-    height: 100dvh;
+    height: calc(100dvh - env(safe-area-inset-top));
   }
 }
 
