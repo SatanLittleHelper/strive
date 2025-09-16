@@ -312,6 +312,37 @@ describe('AuthService', () => {
     });
   });
 
+  describe('refreshTokensInBackground', () => {
+    it('should not call refreshTokenSync if already refreshing', () => {
+      service.isRefreshingTokens.set(true);
+      spyOn(service, 'refreshTokenSync');
+
+      (service as unknown as { refreshTokensInBackground: () => void }).refreshTokensInBackground();
+
+      expect(service.refreshTokenSync).not.toHaveBeenCalled();
+    });
+
+    it('should call refreshTokenSync if not refreshing', () => {
+      service.isRefreshingTokens.set(false);
+      spyOn(service, 'refreshTokenSync').and.returnValue(Promise.resolve(true));
+
+      (service as unknown as { refreshTokensInBackground: () => void }).refreshTokensInBackground();
+
+      expect(service.refreshTokenSync).toHaveBeenCalled();
+    });
+
+    it('should handle errors silently', () => {
+      service.isRefreshingTokens.set(false);
+      spyOn(service, 'refreshTokenSync').and.returnValue(Promise.reject(new Error('Test error')));
+
+      expect(() =>
+        (
+          service as unknown as { refreshTokensInBackground: () => void }
+        ).refreshTokensInBackground(),
+      ).not.toThrow();
+    });
+  });
+
   describe('isAuthenticatedAndValid', () => {
     it('should return false when both tokens are missing', async () => {
       tokenStorageService.getAccessToken.and.returnValue(null);
@@ -328,10 +359,17 @@ describe('AuthService', () => {
 
       tokenStorageService.getAccessToken.and.returnValue(validToken);
       tokenStorageService.getRefreshToken.and.returnValue(null);
+      spyOn(
+        service as unknown as { refreshTokensInBackground: () => void },
+        'refreshTokensInBackground',
+      );
 
       const result = await service.isAuthenticatedAndValid();
 
       expect(result).toBe(true);
+      expect(
+        (service as unknown as { refreshTokensInBackground: () => void }).refreshTokensInBackground,
+      ).not.toHaveBeenCalled();
     });
 
     it('should return true when only refresh token exists and is valid', async () => {
@@ -346,11 +384,17 @@ describe('AuthService', () => {
       tokenStorageService.getAccessToken.and.returnValue(null);
       tokenStorageService.getRefreshToken.and.returnValue(validRefreshToken);
       authApiService.refresh$.and.returnValue(of(refreshResponse));
+      spyOn(
+        service as unknown as { refreshTokensInBackground: () => void },
+        'refreshTokensInBackground',
+      );
 
       const result = await service.isAuthenticatedAndValid();
 
       expect(result).toBe(true);
-      expect(authApiService.refresh$).toHaveBeenCalledWith(validRefreshToken);
+      expect(
+        (service as unknown as { refreshTokensInBackground: () => void }).refreshTokensInBackground,
+      ).toHaveBeenCalled();
     });
 
     it('should return true when both tokens exist and access token is valid', async () => {
@@ -359,10 +403,17 @@ describe('AuthService', () => {
 
       tokenStorageService.getAccessToken.and.returnValue(validToken);
       tokenStorageService.getRefreshToken.and.returnValue('refresh-token');
+      spyOn(
+        service as unknown as { refreshTokensInBackground: () => void },
+        'refreshTokensInBackground',
+      );
 
       const result = await service.isAuthenticatedAndValid();
 
       expect(result).toBe(true);
+      expect(
+        (service as unknown as { refreshTokensInBackground: () => void }).refreshTokensInBackground,
+      ).not.toHaveBeenCalled();
     });
 
     it('should refresh token when access token is expired but refresh token is valid', async () => {
@@ -379,15 +430,17 @@ describe('AuthService', () => {
       tokenStorageService.getAccessToken.and.returnValue(expiredAccessToken);
       tokenStorageService.getRefreshToken.and.returnValue(validRefreshToken);
       authApiService.refresh$.and.returnValue(of(refreshResponse));
+      spyOn(
+        service as unknown as { refreshTokensInBackground: () => void },
+        'refreshTokensInBackground',
+      );
 
       const result = await service.isAuthenticatedAndValid();
 
       expect(result).toBe(true);
-      expect(authApiService.refresh$).toHaveBeenCalledWith(validRefreshToken);
-      expect(tokenStorageService.setTokens).toHaveBeenCalledWith(
-        'new-access-token',
-        validRefreshToken,
-      );
+      expect(
+        (service as unknown as { refreshTokensInBackground: () => void }).refreshTokensInBackground,
+      ).toHaveBeenCalled();
     });
 
     it('should logout and return false when both tokens are expired', async () => {
@@ -406,7 +459,7 @@ describe('AuthService', () => {
       expect(authApiService.refresh$).not.toHaveBeenCalled();
     });
 
-    it('should return false when refresh fails', async () => {
+    it('should return true when refresh token is valid even if refresh fails in background', async () => {
       const expiredTime = Math.floor(Date.now() / 1000) - 3600;
       const expiredAccessToken = `header.${btoa(JSON.stringify({ exp: expiredTime }))}.signature`;
       const futureTime = Math.floor(Date.now() / 1000) + 3600;
@@ -415,12 +468,17 @@ describe('AuthService', () => {
       tokenStorageService.getAccessToken.and.returnValue(expiredAccessToken);
       tokenStorageService.getRefreshToken.and.returnValue(validRefreshToken);
       authApiService.refresh$.and.returnValue(throwError(() => new Error('Refresh failed')));
-      spyOn(service, 'logout');
+      spyOn(
+        service as unknown as { refreshTokensInBackground: () => void },
+        'refreshTokensInBackground',
+      );
 
       const result = await service.isAuthenticatedAndValid();
 
-      expect(result).toBe(false);
-      expect(service.logout).toHaveBeenCalled();
+      expect(result).toBe(true);
+      expect(
+        (service as unknown as { refreshTokensInBackground: () => void }).refreshTokensInBackground,
+      ).toHaveBeenCalled();
     });
   });
 });
