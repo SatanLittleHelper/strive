@@ -8,6 +8,7 @@
   "start_url": "./",
   "theme_color": "#fafafa",
   "background_color": "#fafafa",
+  "display_override": ["window-controls-overlay"],
   "icons": [
     {
       "src": "./icons/icon-72x72.png",
