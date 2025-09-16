@@ -6,7 +6,6 @@ export const authGuard: CanMatchFn = async (): Promise<boolean> => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  debugger;
   const isAuthenticated = await authService.isAuthenticatedAndValid();
 
   if (!isAuthenticated) {
