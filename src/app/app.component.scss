@@ -19,7 +19,7 @@
 @media (display-mode: standalone) {
   :host {
     height: 100vh;
-    padding-bottom: env(safe-area-inset-bottom, 0);
+    padding-top: env(safe-area-inset-top, 0);
     background: var(--color-surface);
   }
 }
