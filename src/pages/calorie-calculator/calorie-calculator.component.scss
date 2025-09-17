@@ -4,10 +4,11 @@
   &__container {
     max-width: 600px;
     margin: 0 auto;
+    padding: var(--space-md);
   }
 
   &__title {
-    margin-bottom: 2rem;
+    margin-bottom: var(--space-xl);
 
     font-size: 2rem;
     font-weight: 600;
@@ -16,27 +17,13 @@
   }
 
   &__loading {
-    padding: 3rem;
+    padding: var(--space-xl);
     color: var(--tui-text-02);
     text-align: center;
   }
 
   &__tabs {
-    margin-bottom: 2rem;
+    margin-bottom: var(--space-xl);
   }
 
-  &__content {
-    padding: 2rem;
-    border-radius: 1rem;
-    background: var(--tui-base-02);
-  }
-
-  &__step {
-    &-title {
-      margin-bottom: 1.5rem;
-      font-size: 1.25rem;
-      font-weight: 500;
-      color: var(--tui-text-01);
-    }
-  }
 }

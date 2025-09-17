@@ -9,7 +9,10 @@ export class TokenStorageService {
   private setCookie(name: string, value: string, expiresInSeconds: number): void {
     const expires = new Date();
     expires.setTime(expires.getTime() + expiresInSeconds * 1000);
-    document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;secure;samesite=strict`;
+    const isSecure =
+      window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+    const secureFlag = isSecure ? ';secure' : '';
+    document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;samesite=strict${secureFlag}`;
   }
 
   private getCookie(name: string): string | null {
