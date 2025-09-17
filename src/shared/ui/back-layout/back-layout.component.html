@@ -1,4 +1,5 @@
 <div class="back-layout">
+  <div class="back-layout__header">
   <button 
     class="back-layout__back-button"
     tuiButton 
@@ -13,7 +14,7 @@
   @if (title()) {
     <h1 class="back-layout__title">{{ title() }}</h1>
   }
-  
+  </div>
   <div class="back-layout__content">
     <ng-content />
   </div>
