@@ -101,7 +101,7 @@ export class AuthService {
         this.authApi.refresh$(refreshToken).pipe(timeout(10000)),
       );
 
-      this.tokenStorage.setTokens(response.access_token, refreshToken);
+      this.tokenStorage.setTokens(response.access_token, response.refresh_token);
       this.isAuthenticated.set(true);
 
       return true;
