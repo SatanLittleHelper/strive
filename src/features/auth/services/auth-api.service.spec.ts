@@ -81,6 +81,7 @@ describe('AuthApiService', () => {
       const refreshToken = 'refresh-token';
       const expectedResponse: RefreshResponse = {
         access_token: 'new-access-token',
+        refresh_token: 'new-refresh-token',
         expires_in: 3600,
         token_type: 'Bearer',
       };
