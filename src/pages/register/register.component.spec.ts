@@ -114,7 +114,7 @@ describe('RegisterComponent', () => {
     passwordControl?.setValue('password');
     expect(passwordControl?.hasError('pattern')).toBe(true);
 
-    passwordControl?.setValue('password123');
+    passwordControl?.setValue('Password123!');
     expect(passwordControl?.hasError('pattern')).toBe(false);
   });
 
@@ -130,8 +130,8 @@ describe('RegisterComponent', () => {
 
   it('should have passwordMismatch validator when passwords do not match', () => {
     component.getForm().patchValue({
-      password: 'password123',
-      confirmPassword: 'differentpassword',
+      password: 'Password123!',
+      confirmPassword: 'DifferentPassword123!',
     });
 
     expect(component.getForm().hasError('passwordMismatch')).toBe(true);
@@ -139,8 +139,8 @@ describe('RegisterComponent', () => {
 
   it('should not have passwordMismatch validator when passwords match', () => {
     component.getForm().patchValue({
-      password: 'password123',
-      confirmPassword: 'password123',
+      password: 'Password123!',
+      confirmPassword: 'Password123!',
     });
 
     expect(component.getForm().hasError('passwordMismatch')).toBe(false);
@@ -161,8 +161,8 @@ describe('RegisterComponent', () => {
   it('should submit form when valid', () => {
     component.getForm().patchValue({
       email: 'test@example.com',
-      password: 'password123',
-      confirmPassword: 'password123',
+      password: 'Password123!',
+      confirmPassword: 'Password123!',
     });
 
     authService.register$.and.returnValue(of(undefined));
@@ -171,7 +171,7 @@ describe('RegisterComponent', () => {
 
     expect(authService.register$).toHaveBeenCalledWith({
       email: 'test@example.com',
-      password: 'password123',
+      password: 'Password123!',
     });
   });
 
@@ -222,8 +222,8 @@ describe('RegisterComponent', () => {
   it('should handle registration error', () => {
     component.getForm().patchValue({
       email: 'test@example.com',
-      password: 'password123',
-      confirmPassword: 'password123',
+      password: 'Password123!',
+      confirmPassword: 'Password123!',
     });
 
     authService.register$.and.returnValue(of(undefined));
