@@ -270,6 +270,7 @@ describe('AuthService', () => {
     it('should successfully refresh token and return true', async () => {
       const refreshResponse = {
         access_token: 'new-access-token',
+        refresh_token: 'new-refresh-token',
         expires_in: 3600,
         token_type: 'Bearer' as const,
       };
@@ -283,7 +284,7 @@ describe('AuthService', () => {
       expect(authApiService.refresh$).toHaveBeenCalledWith('refresh-token');
       expect(tokenStorageService.setTokens).toHaveBeenCalledWith(
         'new-access-token',
-        'refresh-token',
+        'new-refresh-token',
       );
       expect(service.isAuthenticated()).toBe(true);
     });
@@ -377,6 +378,7 @@ describe('AuthService', () => {
       const validRefreshToken = `header.${btoa(JSON.stringify({ exp: futureTime }))}.signature`;
       const refreshResponse = {
         access_token: 'new-access-token',
+        refresh_token: 'new-refresh-token',
         expires_in: 3600,
         token_type: 'Bearer' as const,
       };
@@ -423,6 +425,7 @@ describe('AuthService', () => {
       const validRefreshToken = `header.${btoa(JSON.stringify({ exp: futureTime }))}.signature`;
       const refreshResponse = {
         access_token: 'new-access-token',
+        refresh_token: 'new-refresh-token',
         expires_in: 3600,
         token_type: 'Bearer' as const,
       };
