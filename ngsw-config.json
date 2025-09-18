@@ -26,7 +26,7 @@
     {
       "name": "assets",
       "installMode": "lazy",
-      "updateMode": "prefetch",
+      "updateMode": "lazy",
       "resources": {
         "files": [
           "/assets/**",
@@ -49,6 +49,6 @@
     }
   ],
   "appData": {
-    "version": "1.0.3"
+    "version": "1.0.4"
   }
 }
