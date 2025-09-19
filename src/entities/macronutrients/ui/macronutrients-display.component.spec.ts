@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
+import { MacronutrientsDisplayComponent } from '@/entities';
+import type { Macronutrients } from '@/entities';
 import { configureZonelessTestingModule } from '@/test-setup';
-import { MacronutrientsDisplayComponent } from './macronutrients-display.component';
-import type { Macronutrients } from '../model/index.js';
 import type { ComponentFixture } from '@angular/core/testing';
 
 describe('MacronutrientsDisplayComponent', () => {

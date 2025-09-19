@@ -1,4 +1,4 @@
-import { Directive, ElementRef, inject, input, output, signal, DestroyRef } from '@angular/core';
+import { DestroyRef, Directive, inject, input, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormGroupDirective } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -12,7 +12,6 @@ import type { FormGroup } from '@angular/forms';
   },
 })
 export class FormAutosaveDirective implements OnInit {
-  private readonly elementRef = inject(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
   private readonly formGroupDirective = inject(FormGroupDirective, { optional: true });
 

@@ -390,6 +390,7 @@ app → pages → widgets → features → entities → shared
 - **Standalone Components** - No NgModules
 - **Zoneless Change Detection** - Experimental Angular feature
 - **Signals** - Primary state management
+- **HttpOnly Cookies** - Secure token storage with Fetch API
 
 ### Styling
 - **SCSS** with modular architecture
@@ -402,6 +403,12 @@ app → pages → widgets → features → entities → shared
 - **ESLint** with FSD boundaries enforcement
 - **Prettier** + **Stylelint** for code formatting
 - **Husky** + **lint-staged** for pre-commit hooks
+
+### Security & Authentication
+- **HttpOnly Cookies** - Secure token storage preventing XSS attacks
+- **Fetch API** - Modern HTTP client with better cookie support
+- **CORS Credentials** - Automatic inclusion of cookies in requests
+- **Token Refresh** - Automatic token renewal via HttpOnly cookies
 
 ## Component Structure Pattern
 
@@ -449,6 +456,46 @@ import { SomeService } from '@/shared/services/some';
 // ❌ Wrong - importing from higher layer
 import { SomeComponent } from '@/pages/some-page';
 ```
+
+## HTTP Client Configuration
+
+### HttpOnly Cookies & Fetch API
+
+The application uses HttpOnly cookies for secure token storage with Fetch API for optimal compatibility:
+
+```typescript
+// app.config.ts
+provideHttpClient(
+  withInterceptors([credentialsInterceptor, authInterceptor]),
+  withFetch() // Critical for HttpOnly cookies support
+)
+```
+
+#### Why withFetch() is Required:
+
+1. **HttpOnly Cookie Support**: Fetch API has better support for HttpOnly cookies than XMLHttpRequest
+2. **CORS Credentials**: Automatic handling of `credentials: 'include'` for cross-origin requests
+3. **Modern Standard**: Fetch API is the modern standard for HTTP requests
+4. **Security**: Better integration with secure cookie policies
+
+#### Credentials Interceptor:
+
+```typescript
+// credentials.interceptor.ts
+export const credentialsInterceptor: HttpInterceptorFn = (req, next) => {
+  const modifiedReq = req.clone({
+    withCredentials: true, // Automatically includes HttpOnly cookies
+  });
+  return next(modifiedReq);
+};
+```
+
+#### Key Benefits:
+
+- **XSS Protection**: Tokens stored in HttpOnly cookies are inaccessible to JavaScript
+- **Automatic Inclusion**: Cookies automatically sent with every request
+- **Server-Side Control**: Token lifecycle managed entirely by the server
+- **No Client Storage**: No need for localStorage or sessionStorage for tokens
 
 ## Routing Standards
 
