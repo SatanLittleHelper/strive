@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, switchMap, throwError, defer, finalize } from 'rxjs';
-import { AuthApiService } from '@/features/auth';
+import { AuthService } from '@/features/auth';
 
 import type {
   HttpInterceptorFn,
@@ -58,10 +58,10 @@ const logout = (router: Router): void => {
 const handle401Error = (
   req: HttpRequest<unknown>,
   next: HttpHandlerFn,
-  authApi: AuthApiService,
-  router: Router,
 ): Observable<HttpEvent<unknown>> => {
   const refreshManager = TokenRefreshManager.getInstance();
+  const authService = inject(AuthService);
+  const router = inject(Router);
 
   if (refreshManager.isRefreshInProgress) {
     return defer(() => {
@@ -75,10 +75,16 @@ const handle401Error = (
 
   refreshManager.setRefreshInProgress(true);
 
-  return authApi.refresh$().pipe(
-    switchMap(() => {
-      refreshManager.processPendingRequests();
-      return next(req);
+  return authService.refreshToken$().pipe(
+    switchMap((success) => {
+      if (success) {
+        refreshManager.processPendingRequests();
+        return next(req);
+      } else {
+        refreshManager.clearPendingRequests();
+        logout(router);
+        return throwError(() => new Error('Token refresh failed'));
+      }
     }),
     catchError((error) => {
       refreshManager.clearPendingRequests();
@@ -99,13 +105,23 @@ export const authInterceptor: HttpInterceptorFn = (
     return next(req);
   }
 
-  const authApi = inject(AuthApiService);
-  const router = inject(Router);
+  const authService = inject(AuthService);
 
-  return next(req).pipe(
+  const accessToken = authService.getAccessToken();
+  if (!accessToken) {
+    return next(req);
+  }
+
+  const authReq = req.clone({
+    setHeaders: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
-        return handle401Error(req, next, authApi, router);
+        return handle401Error(authReq, next);
       }
       return throwError(() => error);
     }),

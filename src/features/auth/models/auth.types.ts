@@ -6,6 +6,7 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
+  access_token: string;
   expires_in: number;
   token_type: TokenType;
   message: string;
@@ -17,6 +18,7 @@ export interface RegisterRequest {
 }
 
 export interface RefreshResponse {
+  access_token: string;
   expires_in: number;
   token_type: TokenType;
   message: string;

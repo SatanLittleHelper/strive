@@ -1,11 +1,18 @@
 import { inject, Injectable, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
-import { tap, catchError, of, finalize, map, firstValueFrom, timeout } from 'rxjs';
+import { jwtDecode } from 'jwt-decode';
+import { tap, catchError, of, finalize, map } from 'rxjs';
 import { AuthApiService } from '@/features/auth';
 import type { LoginRequest, RegisterRequest } from '@/features/auth';
 import type { ApiError } from '@/shared/lib/types';
 import type { Observable } from 'rxjs';
+
+interface JwtPayload {
+  exp: number;
+  iat: number;
+  sub: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -13,21 +20,18 @@ export class AuthService {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly isAuthenticated = signal(false);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
 
-  private lastAuthCheck = 0;
-  private readonly AUTH_CACHE_DURATION = 5 * 60 * 1000; // Фиксированное время кэша - 5 минут
+  private accessToken: string | null = null;
 
   login$(body: LoginRequest): Observable<void> {
     this.loading.set(true);
     this.error.set(null);
 
     return this.authApi.login$(body).pipe(
-      tap(() => {
-        this.setAuthenticatedState();
-
+      tap((response) => {
+        this.accessToken = response.access_token;
         const targetUrl = sessionStorage.getItem('return_url') || '/dashboard';
         sessionStorage.removeItem('return_url');
         void this.router.navigate([targetUrl]);
@@ -61,8 +65,7 @@ export class AuthService {
 
   logout(): void {
     const handleLogout = (): void => {
-      this.isAuthenticated.set(false);
-      this.lastAuthCheck = 0;
+      this.accessToken = null;
       void this.router.navigate(['/login']);
     };
     this.authApi
@@ -82,27 +85,43 @@ export class AuthService {
     this.error.set(null);
   }
 
-  private setAuthenticatedState(): void {
-    this.isAuthenticated.set(true);
-    this.lastAuthCheck = Date.now();
+  isAuthenticated(): boolean {
+    return this.getAccessToken() !== null;
   }
 
-  async isAuthenticatedAndValid(): Promise<boolean> {
-    const now = Date.now();
-
-    if (this.isAuthenticated() && now - this.lastAuthCheck < this.AUTH_CACHE_DURATION) {
-      return true;
+  getAccessToken(): string | null {
+    if (!this.accessToken) {
+      return null;
     }
 
-    // Если кэш устарел, проверяем сервер
     try {
-      await firstValueFrom(this.authApi.checkAuth$().pipe(timeout(5000)));
-      this.setAuthenticatedState();
-      return true;
+      const decoded = jwtDecode<JwtPayload>(this.accessToken);
+      const currentTime = Math.floor(Date.now() / 1000);
+      if (decoded.exp <= currentTime) {
+        this.accessToken = null;
+        return null;
+      }
+      return this.accessToken;
     } catch {
-      this.isAuthenticated.set(false);
-      this.lastAuthCheck = 0;
-      return false;
+      this.accessToken = null;
+      return null;
     }
+  }
+
+  setAccessToken(token: string): void {
+    this.accessToken = token;
+  }
+
+  refreshToken$(): Observable<boolean> {
+    return this.authApi.refresh$().pipe(
+      tap((response) => {
+        this.accessToken = response.access_token;
+      }),
+      map(() => true),
+      catchError(() => {
+        this.accessToken = null;
+        return of(false);
+      }),
+    );
   }
 }

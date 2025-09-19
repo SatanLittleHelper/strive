@@ -3,29 +3,33 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { env } from '@/environments/env';
-import { AuthApiService } from '@/features/auth';
+import { AuthService } from '@/features/auth';
 import { configureZonelessTestingModule } from '@/test-setup';
 import { authInterceptor } from './auth.interceptor';
 
 describe('authInterceptor', () => {
   let http: HttpClient;
   let httpMock: HttpTestingController;
-  let authApiService: jasmine.SpyObj<AuthApiService>;
+  let authService: jasmine.SpyObj<AuthService>;
 
   beforeEach(() => {
-    const authApiSpy = jasmine.createSpyObj('AuthApiService', ['refresh$']);
+    const authServiceSpy = jasmine.createSpyObj('AuthService', [
+      'getAccessToken',
+      'setAccessToken',
+      'refreshToken$',
+    ]);
 
     configureZonelessTestingModule({
       providers: [
         provideHttpClient(withInterceptors([authInterceptor])),
         provideHttpClientTesting(),
-        { provide: AuthApiService, useValue: authApiSpy },
+        { provide: AuthService, useValue: authServiceSpy },
       ],
     });
 
     http = TestBed.inject(HttpClient);
     httpMock = TestBed.inject(HttpTestingController);
-    authApiService = TestBed.inject(AuthApiService) as jasmine.SpyObj<AuthApiService>;
+    authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
   });
 
   it('should not intercept auth endpoints', () => {
@@ -42,20 +46,23 @@ describe('authInterceptor', () => {
     expect(refreshReq.request.headers.get('Authorization')).toBeNull();
   });
 
-  it('should handle 401 errors by attempting refresh', () => {
-    authApiService.refresh$.and.returnValue(
-      of({
-        expires_in: 900,
-        token_type: 'Bearer',
-        message: 'Token refreshed',
-      }),
-    );
+  it('should handle 401 errors by attempting refresh', (done) => {
+    authService.getAccessToken.and.returnValue('test-token');
+    authService.refreshToken$.and.returnValue(of(true));
 
-    http.get('/api/protected').subscribe();
+    http.get('/api/protected').subscribe({
+      next: () => {
+        expect(authService.refreshToken$).toHaveBeenCalled();
+        done();
+      },
+      error: () => {
+        // Expected error
+        done();
+      },
+    });
 
     const req = httpMock.expectOne('/api/protected');
+    expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
     req.flush(null, { status: 401, statusText: 'Unauthorized' });
-
-    expect(authApiService.refresh$).toHaveBeenCalled();
   });
 });

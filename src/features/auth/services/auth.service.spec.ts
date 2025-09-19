@@ -43,6 +43,8 @@ describe('AuthService', () => {
     it('should login successfully with HttpOnly cookies', () => {
       const loginRequest: LoginRequest = { email: 'test@test.com', password: 'password' };
       const loginResponse: LoginResponse = {
+        access_token:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjo5OTk5OTk5OTk5LCJpYXQiOjE1MTYyMzkwMjJ9.test',
         expires_in: 900,
         token_type: 'Bearer',
         message: 'Login successful',
@@ -102,24 +104,53 @@ describe('AuthService', () => {
     });
   });
 
-  describe('isAuthenticatedAndValid', () => {
-    it('should return true when authenticated', async () => {
-      authApiService.checkAuth$.and.returnValue(of(undefined));
+  describe('isAuthenticated', () => {
+    it('should return true when token is valid', () => {
+      service.setAccessToken(
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjo5OTk5OTk5OTk5LCJpYXQiOjE1MTYyMzkwMjJ9.test',
+      );
 
-      const result = await service.isAuthenticatedAndValid();
+      const result = service.isAuthenticated();
 
       expect(result).toBe(true);
-      expect(service.isAuthenticated()).toBe(true);
     });
 
-    it('should return false when not authenticated', async () => {
-      const error: ApiError = { code: 'UNAUTHORIZED', message: 'Unauthorized' };
-      authApiService.checkAuth$.and.returnValue(throwError(() => error));
+    it('should return false when token is expired', () => {
+      service.setAccessToken(
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoxLCJpYXQiOjE1MTYyMzkwMjJ9.test',
+      );
 
-      const result = await service.isAuthenticatedAndValid();
+      const result = service.isAuthenticated();
 
       expect(result).toBe(false);
-      expect(service.isAuthenticated()).toBe(false);
+    });
+
+    it('should return false when no token', () => {
+      const result = service.isAuthenticated();
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('getAccessToken', () => {
+    it('should return token when valid', () => {
+      const token =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjo5OTk5OTk5OTk5LCJpYXQiOjE1MTYyMzkwMjJ9.test';
+      service.setAccessToken(token);
+
+      const result = service.getAccessToken();
+
+      expect(result).toBe(token);
+    });
+
+    it('should return null when token is expired', () => {
+      service.setAccessToken(
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoxLCJpYXQiOjE1MTYyMzkwMjJ9.test',
+      );
+
+      const result = service.getAccessToken();
+
+      expect(result).toBe(null);
     });
   });
 });

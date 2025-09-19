@@ -1,14 +1,14 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { env } from '@/environments/env';
-import { configureZonelessTestingModule } from '@/test-setup';
-import { AuthApiService } from './auth-api.service';
+import { AuthApiService } from '@/features/auth';
 import type {
   LoginRequest,
   RegisterRequest,
   LoginResponse,
   RefreshResponse,
-} from '../models/auth.types';
+} from '@/features/auth';
+import { configureZonelessTestingModule } from '@/test-setup';
 
 describe('AuthApiService', () => {
   let service: AuthApiService;
@@ -41,6 +41,7 @@ describe('AuthApiService', () => {
       };
 
       const expectedResponse: LoginResponse = {
+        access_token: 'test-access-token',
         expires_in: 3600,
         token_type: 'Bearer',
         message: 'Login successful',
@@ -78,6 +79,7 @@ describe('AuthApiService', () => {
   describe('refresh$', () => {
     it('should send POST request to refresh endpoint', () => {
       const expectedResponse: RefreshResponse = {
+        access_token: 'new-access-token',
         expires_in: 3600,
         token_type: 'Bearer',
         message: 'Token refreshed',
