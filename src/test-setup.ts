@@ -10,7 +10,3 @@ export function configureZonelessTestingModule(
     providers: [provideExperimentalZonelessChangeDetection(), ...(config.providers || [])],
   });
 }
-
-export function createServiceInInjectionContext<T>(token: unknown): T {
-  return TestBed.runInInjectionContext(() => TestBed.inject(token as never));
-}

@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { handleApiError } from '@/shared';
 import type { ApiError } from '@/shared/lib/types';
-import { handleApiError } from './api-error.utils';
 
 describe('handleApiError', () => {
   it('should handle simple error response', () => {

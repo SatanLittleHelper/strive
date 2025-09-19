@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
+import { FormAutosaveDirective } from '@/shared';
 import { configureZonelessTestingModule } from '@/test-setup';
-import { FormAutosaveDirective } from './form-autosave.directive';
 import type { ComponentFixture } from '@angular/core/testing';
 import type { FormGroup } from '@angular/forms';
 

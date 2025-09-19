@@ -1,13 +1,12 @@
-import { ChangeDetectionStrategy, Component, input, output, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, computed, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TuiButton, TuiTextfield } from '@taiga-ui/core';
 import { TuiInputNumber } from '@taiga-ui/kit';
 
 import {
   type BasicData,
   GenderOptions,
-  type Gender,
   DEFAULT_BASIC_DATA,
   isBasicData,
 } from '@/features/calorie-calculation';
@@ -43,23 +42,19 @@ export class BasicDataFormComponent implements OnInit {
 
   protected readonly genderOptions = computed(() => generateSelectOptions(GenderOptions));
 
-  readonly form = new FormGroup({
-    gender: new FormControl<Gender | null>(DEFAULT_BASIC_DATA.gender, [Validators.required]),
-    age: new FormControl<number | null>(DEFAULT_BASIC_DATA.age, [
-      Validators.required,
-      Validators.min(10),
-      Validators.max(120),
-    ]),
-    height: new FormControl<number | null>(DEFAULT_BASIC_DATA.height, [
-      Validators.required,
-      Validators.min(100),
-      Validators.max(250),
-    ]),
-    weight: new FormControl<number | null>(DEFAULT_BASIC_DATA.weight, [
-      Validators.required,
-      Validators.min(30),
-      Validators.max(300),
-    ]),
+  private readonly fb = inject(FormBuilder);
+
+  readonly form = this.fb.group({
+    gender: [DEFAULT_BASIC_DATA.gender, [Validators.required]],
+    age: [DEFAULT_BASIC_DATA.age, [Validators.required, Validators.min(10), Validators.max(120)]],
+    height: [
+      DEFAULT_BASIC_DATA.height,
+      [Validators.required, Validators.min(100), Validators.max(250)],
+    ],
+    weight: [
+      DEFAULT_BASIC_DATA.weight,
+      [Validators.required, Validators.min(30), Validators.max(300)],
+    ],
   });
 
   constructor() {

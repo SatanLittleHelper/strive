@@ -1,7 +1,8 @@
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideLocationMocks } from '@angular/common/testing';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
 import { TuiRoot } from '@taiga-ui/core';
 import { AuthService } from '@/features/auth';
 import { TelegramService, ThemeService, SwUpdateService } from '@/shared';
@@ -40,9 +41,11 @@ describe('AppComponent', () => {
     const swUpdateServiceSpy = jasmine.createSpyObj('SwUpdateService', ['checkForUpdate']);
 
     configureZonelessTestingModule({
-      imports: [AppComponent, RouterTestingModule, MockTuiRootComponent],
+      imports: [AppComponent, MockTuiRootComponent],
       providers: [
         provideHttpClientTesting(),
+        provideRouter([]),
+        provideLocationMocks(),
         { provide: TelegramService, useValue: telegramServiceSpy },
         { provide: ThemeService, useValue: themeServiceSpy },
         { provide: AuthService, useValue: authServiceSpy },

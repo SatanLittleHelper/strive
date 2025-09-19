@@ -1,14 +1,14 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { env } from '@/environments/env';
-import { configureZonelessTestingModule } from '@/test-setup';
-import { AuthApiService } from './auth-api.service';
+import { AuthApiService } from '@/features/auth';
 import type {
   LoginRequest,
   RegisterRequest,
   LoginResponse,
   RefreshResponse,
-} from '../models/auth.types';
+} from '@/features/auth';
+import { configureZonelessTestingModule } from '@/test-setup';
 
 describe('AuthApiService', () => {
   let service: AuthApiService;
@@ -41,10 +41,10 @@ describe('AuthApiService', () => {
       };
 
       const expectedResponse: LoginResponse = {
-        access_token: 'access-token',
-        refresh_token: 'refresh-token',
+        access_token: 'test-access-token',
         expires_in: 3600,
         token_type: 'Bearer',
+        message: 'Login successful',
       };
 
       service.login$(loginRequest).subscribe((response) => {
@@ -78,21 +78,20 @@ describe('AuthApiService', () => {
 
   describe('refresh$', () => {
     it('should send POST request to refresh endpoint', () => {
-      const refreshToken = 'refresh-token';
       const expectedResponse: RefreshResponse = {
         access_token: 'new-access-token',
-        refresh_token: 'new-refresh-token',
         expires_in: 3600,
         token_type: 'Bearer',
+        message: 'Token refreshed',
       };
 
-      service.refresh$(refreshToken).subscribe((response) => {
+      service.refresh$().subscribe((response) => {
         expect(response).toEqual(expectedResponse);
       });
 
       const req = httpMock.expectOne(`${env.apiHost}/v1/auth/refresh`);
       expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual({ refresh_token: refreshToken });
+      expect(req.request.body).toEqual({});
       req.flush(expectedResponse);
     });
   });
@@ -141,9 +140,7 @@ describe('AuthApiService', () => {
     });
 
     it('should handle refresh error', () => {
-      const refreshToken = 'invalid-refresh-token';
-
-      service.refresh$(refreshToken).subscribe({
+      service.refresh$().subscribe({
         error: (error) => {
           expect(error).toBeDefined();
           expect(typeof error.code).toBe('string');

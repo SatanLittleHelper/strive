@@ -1,5 +1,6 @@
+import { provideLocationMocks } from '@angular/common/testing';
 import { TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
 import { TuiButton, TuiIcon } from '@taiga-ui/core';
 import { ThemeService } from '@/shared';
 import { configureZonelessTestingModule } from '@/test-setup';
@@ -16,8 +17,12 @@ describe('NavigationComponent', () => {
     const themeServiceSpy = jasmine.createSpyObj('ThemeService', ['toggleTheme', 'isDark']);
 
     configureZonelessTestingModule({
-      imports: [NavigationComponent, RouterTestingModule, TuiButton, TuiIcon],
-      providers: [{ provide: ThemeService, useValue: themeServiceSpy }],
+      imports: [NavigationComponent, TuiButton, TuiIcon],
+      providers: [
+        provideRouter([]),
+        provideLocationMocks(),
+        { provide: ThemeService, useValue: themeServiceSpy },
+      ],
     });
 
     fixture = TestBed.createComponent(NavigationComponent);
