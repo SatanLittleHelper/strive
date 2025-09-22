@@ -1,7 +1,7 @@
 import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { Router } from '@angular/router';
 import { env } from '@/environments/env';
 import { AuthService } from '@/features/auth';
 import { configureZonelessTestingModule } from '@/test-setup';
@@ -19,11 +19,14 @@ describe('authInterceptor', () => {
       'refreshToken$',
     ]);
 
+    const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+
     configureZonelessTestingModule({
       providers: [
         provideHttpClient(withInterceptors([authInterceptor])),
         provideHttpClientTesting(),
         { provide: AuthService, useValue: authServiceSpy },
+        { provide: Router, useValue: routerSpy },
       ],
     });
 
@@ -46,23 +49,27 @@ describe('authInterceptor', () => {
     expect(refreshReq.request.headers.get('Authorization')).toBeNull();
   });
 
-  it('should handle 401 errors by attempting refresh', (done) => {
+  it('should not add authorization header when no token', () => {
+    authService.getAccessToken.and.returnValue(null);
+
+    http.get('/api/protected').subscribe();
+
+    const req = httpMock.expectOne('/api/protected');
+    expect(req.request.headers.get('Authorization')).toBeNull();
+  });
+
+  it('should handle non-401 errors without refresh', (done) => {
     authService.getAccessToken.and.returnValue('test-token');
-    authService.refreshToken$.and.returnValue(of(true));
 
     http.get('/api/protected').subscribe({
-      next: () => {
-        expect(authService.refreshToken$).toHaveBeenCalled();
-        done();
-      },
+      next: () => done(),
       error: () => {
-        // Expected error
+        expect(authService.refreshToken$).not.toHaveBeenCalled();
         done();
       },
     });
 
     const req = httpMock.expectOne('/api/protected');
-    expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
-    req.flush(null, { status: 401, statusText: 'Unauthorized' });
+    req.flush(null, { status: 500, statusText: 'Internal Server Error' });
   });
 });

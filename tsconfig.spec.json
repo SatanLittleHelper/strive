@@ -13,6 +13,7 @@
       "@/entities": ["entities/index"],
       "@/entities/*": ["entities/*"],
       "@/widgets/*": ["widgets/*"],
+      "@/widgets": ["widgets/index"],
       "@/shared": ["shared/index"],
       "@/shared/*": ["shared/*"],
       "@/test-setup": ["test-setup.ts"]

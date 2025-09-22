@@ -1,0 +1,25 @@
+@if (isAuthenticated()) {
+	<nav class="navigation">
+		<div class="navigation-content">
+			<div class="navigation-nav">
+				@for (item of navigationItems; track item.route) {
+					<button 
+						tuiButton 
+						[routerLink]="item.route" 
+						routerLinkActive="active" 
+						class="navigation-button"
+						size="s"
+						appearance="secondary"
+					>
+						<span class="navigation-label">{{ item.label }}</span>
+						<tui-icon [icon]="item.icon" class="navigation-icon"></tui-icon>
+					</button>
+				}
+			</div>
+			<div class="navigation-user">
+				<app-user-menu (logout)="onLogout()"></app-user-menu>
+			</div>
+		</div>
+	</nav>
+}
+
