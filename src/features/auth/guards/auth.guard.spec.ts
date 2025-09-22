@@ -1,8 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
+import { of } from 'rxjs';
+import { AuthService } from '@/features/auth';
 import { configureZonelessTestingModule } from '@/test-setup';
 import { authGuard } from './auth.guard';
-import { AuthService } from '../services/auth.service';
 import type { Route, UrlSegment } from '@angular/router';
 
 describe('authGuard', () => {
@@ -10,7 +11,10 @@ describe('authGuard', () => {
   let router: jasmine.SpyObj<Router>;
 
   beforeEach(() => {
-    const authServiceSpy = jasmine.createSpyObj('AuthService', ['isAuthenticatedAndValid']);
+    const authServiceSpy = jasmine.createSpyObj('AuthService', [
+      'isAuthenticated',
+      'refreshToken$',
+    ]);
     const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     configureZonelessTestingModule();
@@ -29,43 +33,48 @@ describe('authGuard', () => {
   });
 
   it('should allow access when user is authenticated and tokens are valid', async () => {
-    authService.isAuthenticatedAndValid.and.returnValue(Promise.resolve(true));
+    authService.isAuthenticated.and.returnValue(true);
 
     const result = await TestBed.runInInjectionContext(() =>
       authGuard({} as Route, [] as UrlSegment[]),
     );
 
     expect(result).toBe(true);
-    expect(authService.isAuthenticatedAndValid).toHaveBeenCalled();
+    expect(authService.isAuthenticated).toHaveBeenCalled();
     expect(router.navigate).not.toHaveBeenCalled();
   });
 
-  it('should redirect to login when user is not authenticated', async () => {
-    authService.isAuthenticatedAndValid.and.returnValue(Promise.resolve(false));
+  it('should redirect to login when user is not authenticated and refresh fails', async () => {
+    authService.isAuthenticated.and.returnValue(false);
+    authService.refreshToken$.and.returnValue(of(false));
 
     const result = await TestBed.runInInjectionContext(() =>
       authGuard({} as Route, [] as UrlSegment[]),
     );
 
     expect(result).toBe(false);
-    expect(authService.isAuthenticatedAndValid).toHaveBeenCalled();
+    expect(authService.isAuthenticated).toHaveBeenCalled();
+    expect(authService.refreshToken$).toHaveBeenCalled();
     expect(router.navigate).toHaveBeenCalledWith(['/login']);
   });
 
-  it('should redirect to login when token validation fails', async () => {
-    authService.isAuthenticatedAndValid.and.returnValue(Promise.resolve(false));
+  it('should allow access when refresh is successful', async () => {
+    authService.isAuthenticated.and.returnValue(false);
+    authService.refreshToken$.and.returnValue(of(true));
 
     const result = await TestBed.runInInjectionContext(() =>
       authGuard({} as Route, [] as UrlSegment[]),
     );
 
-    expect(result).toBe(false);
-    expect(authService.isAuthenticatedAndValid).toHaveBeenCalled();
-    expect(router.navigate).toHaveBeenCalledWith(['/login']);
+    expect(result).toBe(true);
+    expect(authService.isAuthenticated).toHaveBeenCalled();
+    expect(authService.refreshToken$).toHaveBeenCalled();
+    expect(router.navigate).not.toHaveBeenCalled();
   });
 
   it('should save return URL when redirecting to login', async () => {
-    authService.isAuthenticatedAndValid.and.returnValue(Promise.resolve(false));
+    authService.isAuthenticated.and.returnValue(false);
+    authService.refreshToken$.and.returnValue(of(false));
 
     Object.defineProperty(TestBed.inject(Router), 'url', {
       get: () => '/protected-page',
@@ -79,7 +88,8 @@ describe('authGuard', () => {
   });
 
   it('should not save return URL when already on login page', async () => {
-    authService.isAuthenticatedAndValid.and.returnValue(Promise.resolve(false));
+    authService.isAuthenticated.and.returnValue(false);
+    authService.refreshToken$.and.returnValue(of(false));
 
     Object.defineProperty(TestBed.inject(Router), 'url', {
       get: () => '/login',
@@ -92,7 +102,8 @@ describe('authGuard', () => {
   });
 
   it('should not save return URL when already on register page', async () => {
-    authService.isAuthenticatedAndValid.and.returnValue(Promise.resolve(false));
+    authService.isAuthenticated.and.returnValue(false);
+    authService.refreshToken$.and.returnValue(of(false));
 
     Object.defineProperty(TestBed.inject(Router), 'url', {
       get: () => '/register',

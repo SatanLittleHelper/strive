@@ -69,7 +69,7 @@ describe('ActivityGoalFormComponent', () => {
 
     spyOn(component.dataChanged, 'emit');
 
-    component.form.patchValue({ activityLevel: 'moderate' });
+    component.form.patchValue({ activityLevel: 'moderately_active' });
 
     expect(component.dataChanged.emit).toHaveBeenCalled();
   });
@@ -95,8 +95,14 @@ describe('ActivityGoalFormComponent', () => {
     fixture.detectChanges();
 
     spyOn(component.form, 'getRawValue').and.returnValue({ someOtherField: 'value' } as unknown as {
-      activityLevel: string | null;
-      goal: string | null;
+      activityLevel:
+        | 'sedentary'
+        | 'lightly_active'
+        | 'moderately_active'
+        | 'very_active'
+        | 'extremely_active'
+        | null;
+      goal: 'lose_weight' | 'maintain_weight' | 'gain_weight' | null;
     });
 
     expect(() => {

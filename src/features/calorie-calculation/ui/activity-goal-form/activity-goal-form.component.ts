@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, input, output, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, computed, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TuiButton } from '@taiga-ui/core';
 
 import {
@@ -42,11 +42,11 @@ export class ActivityGoalFormComponent implements OnInit {
   );
   protected readonly goalOptions = computed(() => generateSelectOptions(GoalOptions));
 
-  readonly form = new FormGroup({
-    activityLevel: new FormControl<string | null>(DEFAULT_ACTIVITY_DATA.activityLevel, [
-      Validators.required,
-    ]),
-    goal: new FormControl<string | null>(DEFAULT_ACTIVITY_DATA.goal, [Validators.required]),
+  private readonly fb = inject(FormBuilder);
+
+  readonly form = this.fb.group({
+    activityLevel: [DEFAULT_ACTIVITY_DATA.activityLevel, [Validators.required]],
+    goal: [DEFAULT_ACTIVITY_DATA.goal, [Validators.required]],
   });
 
   constructor() {

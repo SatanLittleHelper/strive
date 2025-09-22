@@ -1,46 +1,37 @@
 import { inject, Injectable, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
-import { tap, catchError, of, finalize, map, firstValueFrom, timeout } from 'rxjs';
+import { jwtDecode } from 'jwt-decode';
+import { tap, catchError, of, finalize, map } from 'rxjs';
 import { AuthApiService } from '@/features/auth';
-import type {
-  LoginRequest,
-  RegisterRequest,
-  LoginResponse,
-  RefreshResponse,
-} from '@/features/auth';
+import type { LoginRequest, RegisterRequest } from '@/features/auth';
 import type { ApiError } from '@/shared/lib/types';
-import { getTokenExpirationSeconds } from '@/shared/lib/utils';
-import { TokenStorageService } from '@/shared/services/auth/token-storage.service';
 import type { Observable } from 'rxjs';
+
+interface JwtPayload {
+  exp: number;
+  iat: number;
+  sub: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly authApi = inject(AuthApiService);
-  private readonly tokenStorage = inject(TokenStorageService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly isAuthenticated = signal(false);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
-  readonly isRefreshingTokens = signal(false);
 
-  initFromStorage(): void {
-    const accessToken = this.tokenStorage.getAccessToken();
-    const refreshToken = this.tokenStorage.getRefreshToken();
-    this.isAuthenticated.set(!!accessToken && !!refreshToken);
-  }
+  private accessToken: string | null = null;
 
   login$(body: LoginRequest): Observable<void> {
     this.loading.set(true);
     this.error.set(null);
 
     return this.authApi.login$(body).pipe(
-      tap((response: LoginResponse) => {
-        this.tokenStorage.setTokens(response.access_token, response.refresh_token);
-        this.isAuthenticated.set(true);
-
+      tap((response) => {
+        this.accessToken = response.access_token;
         const targetUrl = sessionStorage.getItem('return_url') || '/dashboard';
         sessionStorage.removeItem('return_url');
         void this.router.navigate([targetUrl]);
@@ -73,86 +64,64 @@ export class AuthService {
   }
 
   logout(): void {
-    this.tokenStorage.clearTokens();
-    this.isAuthenticated.set(false);
-    void this.router.navigate(['/login']);
+    const handleLogout = (): void => {
+      this.accessToken = null;
+      void this.router.navigate(['/login']);
+    };
+    this.authApi
+      .logout$()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          handleLogout();
+        },
+        error: () => {
+          handleLogout();
+        },
+      });
   }
 
   clearError(): void {
     this.error.set(null);
   }
 
-  async refreshTokenSync(): Promise<boolean> {
-    if (this.isRefreshingTokens()) {
-      return false;
-    }
+  isAuthenticated(): boolean {
+    return this.getAccessToken() !== null;
+  }
 
-    this.isRefreshingTokens.set(true);
+  getAccessToken(): string | null {
+    if (!this.accessToken) {
+      return null;
+    }
 
     try {
-      const refreshToken = this.tokenStorage.getRefreshToken();
-
-      if (!refreshToken) {
-        this.logout();
-        return false;
+      const decoded = jwtDecode<JwtPayload>(this.accessToken);
+      const currentTime = Math.floor(Date.now() / 1000);
+      if (decoded.exp <= currentTime) {
+        this.accessToken = null;
+        return null;
       }
-
-      const response: RefreshResponse = await firstValueFrom(
-        this.authApi.refresh$(refreshToken).pipe(timeout(10000)),
-      );
-
-      this.tokenStorage.setTokens(response.access_token, response.refresh_token);
-      this.isAuthenticated.set(true);
-
-      return true;
+      return this.accessToken;
     } catch {
-      this.logout();
-      return false;
-    } finally {
-      this.isRefreshingTokens.set(false);
+      this.accessToken = null;
+      return null;
     }
   }
 
-  async isAuthenticatedAndValid(): Promise<boolean> {
-    const accessToken = this.tokenStorage.getAccessToken();
-    const refreshToken = this.tokenStorage.getRefreshToken();
-
-    if (!accessToken && !refreshToken) {
-      return false;
-    }
-
-    if (accessToken && !this.isTokenExpired(accessToken)) {
-      return true;
-    }
-
-    if (refreshToken && !this.isTokenExpired(refreshToken)) {
-      this.refreshTokensInBackground();
-      return true;
-    }
-
-    this.logout();
-    return false;
+  setAccessToken(token: string): void {
+    this.accessToken = token;
   }
 
-  private refreshTokensInBackground(): void {
-    if (this.isRefreshingTokens()) {
-      return;
-    }
-
-    this.refreshTokenSync().catch(() => {});
-  }
-
-  private isTokenExpired(token: string | null): boolean {
-    if (!token) {
-      return true;
-    }
-
-    const expirationSeconds = getTokenExpirationSeconds(token);
-
-    if (expirationSeconds === null) {
-      return true;
-    }
-
-    return expirationSeconds <= 0;
+  refreshToken$(): Observable<boolean> {
+    return this.authApi.refresh$().pipe(
+      tap((response) => {
+        this.accessToken = response.access_token;
+      }),
+      map(() => true),
+      catchError(() => {
+        this.accessToken = null;
+        return of(false);
+      }),
+    );
   }
 }
