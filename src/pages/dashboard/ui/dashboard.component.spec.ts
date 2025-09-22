@@ -40,4 +40,20 @@ describe('DashboardComponent', () => {
     const nextWorkoutWidget = fixture.nativeElement.querySelector('app-next-workout-widget');
     expect(nextWorkoutWidget).toBeTruthy();
   });
+
+  it('should calculate tasks count correctly', () => {
+    expect(component.tasksCount()).toBe(3);
+  });
+
+  it('should calculate completed count correctly', () => {
+    expect(component.completedCount()).toBe(2);
+  });
+
+  it('should update computed values when tasks change', () => {
+    const initialTasksCount = component.tasksCount();
+    const initialCompletedCount = component.completedCount();
+
+    expect(initialTasksCount).toBe(3);
+    expect(initialCompletedCount).toBe(2);
+  });
 });

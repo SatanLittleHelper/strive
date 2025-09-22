@@ -2,6 +2,7 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, switchMap, throwError, defer, finalize } from 'rxjs';
 import { AuthService } from '@/features/auth';
+import { TokenRefreshManager } from './token-refresh-manager';
 
 import type {
   HttpInterceptorFn,
@@ -17,40 +18,6 @@ const shouldSkipAuth = (req: HttpRequest<unknown>): boolean => {
   return AUTH_ENDPOINTS.some((endpoint) => req.url.endsWith(endpoint));
 };
 
-class TokenRefreshManager {
-  private refreshInProgress = false;
-  private pendingRequests: Array<() => void> = [];
-  private static instance: TokenRefreshManager;
-
-  static getInstance(): TokenRefreshManager {
-    if (!TokenRefreshManager.instance) {
-      TokenRefreshManager.instance = new TokenRefreshManager();
-    }
-    return TokenRefreshManager.instance;
-  }
-
-  get isRefreshInProgress(): boolean {
-    return this.refreshInProgress;
-  }
-
-  setRefreshInProgress(value: boolean): void {
-    this.refreshInProgress = value;
-  }
-
-  addPendingRequest(request: () => void): void {
-    this.pendingRequests.push(request);
-  }
-
-  processPendingRequests(): void {
-    this.pendingRequests.forEach((request) => request());
-    this.pendingRequests = [];
-  }
-
-  clearPendingRequests(): void {
-    this.pendingRequests = [];
-  }
-}
-
 const logout = (router: Router): void => {
   void router.navigate(['/login']);
 };
@@ -58,10 +25,10 @@ const logout = (router: Router): void => {
 const handle401Error = (
   req: HttpRequest<unknown>,
   next: HttpHandlerFn,
+  authService: AuthService,
+  router: Router,
 ): Observable<HttpEvent<unknown>> => {
   const refreshManager = TokenRefreshManager.getInstance();
-  const authService = inject(AuthService);
-  const router = inject(Router);
 
   if (refreshManager.isRefreshInProgress) {
     return defer(() => {
@@ -106,6 +73,7 @@ export const authInterceptor: HttpInterceptorFn = (
   }
 
   const authService = inject(AuthService);
+  const router = inject(Router);
 
   const accessToken = authService.getAccessToken();
   if (!accessToken) {
@@ -121,7 +89,7 @@ export const authInterceptor: HttpInterceptorFn = (
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
-        return handle401Error(authReq, next);
+        return handle401Error(authReq, next, authService, router);
       }
       return throwError(() => error);
     }),

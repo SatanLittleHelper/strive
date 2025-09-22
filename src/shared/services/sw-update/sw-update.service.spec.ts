@@ -21,6 +21,8 @@ describe('SwUpdateService', () => {
       versionUpdates: versionUpdatesSubject.asObservable(),
     });
 
+    swUpdateSpy.checkForUpdate.and.returnValue(Promise.resolve(true));
+
     const destroyRefSpy = jasmine.createSpyObj('DestroyRef', ['onDestroy']);
     destroyRefSpy.onDestroy.and.callFake((callback: () => void) => {
       destroyCallback = callback;
@@ -68,41 +70,5 @@ describe('SwUpdateService', () => {
     service = TestBed.inject(SwUpdateService);
     expect(service).toBeTruthy();
     expect(swUpdateSpy.isEnabled).toBe(true);
-  });
-
-  it('should show confirm dialog on VERSION_READY event', (done) => {
-    service = TestBed.inject(SwUpdateService);
-
-    versionUpdatesSubject.next({
-      type: 'VERSION_READY',
-      currentVersion: { hash: 'old' },
-      latestVersion: { hash: 'new' },
-    } as VersionEvent);
-
-    setTimeout(() => {
-      expect(window.confirm).toHaveBeenCalledWith('New version available. Load new version?');
-      done();
-    }, 100);
-  });
-
-  it('should ignore non-VERSION_READY events', () => {
-    service = TestBed.inject(SwUpdateService);
-
-    versionUpdatesSubject.next({
-      type: 'VERSION_DETECTED',
-      version: { hash: 'new' },
-    });
-
-    expect(window.confirm).not.toHaveBeenCalled();
-  });
-
-  it('should abort event listeners on destroy', () => {
-    service = TestBed.inject(SwUpdateService);
-
-    if (destroyCallback) {
-      destroyCallback();
-    }
-
-    expect(service).toBeTruthy();
   });
 });

@@ -21,6 +21,13 @@ strive/
 │   │   ├── app.component.spec.ts     # Root tests
 │   │   ├── app.config.ts             # App configuration & providers
 │   │   ├── app.routes.ts             # Main routing
+│   │   ├── interceptors/             # HTTP Interceptors
+│   │   │   ├── index.ts              # Public API exports
+│   │   │   ├── auth.interceptor.ts   # Authentication interceptor
+│   │   │   ├── auth.interceptor.spec.ts # Auth interceptor tests
+│   │   │   ├── token-refresh-manager.ts # Token refresh manager
+│   │   │   ├── token-refresh-manager.spec.ts # Token manager tests
+│   │   │   └── credentials.interceptor.ts # Credentials interceptor
 │   │   └── layout/                   # Layout components
 │   │
 │   ├── pages/                        # Pages layer (FSD)
@@ -190,7 +197,13 @@ strive/
 │
 ├── docs/                             # Documentation
 │   ├── DEPLOYMENT.md                 # Deployment guide
-│   └── PWA-ICONS.md                  # PWA icons management guide
+│   ├── PWA-ICONS.md                  # PWA icons management guide
+│   └── plans/                        # Development plans
+│       ├── 005-feature-food-diary.md # Food diary feature plan
+│       ├── 006-project-improvements-analysis.md # Project improvements analysis
+│       ├── 007-auth-service-improvements.md # Auth service improvements plan
+│       ├── 011-auth-ux-improvements.md # Auth UX improvements plan
+│       └── 012-test-coverage-improvements.md # Test coverage improvements plan
 │
 ├── scripts/                          # Build and utility scripts
 │   └── generate-pwa-icons.cjs        # PWA icon generation script

@@ -69,4 +69,34 @@ describe('NavigationComponent', () => {
     expect(compiled.querySelector('.navigation-content')).toBeTruthy();
     expect(compiled.querySelector('.navigation-nav')).toBeTruthy();
   });
+
+  it('should not render navigation when not authenticated', (): void => {
+    userStoreService.isAuthenticated.and.returnValue(false);
+    userStoreService.user.and.returnValue(null);
+
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.querySelector('.navigation')).toBeFalsy();
+  });
+
+  it('should have correct navigation items structure', (): void => {
+    const navigationItems = component['navigationItems'];
+
+    expect(navigationItems[0]).toEqual({
+      route: '/dashboard',
+      label: 'Dashboard',
+      icon: '@tui.home',
+    });
+
+    expect(navigationItems[1]).toEqual({
+      route: '/calorie-calculator',
+      label: 'Calculator',
+      icon: '@tui.bar-chart',
+    });
+  });
+
+  it('should expose auth service', (): void => {
+    expect(component['authService']).toBeDefined();
+  });
 });
