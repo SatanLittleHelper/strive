@@ -60,7 +60,7 @@ describe('NavigationComponent', () => {
 
   it('should render navigation structure correctly when authenticated', (): void => {
     userStoreService.isAuthenticated.and.returnValue(true);
-    userStoreService.user.and.returnValue({ id: '1', email: 'test@example.com' });
+    userStoreService.user.and.returnValue({ id: '1', email: 'test@example.com', theme: 'light' });
 
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;

@@ -249,6 +249,64 @@ const mockServiceResponse: ServiceResponse = {
 };
 ```
 
+### Repeated Mock Objects Rule
+**CRITICAL**: If the same mock object is used multiple times in tests, extract it to the main `describe` block and initialize in `beforeEach`.
+
+#### ✅ Correct Pattern
+```typescript
+describe('ServiceName', () => {
+  let service: ServiceName;
+  let mockUser: User; // Extract repeated mock to describe level
+  
+  beforeEach(() => {
+    // Initialize mock in beforeEach
+    mockUser = { id: '1', email: 'test@example.com', theme: 'light' };
+    
+    configureZonelessTestingModule({
+      providers: [ServiceName],
+    });
+    
+    service = TestBed.inject(ServiceName);
+  });
+  
+  it('should work with user data', () => {
+    // Use mockUser directly - no const declaration needed
+    service.setUser(mockUser);
+    expect(service.getUser()).toEqual(mockUser);
+  });
+  
+  it('should handle user updates', () => {
+    // Use same mockUser
+    service.updateUser(mockUser);
+    expect(service.user()).toEqual(mockUser);
+  });
+});
+```
+
+#### ❌ Wrong Patterns
+```typescript
+// ❌ Wrong - repeating mock object in each test
+it('should work with user data', () => {
+  const user: User = { id: '1', email: 'test@example.com', theme: 'light' };
+  service.setUser(user);
+});
+
+it('should handle user updates', () => {
+  const user: User = { id: '1', email: 'test@example.com', theme: 'light' }; // Duplication!
+  service.updateUser(user);
+});
+
+// ❌ Wrong - creating utility function for simple mocks
+const createMockUser = () => ({ id: '1', email: 'test@example.com', theme: 'light' });
+```
+
+#### Benefits of This Pattern
+- **DRY Principle**: No code duplication
+- **Consistency**: Same mock data across all tests
+- **Maintainability**: Change mock in one place
+- **Readability**: Clear separation of setup and test logic
+- **Performance**: No repeated object creation
+
 ### Spy Object Creation
 ```typescript
 const serviceSpy = jasmine.createSpyObj('ServiceName', [

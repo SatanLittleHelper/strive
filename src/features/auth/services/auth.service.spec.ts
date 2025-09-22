@@ -4,7 +4,7 @@ import { of, throwError } from 'rxjs';
 import { AuthApiService } from '@/features/auth';
 import type { LoginRequest, RegisterRequest, LoginResponse } from '@/features/auth';
 import { UserStoreService } from '@/shared';
-import type { User, ApiError } from '@/shared/lib/types';
+import type { ApiError } from '@/shared/lib/types';
 import { configureZonelessTestingModule } from '@/test-setup';
 import { AuthService } from './auth.service';
 
@@ -56,10 +56,8 @@ describe('AuthService', () => {
         token_type: 'Bearer',
         message: 'Login successful',
       };
-      const user: User = { id: '1', email: 'test@test.com' };
-
       authApiService.login$.and.returnValue(of(loginResponse));
-      userStoreService.fetchUser$.and.returnValue(of(user));
+      userStoreService.fetchUser$.and.returnValue(of(void 0));
 
       service.login$(loginRequest).subscribe();
 
