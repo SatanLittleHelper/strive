@@ -2,7 +2,9 @@ import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { TuiButton, TuiIcon } from '@taiga-ui/core';
 
-import { ThemeService } from '@/shared';
+import { UserMenuComponent } from '@/entities/user';
+import { AuthService } from '@/features/auth';
+import { UserStoreService } from '@/shared';
 
 interface NavigationItem {
   route: string;
@@ -12,13 +14,14 @@ interface NavigationItem {
 
 @Component({
   selector: 'app-navigation',
-  imports: [RouterLink, RouterLinkActive, TuiButton, TuiIcon],
+  imports: [RouterLink, RouterLinkActive, TuiButton, TuiIcon, UserMenuComponent],
   templateUrl: './navigation.component.html',
   styleUrl: './navigation.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NavigationComponent {
-  private readonly themeService = inject(ThemeService);
+  private readonly userStore = inject(UserStoreService);
+  private readonly authService = inject(AuthService);
 
   protected readonly navigationItems: NavigationItem[] = [
     {
@@ -33,9 +36,10 @@ export class NavigationComponent {
     },
   ];
 
-  protected readonly toggleTheme = (): void => {
-    this.themeService.toggleTheme();
-  };
+  protected readonly isAuthenticated = this.userStore.isAuthenticated;
+  protected readonly user = this.userStore.user;
 
-  protected readonly isDark = this.themeService.isDark;
+  protected readonly onLogout = (): void => {
+    this.authService.logout();
+  };
 }

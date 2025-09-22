@@ -5,7 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { TuiRoot } from '@taiga-ui/core';
 import { AuthService } from '@/features/auth';
-import { TelegramService, ThemeService, SwUpdateService } from '@/shared';
+import { TelegramService, ThemeService, SwUpdateService, UserStoreService } from '@/shared';
 import { configureZonelessTestingModule } from '@/test-setup';
 import { AppComponent } from './app.component';
 
@@ -40,6 +40,11 @@ describe('AppComponent', () => {
 
     const swUpdateServiceSpy = jasmine.createSpyObj('SwUpdateService', ['checkForUpdate']);
 
+    const userStoreSpy = jasmine.createSpyObj('UserStoreService', ['clearUser'], {
+      user: jasmine.createSpy().and.returnValue(null),
+      isAuthenticated: jasmine.createSpy().and.returnValue(false),
+    });
+
     configureZonelessTestingModule({
       imports: [AppComponent, MockTuiRootComponent],
       providers: [
@@ -50,6 +55,7 @@ describe('AppComponent', () => {
         { provide: ThemeService, useValue: themeServiceSpy },
         { provide: AuthService, useValue: authServiceSpy },
         { provide: SwUpdateService, useValue: swUpdateServiceSpy },
+        { provide: UserStoreService, useValue: userStoreSpy },
         { provide: TuiRoot, useClass: MockTuiRootComponent },
       ],
     });

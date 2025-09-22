@@ -2,9 +2,10 @@ import { inject, Injectable, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
-import { tap, catchError, of, finalize, map } from 'rxjs';
+import { tap, catchError, of, finalize, map, switchMap } from 'rxjs';
 import { AuthApiService } from '@/features/auth';
 import type { LoginRequest, RegisterRequest } from '@/features/auth';
+import { UserStoreService } from '@/shared';
 import type { ApiError } from '@/shared/lib/types';
 import type { Observable } from 'rxjs';
 
@@ -17,6 +18,7 @@ interface JwtPayload {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly authApi = inject(AuthApiService);
+  private readonly userStore = inject(UserStoreService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -32,6 +34,9 @@ export class AuthService {
     return this.authApi.login$(body).pipe(
       tap((response) => {
         this.accessToken = response.access_token;
+      }),
+      switchMap(() => this.userStore.fetchUser$()),
+      tap(() => {
         const targetUrl = sessionStorage.getItem('return_url') || '/dashboard';
         sessionStorage.removeItem('return_url');
         void this.router.navigate([targetUrl]);
@@ -66,6 +71,7 @@ export class AuthService {
   logout(): void {
     const handleLogout = (): void => {
       this.accessToken = null;
+      this.userStore.clearUser();
       void this.router.navigate(['/login']);
     };
     this.authApi
@@ -117,9 +123,11 @@ export class AuthService {
       tap((response) => {
         this.accessToken = response.access_token;
       }),
+      switchMap(() => this.userStore.fetchUser$()),
       map(() => true),
       catchError(() => {
         this.accessToken = null;
+        this.userStore.clearUser();
         return of(false);
       }),
     );

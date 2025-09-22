@@ -9,6 +9,7 @@
       "@/features/*": ["features/*"],
       "@/entities": ["entities/index"],
       "@/entities/*": ["entities/*"],
+      "@/widgets": ["widgets/index"],
       "@/widgets/*": ["widgets/*"],
       "@/shared": ["shared/index"],
     },

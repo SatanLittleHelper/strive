@@ -3,13 +3,15 @@ import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { AuthApiService } from '@/features/auth';
 import type { LoginRequest, RegisterRequest, LoginResponse } from '@/features/auth';
-import type { ApiError } from '@/shared/lib/types';
+import { UserStoreService } from '@/shared';
+import type { User, ApiError } from '@/shared/lib/types';
 import { configureZonelessTestingModule } from '@/test-setup';
 import { AuthService } from './auth.service';
 
 describe('AuthService', () => {
   let service: AuthService;
   let authApiService: jasmine.SpyObj<AuthApiService>;
+  let userStoreService: jasmine.SpyObj<UserStoreService>;
   let router: jasmine.SpyObj<Router>;
 
   beforeEach(() => {
@@ -20,18 +22,23 @@ describe('AuthService', () => {
       'logout$',
       'checkAuth$',
     ]);
+    const userStoreSpy = jasmine.createSpyObj('UserStoreService', ['clearUser', 'fetchUser$'], {
+      user: jasmine.createSpy().and.returnValue(null),
+    });
     const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     configureZonelessTestingModule({
       providers: [
         AuthService,
         { provide: AuthApiService, useValue: authApiSpy },
+        { provide: UserStoreService, useValue: userStoreSpy },
         { provide: Router, useValue: routerSpy },
       ],
     });
 
     service = TestBed.inject(AuthService);
     authApiService = TestBed.inject(AuthApiService) as jasmine.SpyObj<AuthApiService>;
+    userStoreService = TestBed.inject(UserStoreService) as jasmine.SpyObj<UserStoreService>;
     router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
   });
 
@@ -40,7 +47,7 @@ describe('AuthService', () => {
   });
 
   describe('login$', () => {
-    it('should login successfully with HttpOnly cookies', () => {
+    it('should login successfully and set user data', () => {
       const loginRequest: LoginRequest = { email: 'test@test.com', password: 'password' };
       const loginResponse: LoginResponse = {
         access_token:
@@ -49,12 +56,15 @@ describe('AuthService', () => {
         token_type: 'Bearer',
         message: 'Login successful',
       };
+      const user: User = { id: '1', email: 'test@test.com' };
 
       authApiService.login$.and.returnValue(of(loginResponse));
+      userStoreService.fetchUser$.and.returnValue(of(user));
 
       service.login$(loginRequest).subscribe();
 
       expect(authApiService.login$).toHaveBeenCalledWith(loginRequest);
+      expect(userStoreService.fetchUser$).toHaveBeenCalled();
       expect(service.isAuthenticated()).toBe(true);
     });
 
@@ -95,12 +105,13 @@ describe('AuthService', () => {
   });
 
   describe('logout', () => {
-    it('should logout successfully', () => {
+    it('should logout successfully and clear user data', () => {
       authApiService.logout$.and.returnValue(of(undefined));
 
       service.logout();
 
       expect(authApiService.logout$).toHaveBeenCalled();
+      expect(userStoreService.clearUser).toHaveBeenCalled();
     });
   });
 

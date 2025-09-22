@@ -1,0 +1,49 @@
+  <div class="user-menu">
+    <button 
+      tuiButton 
+      class="user-menu__avatar-button"
+      size="m" 
+      appearance="secondary"
+      type="button"
+      [tuiDropdown]="dropdownContent"
+      [tuiDropdownManual]="open"
+      [tuiDropdownAlign]="'center'"
+      (click)="open = !open"
+      >
+      <tui-icon icon="@tui.user" class="user-menu__avatar-icon"></tui-icon>
+    </button>
+    
+    <ng-template #dropdownContent>
+      <div class="user-menu__dropdown">
+        <div class="user-menu__info">
+          <div class="user-menu__email">{{ user()?.email }}</div>
+        </div>
+        
+        <div class="user-menu__actions">
+          <button 
+            tuiButton 
+            class="user-menu__theme-button"
+            size="s" 
+            appearance="secondary" 
+            (click)="toggleTheme()" 
+            type="button"
+          >
+            <tui-icon [icon]="isDark() ? '@tui.sun' : '@tui.moon'" class="user-menu__theme-icon"></tui-icon>
+            @if (isDark()) { Light Mode } @else { Dark Mode }
+          </button>
+          
+          <button 
+            tuiButton 
+            class="user-menu__logout-button"
+            size="s" 
+            appearance="secondary" 
+            (click)="onLogout()" 
+            type="button"
+          >
+            <tui-icon icon="@tui.arrow-right" class="user-menu__logout-icon"></tui-icon>
+            Logout
+          </button>
+        </div>
+      </div>
+    </ng-template>
+  </div>

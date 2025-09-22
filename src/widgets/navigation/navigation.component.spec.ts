@@ -1,8 +1,10 @@
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideLocationMocks } from '@angular/common/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { TuiButton, TuiIcon } from '@taiga-ui/core';
-import { ThemeService } from '@/shared';
+import { AuthService } from '@/features/auth';
+import { ThemeService, UserStoreService } from '@/shared';
 import { configureZonelessTestingModule } from '@/test-setup';
 
 import { NavigationComponent } from './navigation.component';
@@ -11,10 +13,17 @@ import type { ComponentFixture } from '@angular/core/testing';
 describe('NavigationComponent', () => {
   let component: NavigationComponent;
   let fixture: ComponentFixture<NavigationComponent>;
-  let themeService: jasmine.SpyObj<ThemeService>;
+  let userStoreService: jasmine.SpyObj<UserStoreService>;
 
   beforeEach((): void => {
-    const themeServiceSpy = jasmine.createSpyObj('ThemeService', ['toggleTheme', 'isDark']);
+    const themeServiceSpy = jasmine.createSpyObj('ThemeService', ['toggleTheme'], {
+      isDark: jasmine.createSpy().and.returnValue(false),
+    });
+    const userStoreSpy = jasmine.createSpyObj('UserStoreService', ['clearUser'], {
+      user: jasmine.createSpy().and.returnValue(null),
+      isAuthenticated: jasmine.createSpy().and.returnValue(false),
+    });
+    const authSpy = jasmine.createSpyObj('AuthService', ['logout']);
 
     configureZonelessTestingModule({
       imports: [NavigationComponent, TuiButton, TuiIcon],
@@ -22,12 +31,15 @@ describe('NavigationComponent', () => {
         provideRouter([]),
         provideLocationMocks(),
         { provide: ThemeService, useValue: themeServiceSpy },
+        { provide: UserStoreService, useValue: userStoreSpy },
+        { provide: AuthService, useValue: authSpy },
+        provideHttpClientTesting(),
       ],
     });
 
     fixture = TestBed.createComponent(NavigationComponent);
     component = fixture.componentInstance;
-    themeService = TestBed.inject(ThemeService) as jasmine.SpyObj<ThemeService>;
+    userStoreService = TestBed.inject(UserStoreService) as jasmine.SpyObj<UserStoreService>;
   });
 
   it('should create', (): void => {
@@ -41,16 +53,15 @@ describe('NavigationComponent', () => {
     expect(component['navigationItems'][1].route).toBe('/calorie-calculator');
   });
 
-  it('should call themeService.toggleTheme when toggleTheme is called', (): void => {
-    (component as unknown as { toggleTheme: () => void }).toggleTheme();
-    expect(themeService.toggleTheme).toHaveBeenCalled();
+  it('should expose userStore signals', (): void => {
+    expect(component['isAuthenticated']).toBe(userStoreService.isAuthenticated);
+    expect(component['user']).toBe(userStoreService.user);
   });
 
-  it('should return themeService.isDark signal when isDark is accessed', (): void => {
-    expect((component as unknown as { isDark: unknown }).isDark).toBe(themeService.isDark);
-  });
+  it('should render navigation structure correctly when authenticated', (): void => {
+    userStoreService.isAuthenticated.and.returnValue(true);
+    userStoreService.user.and.returnValue({ id: '1', email: 'test@example.com' });
 
-  it('should render navigation structure correctly', (): void => {
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
 
