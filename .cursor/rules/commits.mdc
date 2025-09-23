@@ -45,25 +45,51 @@ macro: update components
 
 Before making any commit, you MUST complete ALL of the following steps:
 
-> ⚠️ **CRITICAL REMINDER**: Steps 1 and 6 are often forgotten but are MANDATORY!
+> ⚠️ **CRITICAL REMINDER**: Steps 1, 2, and 7 are often forgotten but are MANDATORY!
 
-### 1. ✅ Remove Unnecessary Comments ⚠️ CRITICAL STEP
+### 1. ✅ Check Git Branch and Create Feature Branch ⚠️ CRITICAL STEP
+- **MANDATORY**: Check current branch with `git branch` or `git status`
+- **If on main branch**: Create new feature branch before committing
+- **Commands to execute**:
+  ```bash
+  # Check current branch
+  git branch
+  
+  # If on main, create feature branch
+  git checkout -b feature/[descriptive-name]
+  
+  # Examples:
+  # git checkout -b feature/pwa-update-fixes
+  # git checkout -b feature/feature-workout-diary
+  # git checkout -b feature/auth-service-improvements
+  ```
+- **Branch naming convention**: `feature/[kebab-case-description]`
+- **If working from a plan**: Use plan name as branch name
+  - **Example**: If plan is `feature-workout-diary.md`, branch should be `feature/feature-workout-diary`
+  - **Example**: If plan is `auth-service-improvements.md`, branch should be `feature/auth-service-improvements`
+  - **Plan file location**: `docs/plans/[plan-name].md`
+  - **Update plan status** as you progress through implementation
+- **NEVER commit directly to main branch**
+- **After creating feature branch**: Continue with steps 2-8
+- **This step is CRITICAL for proper Git workflow!**
+
+### 2. ✅ Remove Unnecessary Comments ⚠️ CRITICAL STEP
 - **MANDATORY**: Delete ALL unnecessary comments from code before commit
 - Use `grep -r "^\s*//" src/` to find all comments in changed files
 - Keep only essential documentation comments
 - **This step is often forgotten but is required!**
 
-### 2. ✅ Fix Linter Errors
+### 3. ✅ Fix Linter Errors
 - Run `npm run lint` and fix all errors
 - Ensure all files pass linting rules
 - Fix TypeScript, Angular, and style linting issues
 
-### 3. ✅ Verify Application Build
+### 4. ✅ Verify Application Build
 - Run `npm run build` and ensure successful compilation
 - Fix any build errors or warnings
 - Verify all imports and dependencies are correct
 
-### 4. ✅ Check Test Coverage
+### 5. ✅ Check Test Coverage
 - Run `npm run test:ci` to check test coverage
 - Ensure minimum coverage requirements are met:
   - 80% statements
@@ -72,18 +98,18 @@ Before making any commit, you MUST complete ALL of the following steps:
   - 80% lines
 - Add tests for new functionality if coverage is insufficient
 
-### 5. ✅ Verify All Tests Pass
+### 6. ✅ Verify All Tests Pass
 - All tests must pass in headless mode
 - No tests should be skipped or failing
 - Fix any broken tests before committing
 
-### 6. ✅ Update Project Structure Documentation ⚠️ CRITICAL STEP
+### 7. ✅ Update Project Structure Documentation ⚠️ CRITICAL STEP
 - **MANDATORY**: Update `.cursor/rules/project-structure.mdc` if project structure changed
 - Add new components, services, or features to documentation
 - Keep architecture documentation current
 - **This step is often forgotten but is required!**
 
-### 7. ✅ Update PWA Version ⚠️ CRITICAL STEP
+### 8. ✅ Update PWA Version ⚠️ CRITICAL STEP
 - **MANDATORY**: Update version in `ngsw-config.json` before every commit
 - Increment the version number in `appData.version` field
 - This ensures PWA updates are detected by users
@@ -98,3 +124,40 @@ Before making any commit, you MUST complete ALL of the following steps:
 - **Include branch name** at the beginning of commit message
 - **Do not include test results** in commit message description
 - **ALWAYS update PWA version** in `ngsw-config.json` before committing to ensure updates work
+
+## After Committing to Feature Branch
+
+### Push Feature Branch
+```bash
+# Push feature branch to remote
+git push -u origin feature/[branch-name]
+
+# Example: git push -u origin feature/pwa-update-fixes
+```
+
+### Create Pull Request
+- Create Pull Request from feature branch to main
+- Add descriptive title and description
+- Request code review if needed
+- Merge after approval
+
+### Clean Up After Merge
+```bash
+# Switch back to main
+git checkout main
+
+# Pull latest changes
+git pull origin main
+
+# Delete local feature branch
+git branch -d feature/[branch-name]
+
+# Delete remote feature branch (if needed)
+git push origin --delete feature/[branch-name]
+```
+
+### Plan Management
+- **If working from a plan**: Update plan status as you progress
+- **Mark completed tasks** in the plan file
+- **After feature completion**: Consider archiving or updating the plan
+- **Plan location**: `docs/plans/[plan-name].md`
