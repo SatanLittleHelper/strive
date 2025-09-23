@@ -83,6 +83,13 @@ Before making any commit, you MUST complete ALL of the following steps:
 - Keep architecture documentation current
 - **This step is often forgotten but is required!**
 
+### 7. ✅ Update PWA Version ⚠️ CRITICAL STEP
+- **MANDATORY**: Update version in `ngsw-config.json` before every commit
+- Increment the version number in `appData.version` field
+- This ensures PWA updates are detected by users
+- **Example**: Change `"version": "1.0.4"` to `"version": "1.0.5"`
+- **This step is critical for PWA update functionality!**
+
 ## Important Notes
 
 - **Never commit with failing tests** - even if tests are unrelated to your changes
@@ -90,3 +97,4 @@ Before making any commit, you MUST complete ALL of the following steps:
 - **Commit messages must be in English** and concise (max 3 lines)
 - **Include branch name** at the beginning of commit message
 - **Do not include test results** in commit message description
+- **ALWAYS update PWA version** in `ngsw-config.json` before committing to ensure updates work
