@@ -2,10 +2,12 @@ import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
+import { of } from 'rxjs';
 import { env } from '@/environments/env';
 import { AuthService } from '@/features/auth';
 import { configureZonelessTestingModule } from '@/test-setup';
 import { authInterceptor } from './auth.interceptor';
+import { TokenRefreshManager } from './token-refresh-manager';
 
 describe('authInterceptor', () => {
   let http: HttpClient;
@@ -71,5 +73,39 @@ describe('authInterceptor', () => {
 
     const req = httpMock.expectOne('/api/protected');
     req.flush(null, { status: 500, statusText: 'Internal Server Error' });
+  });
+
+  it('should navigate to login on 401 error when refresh fails', (done) => {
+    const router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    authService.getAccessToken.and.returnValue('test-token');
+    authService.refreshToken$.and.returnValue(of(false));
+
+    http.get('/api/protected').subscribe({
+      next: () => {},
+      error: () => {
+        expect(router.navigate).toHaveBeenCalledWith(['/login']);
+        done();
+      },
+    });
+
+    const req = httpMock.expectOne('/api/protected');
+    req.flush(null, { status: 401, statusText: 'Unauthorized' });
+  });
+
+  it('should queue request when refresh is already in progress', () => {
+    const refreshManager = TokenRefreshManager.getInstance();
+    const addPendingRequestSpy = spyOn(refreshManager, 'addPendingRequest').and.callThrough();
+
+    authService.getAccessToken.and.returnValue('test-token');
+    authService.refreshToken$.and.returnValue(of(true));
+
+    refreshManager.setRefreshInProgress(true);
+
+    http.get('/api/queued').subscribe();
+
+    const req = httpMock.expectOne('/api/queued');
+    req.flush(null, { status: 401, statusText: 'Unauthorized' });
+
+    expect(addPendingRequestSpy).toHaveBeenCalledWith(jasmine.any(Function));
   });
 });
