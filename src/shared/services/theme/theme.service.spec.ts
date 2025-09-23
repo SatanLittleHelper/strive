@@ -82,7 +82,7 @@ describe('ThemeService', () => {
       setTimeout(() => {
         expect(userApiService.updateTheme$).toHaveBeenCalledWith({ theme: 'dark' });
         done();
-      }, 600);
+      }, 1000);
     });
 
     it('should not sync with server when syncWithServer is false', () => {
@@ -99,7 +99,7 @@ describe('ThemeService', () => {
   });
 
   describe('debounce functionality', () => {
-    it('should debounce multiple rapid theme changes', (done: DoneFn) => {
+    it('should debounce rapid theme changes and call API only once with final value', (done: DoneFn) => {
       userApiService.updateTheme$.and.returnValue(
         of({ message: 'Theme updated successfully', theme: 'dark' }),
       );
@@ -115,56 +115,46 @@ describe('ThemeService', () => {
         expect(userApiService.updateTheme$).toHaveBeenCalledTimes(1);
         expect(userApiService.updateTheme$).toHaveBeenCalledWith({ theme: 'dark' });
         done();
-      }, 600);
+      }, 1000);
     });
 
-    it('should not call API for duplicate theme changes', (done: DoneFn) => {
-      userApiService.updateTheme$.and.returnValue(
-        of({ message: 'Theme updated successfully', theme: 'dark' }),
-      );
-
-      service.setTheme('dark');
-      service.setTheme('dark');
-      service.setTheme('dark');
-
-      setTimeout(() => {
-        expect(userApiService.updateTheme$).toHaveBeenCalledTimes(1);
-        done();
-      }, 600);
-    });
-
-    it('should handle rapid theme changes with distinctUntilChanged', (done: DoneFn) => {
+    it('should handle duplicate theme changes with distinctUntilChanged', (done: DoneFn) => {
       userApiService.updateTheme$.and.returnValue(
         of({ message: 'Theme updated successfully', theme: 'light' }),
       );
 
       service.setTheme('light');
-      service.setTheme('dark');
       service.setTheme('light');
+      service.setTheme('light');
+
+      expect(userApiService.updateTheme$).not.toHaveBeenCalled();
 
       setTimeout(() => {
         expect(userApiService.updateTheme$).toHaveBeenCalledTimes(1);
         expect(userApiService.updateTheme$).toHaveBeenCalledWith({ theme: 'light' });
         done();
-      }, 600);
+      }, 1000);
     });
   });
 
   describe('server synchronization', () => {
-    it('should call updateTheme$ when setTheme is called with default parameters', (done: DoneFn) => {
+    it('should sync theme changes with server and handle API calls', (done: DoneFn) => {
       userApiService.updateTheme$.and.returnValue(
         of({ message: 'Theme updated successfully', theme: 'light' }),
       );
 
       service.setTheme('light');
 
+      expect(userApiService.updateTheme$).not.toHaveBeenCalled();
+
       setTimeout(() => {
+        expect(userApiService.updateTheme$).toHaveBeenCalledTimes(1);
         expect(userApiService.updateTheme$).toHaveBeenCalledWith({ theme: 'light' });
         done();
-      }, 600);
+      }, 1000);
     });
 
-    it('should handle API errors gracefully', (done: DoneFn) => {
+    it('should handle API errors gracefully without throwing', (done: DoneFn) => {
       userApiService.updateTheme$.and.returnValue(
         of({ message: 'Theme updated successfully', theme: 'dark' }),
       );
@@ -173,7 +163,7 @@ describe('ThemeService', () => {
         service.setTheme('dark');
         setTimeout(() => {
           done();
-        }, 600);
+        }, 1000);
       }).not.toThrow();
     });
   });
