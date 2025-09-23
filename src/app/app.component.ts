@@ -21,5 +21,6 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     this.telegramService.webApp.ready();
     this.themeService.initialize();
+    this.swUpdateService.init();
   }
 }
