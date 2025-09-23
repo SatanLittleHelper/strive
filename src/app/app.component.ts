@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { TuiRoot } from '@taiga-ui/core';
 
-import { TelegramService, ThemeService } from '@/shared';
+import { TelegramService, ThemeService, SwUpdateService } from '@/shared';
 import { NavigationComponent } from '@/widgets';
 import type { OnInit } from '@angular/core';
 
@@ -16,9 +16,11 @@ import type { OnInit } from '@angular/core';
 export class AppComponent implements OnInit {
   private readonly telegramService = inject(TelegramService);
   private readonly themeService = inject(ThemeService);
+  private readonly swUpdateService = inject(SwUpdateService);
 
   ngOnInit(): void {
     this.telegramService.webApp.ready();
     this.themeService.initialize();
+    this.swUpdateService.init();
   }
 }

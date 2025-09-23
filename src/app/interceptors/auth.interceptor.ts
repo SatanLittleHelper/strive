@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, switchMap, throwError, defer, finalize } from 'rxjs';
+import { catchError, switchMap, throwError, defer, finalize, Observable } from 'rxjs';
 import { AuthService } from '@/features/auth';
 import { TokenRefreshManager } from './token-refresh-manager';
 
@@ -11,7 +11,6 @@ import type {
   HttpErrorResponse,
   HttpEvent,
 } from '@angular/common/http';
-import type { Observable } from 'rxjs';
 
 const AUTH_ENDPOINTS = ['/v1/auth/login', '/v1/auth/register', '/v1/auth/refresh'] as const;
 const shouldSkipAuth = (req: HttpRequest<unknown>): boolean => {
@@ -32,9 +31,10 @@ const handle401Error = (
 
   if (refreshManager.isRefreshInProgress) {
     return defer(() => {
-      return new Promise<Observable<HttpEvent<unknown>>>((resolve) => {
+      return new Observable<Observable<HttpEvent<unknown>>>((subscriber) => {
         refreshManager.addPendingRequest(() => {
-          resolve(next(req));
+          subscriber.next(next(req));
+          subscriber.complete();
         });
       });
     }).pipe(switchMap((observable) => observable));
