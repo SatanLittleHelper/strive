@@ -77,14 +77,18 @@ describe('authInterceptor', () => {
 
   it('should navigate to login on 401 error when refresh fails', (done) => {
     const router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    router.navigate.and.returnValue(Promise.resolve(true));
+
     authService.getAccessToken.and.returnValue('test-token');
     authService.refreshToken$.and.returnValue(of(false));
 
     http.get('/api/protected').subscribe({
       next: () => {},
       error: () => {
-        expect(router.navigate).toHaveBeenCalledWith(['/login']);
-        done();
+        setTimeout(() => {
+          expect(router.navigate).toHaveBeenCalledWith(['/login']);
+          done();
+        }, 0);
       },
     });
 
