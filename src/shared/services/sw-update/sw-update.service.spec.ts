@@ -71,4 +71,20 @@ describe('SwUpdateService', () => {
     expect(service).toBeTruthy();
     expect(swUpdateSpy.isEnabled).toBe(true);
   });
+
+  it('should initialize service', () => {
+    service = TestBed.inject(SwUpdateService);
+    expect(() => service.init()).not.toThrow();
+  });
+
+  it('should handle init when service worker is disabled', () => {
+    const disabledSwUpdateSpy = jasmine.createSpyObj('SwUpdate', ['checkForUpdate'], {
+      isEnabled: false,
+      versionUpdates: versionUpdatesSubject.asObservable(),
+    });
+
+    TestBed.overrideProvider(SwUpdate, { useValue: disabledSwUpdateSpy });
+    service = TestBed.inject(SwUpdateService);
+    expect(() => service.init()).not.toThrow();
+  });
 });

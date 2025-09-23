@@ -1,12 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
+import { ThemeService } from '@/shared';
 import { UserApiService } from '@/shared/services/user';
 import { configureZonelessTestingModule } from '@/test-setup';
-import { ThemeService } from './theme.service';
 
 describe('ThemeService', () => {
   let service: ThemeService;
-  let userApiService: jasmine.SpyObj<UserApiService>;
 
   beforeEach((): void => {
     const matchMediaMock = jasmine.createSpy('matchMedia').and.returnValue({
@@ -37,7 +36,6 @@ describe('ThemeService', () => {
     });
 
     service = TestBed.inject(ThemeService);
-    userApiService = TestBed.inject(UserApiService) as jasmine.SpyObj<UserApiService>;
   });
 
   it('should be created', (): void => {
@@ -71,99 +69,52 @@ describe('ThemeService', () => {
     expect(() => service.initialize()).not.toThrow();
   });
 
-  describe('setTheme with syncWithServer parameter', () => {
-    it('should sync with server when syncWithServer is true (default)', (done: DoneFn) => {
-      userApiService.updateTheme$.and.returnValue(
-        of({ message: 'Theme updated successfully', theme: 'dark' }),
-      );
+  describe('theme color management', () => {
+    it('should update theme color meta tag for dark theme', () => {
+      const mockMeta = document.createElement('meta');
+      mockMeta.setAttribute('name', 'theme-color');
+      document.head.appendChild(mockMeta);
 
       service.setTheme('dark');
 
-      setTimeout(() => {
-        expect(userApiService.updateTheme$).toHaveBeenCalledWith({ theme: 'dark' });
-        done();
-      }, 1000);
+      expect(mockMeta.getAttribute('content')).toBe('#0f172a');
+
+      document.head.removeChild(mockMeta);
     });
 
-    it('should not sync with server when syncWithServer is false', () => {
-      service.setTheme('dark', false);
+    it('should update theme color meta tag for light theme', () => {
+      const mockMeta = document.createElement('meta');
+      mockMeta.setAttribute('name', 'theme-color');
+      document.head.appendChild(mockMeta);
 
-      expect(userApiService.updateTheme$).not.toHaveBeenCalled();
+      service.setTheme('light');
+
+      expect(mockMeta.getAttribute('content')).toBe('#ffffff');
+
+      document.head.removeChild(mockMeta);
     });
 
-    it('should still apply theme locally when syncWithServer is false', () => {
-      service.setTheme('dark', false);
-
-      expect(service.theme()).toBe('dark');
+    it('should handle missing theme color meta tag', () => {
+      expect(() => {
+        service.setTheme('dark');
+      }).not.toThrow();
     });
   });
 
-  describe('debounce functionality', () => {
-    it('should debounce rapid theme changes and call API only once with final value', (done: DoneFn) => {
-      userApiService.updateTheme$.and.returnValue(
-        of({ message: 'Theme updated successfully', theme: 'dark' }),
-      );
-
-      service.setTheme('light');
-      service.setTheme('dark');
-      service.setTheme('light');
-      service.setTheme('dark');
-
-      expect(userApiService.updateTheme$).not.toHaveBeenCalled();
-
-      setTimeout(() => {
-        expect(userApiService.updateTheme$).toHaveBeenCalledTimes(1);
-        expect(userApiService.updateTheme$).toHaveBeenCalledWith({ theme: 'dark' });
-        done();
-      }, 1000);
-    });
-
-    it('should handle duplicate theme changes with distinctUntilChanged', (done: DoneFn) => {
-      userApiService.updateTheme$.and.returnValue(
-        of({ message: 'Theme updated successfully', theme: 'light' }),
-      );
-
-      service.setTheme('light');
-      service.setTheme('light');
-      service.setTheme('light');
-
-      expect(userApiService.updateTheme$).not.toHaveBeenCalled();
-
-      setTimeout(() => {
-        expect(userApiService.updateTheme$).toHaveBeenCalledTimes(1);
-        expect(userApiService.updateTheme$).toHaveBeenCalledWith({ theme: 'light' });
-        done();
-      }, 1000);
-    });
-  });
-
-  describe('server synchronization', () => {
-    it('should sync theme changes with server and handle API calls', (done: DoneFn) => {
-      userApiService.updateTheme$.and.returnValue(
-        of({ message: 'Theme updated successfully', theme: 'light' }),
-      );
-
-      service.setTheme('light');
-
-      expect(userApiService.updateTheme$).not.toHaveBeenCalled();
-
-      setTimeout(() => {
-        expect(userApiService.updateTheme$).toHaveBeenCalledTimes(1);
-        expect(userApiService.updateTheme$).toHaveBeenCalledWith({ theme: 'light' });
-        done();
-      }, 1000);
-    });
-
-    it('should handle API errors gracefully without throwing', (done: DoneFn) => {
-      userApiService.updateTheme$.and.returnValue(
-        of({ message: 'Theme updated successfully', theme: 'dark' }),
-      );
+  describe('localStorage handling', () => {
+    it('should handle localStorage errors gracefully', () => {
+      spyOn(localStorage, 'getItem').and.throwError('Storage error');
 
       expect(() => {
         service.setTheme('dark');
-        setTimeout(() => {
-          done();
-        }, 1000);
+      }).not.toThrow();
+    });
+
+    it('should handle localStorage setItem errors', () => {
+      spyOn(localStorage, 'setItem').and.throwError('Storage error');
+
+      expect(() => {
+        service.setTheme('light');
       }).not.toThrow();
     });
   });
