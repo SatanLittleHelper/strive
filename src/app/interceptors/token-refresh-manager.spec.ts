@@ -10,6 +10,8 @@ describe('TokenRefreshManager', () => {
     });
 
     manager = TokenRefreshManager.getInstance();
+    manager.clearPendingRequests();
+    manager.setRefreshInProgress(false);
   });
 
   afterEach(() => {

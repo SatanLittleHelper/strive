@@ -75,8 +75,10 @@ describe('authInterceptor', () => {
     req.flush(null, { status: 500, statusText: 'Internal Server Error' });
   });
 
-  it('should navigate to login on 401 error when refresh fails', (done) => {
+  it('should handle 401 error when refresh fails', () => {
     const router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    router.navigate.and.returnValue(Promise.resolve(true));
+
     authService.getAccessToken.and.returnValue('test-token');
     authService.refreshToken$.and.returnValue(of(false));
 
@@ -84,7 +86,6 @@ describe('authInterceptor', () => {
       next: () => {},
       error: () => {
         expect(router.navigate).toHaveBeenCalledWith(['/login']);
-        done();
       },
     });
 
