@@ -11,7 +11,7 @@ export class SwUpdateService {
   private readonly swUpdate = inject(SwUpdate);
   private readonly destroyRef = inject(DestroyRef);
 
-  constructor() {
+  init(): void {
     if (this.swUpdate.isEnabled) {
       this.initializeUpdateChecks();
       this.handleUpdates();

@@ -17,6 +17,10 @@ import { AppComponent } from './app.component';
 class MockTuiRootComponent {}
 
 describe('AppComponent', () => {
+  let telegramServiceSpy: jasmine.SpyObj<TelegramService>;
+  let themeServiceSpy: jasmine.SpyObj<ThemeService>;
+  let swUpdateServiceSpy: jasmine.SpyObj<SwUpdateService>;
+
   beforeEach(async () => {
     const mockWebApp = {
       ready: jasmine.createSpy('ready'),
@@ -24,13 +28,17 @@ describe('AppComponent', () => {
       expand: jasmine.createSpy('expand'),
     };
 
-    const telegramServiceSpy = jasmine.createSpyObj('TelegramService', [], {
+    telegramServiceSpy = jasmine.createSpyObj('TelegramService', [], {
       webApp: mockWebApp,
     });
 
-    const themeServiceSpy = jasmine.createSpyObj('ThemeService', ['toggleTheme', 'isDark'], {
-      isDark: jasmine.createSpy('isDark').and.returnValue(false),
-    });
+    themeServiceSpy = jasmine.createSpyObj(
+      'ThemeService',
+      ['toggleTheme', 'isDark', 'initialize'],
+      {
+        isDark: jasmine.createSpy('isDark').and.returnValue(false),
+      },
+    );
 
     const authServiceSpy = jasmine.createSpyObj('AuthService', ['initFromStorage'], {
       isAuthenticated: jasmine.createSpy('isAuthenticated').and.returnValue(false),
@@ -38,7 +46,7 @@ describe('AppComponent', () => {
       error: jasmine.createSpy('error').and.returnValue(null),
     });
 
-    const swUpdateServiceSpy = jasmine.createSpyObj('SwUpdateService', ['checkForUpdate']);
+    swUpdateServiceSpy = jasmine.createSpyObj('SwUpdateService', ['checkForUpdate', 'init']);
 
     const userStoreSpy = jasmine.createSpyObj('UserStoreService', ['clearUser'], {
       user: jasmine.createSpy().and.returnValue(null),
@@ -66,5 +74,16 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     expect(app).toBeTruthy();
+  });
+
+  it('should initialize all services on ngOnInit', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+
+    app.ngOnInit();
+
+    expect(telegramServiceSpy.webApp.ready).toHaveBeenCalled();
+    expect(themeServiceSpy.initialize).toHaveBeenCalled();
+    expect(swUpdateServiceSpy.init).toHaveBeenCalled();
   });
 });

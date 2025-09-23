@@ -1,8 +1,8 @@
 import { inject, Injectable, signal, computed } from '@angular/core';
 import { tap, catchError, of, map } from 'rxjs';
+import { UserApiService } from '@/shared';
 import type { User } from '@/shared/lib/types';
 import { ThemeService } from '@/shared/services/theme';
-import { UserApiService } from './user-api.service';
 import type { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
