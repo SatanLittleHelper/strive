@@ -19,8 +19,8 @@ npm install
 # Build for GitHub Pages
 npm run build:github
 
-# Deploy to GitHub Pages
-npm run deploy
+# The built files will be in dist/strive/browser
+# Deploy these files to GitHub Pages using GitHub Actions or manual upload
 ```
 
 ## 📋 Prerequisites
@@ -54,7 +54,7 @@ The project includes a special build configuration for GitHub Pages:
 | Script | Description |
 |--------|-------------|
 | `npm run build:github` | Build the app for GitHub Pages deployment |
-| `npm run deploy` | Build and deploy to GitHub Pages manually |
+| `npm run deploy` | Same as build:github (output in dist/strive/browser) |
 | `npm run test:ci` | Run tests in CI mode (headless) |
 
 ## 🌐 Deployment URLs

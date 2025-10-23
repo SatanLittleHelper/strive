@@ -1,5 +1,5 @@
 import { inject, Injectable, signal, computed } from '@angular/core';
-import { tap, catchError, of, map } from 'rxjs';
+import { tap, catchError, of, map, finalize } from 'rxjs';
 import { UserApiService } from '@/shared';
 import type { User } from '@/shared/lib/types';
 import { ThemeService } from '@/shared/services/theme';
@@ -11,9 +11,12 @@ export class UserStoreService {
   private readonly themeService = inject(ThemeService);
 
   readonly user = signal<User | null>(null);
+  readonly loading = signal(false);
   readonly isAuthenticated = computed(() => this.user() !== null);
 
   fetchUser$(): Observable<void> {
+    this.loading.set(true);
+
     return this.userApi.getMe$().pipe(
       tap((user) => {
         this.user.set(user);
@@ -26,6 +29,9 @@ export class UserStoreService {
         return of(void 0);
       }),
       map(() => void 0),
+      finalize(() => {
+        this.loading.set(false);
+      }),
     );
   }
 

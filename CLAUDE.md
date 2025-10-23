@@ -150,6 +150,37 @@ export const appConfig: ApplicationConfig = {
 
 Access Telegram features through `TelegramService` in `/src/shared/services/telegram/`.
 
+## Authentication System
+
+The project implements a comprehensive authentication system with the following features:
+
+### AuthService Architecture
+- **Modular Design**: Uses `AuthProvider` interface for different authentication methods
+- **Email/Password Provider**: Concrete implementation for email/password authentication
+- **Token Management**: JWT access tokens with automatic refresh
+- **State Caching**: localStorage caching for authentication status (7 days)
+
+### Key Components
+- **AuthService**: Main authentication service with login, logout, and token refresh
+- **AuthGuard**: Route protection with automatic redirect to login
+- **AuthInterceptor**: HTTP interceptor for automatic token attachment and refresh
+- **TokenRefreshManager**: Singleton for managing refresh token race conditions
+- **UserStoreService**: Centralized user state management with Cache API
+
+### Security Features
+- **HttpOnly Cookies**: Secure refresh token storage
+- **Proactive Token Refresh**: Automatic refresh 5 minutes before expiry
+- **Race Condition Prevention**: Prevents multiple simultaneous refresh attempts
+- **Retry Logic**: Exponential backoff for failed refresh attempts
+- **CORS Support**: Proper credentials handling for cross-origin requests
+
+### Authentication Flow
+1. User logs in → Access token stored in memory
+2. Auth status cached in localStorage for 7 days
+3. Interceptor checks token expiry and refreshes proactively
+4. Failed refresh → User redirected to login
+5. Logout → All tokens and cache cleared
+
 ## Important Files
 
 - `/angular.json` - Angular CLI configuration with Taiga UI styles

@@ -19,6 +19,7 @@ describe('authInterceptor', () => {
       'getAccessToken',
       'setAccessToken',
       'refreshToken$',
+      'getTokenInfo',
     ]);
 
     const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
@@ -53,6 +54,7 @@ describe('authInterceptor', () => {
 
   it('should not add authorization header when no token', () => {
     authService.getAccessToken.and.returnValue(null);
+    authService.getTokenInfo.and.returnValue(null);
 
     http.get('/api/protected').subscribe();
 
@@ -62,6 +64,7 @@ describe('authInterceptor', () => {
 
   it('should handle non-401 errors without refresh', (done) => {
     authService.getAccessToken.and.returnValue('test-token');
+    authService.getTokenInfo.and.returnValue(null);
 
     http.get('/api/protected').subscribe({
       next: () => done(),
@@ -80,6 +83,7 @@ describe('authInterceptor', () => {
     router.navigate.and.returnValue(Promise.resolve(true));
 
     authService.getAccessToken.and.returnValue('test-token');
+    authService.getTokenInfo.and.returnValue(null);
     authService.refreshToken$.and.returnValue(of(false));
 
     http.get('/api/protected').subscribe({
@@ -98,6 +102,7 @@ describe('authInterceptor', () => {
     const addPendingRequestSpy = spyOn(refreshManager, 'addPendingRequest').and.callThrough();
 
     authService.getAccessToken.and.returnValue('test-token');
+    authService.getTokenInfo.and.returnValue(null);
     authService.refreshToken$.and.returnValue(of(true));
 
     refreshManager.setRefreshInProgress(true);

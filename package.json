@@ -17,7 +17,7 @@
     "lint": "npm run lint:ts && npm run lint:styles",
     "format": "prettier --write .",
     "prepare": "husky",
-    "deploy": "npm run build:github && npx angular-cli-ghpages --dir=dist/strive",
+    "deploy": "npm run build:github",
     "generate:icons": "node scripts/generate-pwa-icons.cjs"
   },
   "type": "module",
@@ -70,7 +70,6 @@
     "@angular/compiler-cli": "^19.2.0",
     "@types/jasmine": "~5.1.0",
     "@types/telegram-web-app": "^9.0.0",
-    "angular-cli-ghpages": "^1.0.3",
     "angular-eslint": "20.1.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^3.6.1",
