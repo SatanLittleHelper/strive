@@ -32,7 +32,7 @@ describe('authGuard', () => {
     sessionStorage.clear();
   });
 
-  it('should allow access when user is authenticated and tokens are valid', async () => {
+  it('should allow access when user is authenticated', async () => {
     authService.isAuthenticated.and.returnValue(true);
 
     const result = await TestBed.runInInjectionContext(() =>
@@ -41,6 +41,7 @@ describe('authGuard', () => {
 
     expect(result).toBe(true);
     expect(authService.isAuthenticated).toHaveBeenCalled();
+    expect(authService.refreshToken$).not.toHaveBeenCalled();
     expect(router.navigate).not.toHaveBeenCalled();
   });
 

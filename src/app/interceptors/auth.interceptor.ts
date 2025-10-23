@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, switchMap, throwError, defer, finalize, Observable } from 'rxjs';
-import { AuthService } from '@/features/auth';
+import { AuthService, type TokenInfo } from '@/features/auth';
 import { TokenRefreshManager } from './token-refresh-manager';
 
 import type {
@@ -33,7 +33,8 @@ const handle401Error = (
     return defer(() => {
       return new Observable<Observable<HttpEvent<unknown>>>((subscriber) => {
         refreshManager.addPendingRequest(() => {
-          subscriber.next(next(req));
+          const authReq = createAuthRequest(req, authService);
+          subscriber.next(next(authReq));
           subscriber.complete();
         });
       });
@@ -46,7 +47,8 @@ const handle401Error = (
     switchMap((success) => {
       if (success) {
         refreshManager.processPendingRequests();
-        return next(req);
+        const authReq = createAuthRequest(req, authService);
+        return next(authReq);
       } else {
         refreshManager.clearPendingRequests();
         logout(router);
@@ -64,6 +66,36 @@ const handle401Error = (
   );
 };
 
+const isTokenExpiringSoon = (tokenInfo: TokenInfo | null, minutesBeforeExpiry = 5): boolean => {
+  if (!tokenInfo) {
+    return false;
+  }
+
+  try {
+    const now = new Date();
+    const timeUntilExpiry = tokenInfo.expiresAt.getTime() - now.getTime();
+    const minutesInMilliseconds = minutesBeforeExpiry * 60 * 1000;
+
+    return timeUntilExpiry <= minutesInMilliseconds && timeUntilExpiry > 0;
+  } catch {
+    return true;
+  }
+};
+
+const createAuthRequest = (
+  req: HttpRequest<unknown>,
+  authService: AuthService,
+): HttpRequest<unknown> => {
+  const tokenInfo = authService.getTokenInfo();
+  return tokenInfo
+    ? req.clone({
+        setHeaders: {
+          Authorization: `Bearer ${tokenInfo.token}`,
+        },
+      })
+    : req;
+};
+
 export const authInterceptor: HttpInterceptorFn = (
   req: HttpRequest<unknown>,
   next: HttpHandlerFn,
@@ -75,16 +107,25 @@ export const authInterceptor: HttpInterceptorFn = (
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  const accessToken = authService.getAccessToken();
-  if (!accessToken) {
-    return next(req);
+  const tokenInfo = authService.getTokenInfo();
+
+  if (isTokenExpiringSoon(tokenInfo, 5)) {
+    const refreshManager = TokenRefreshManager.getInstance();
+
+    if (!refreshManager.isRefreshInProgress) {
+      refreshManager.setRefreshInProgress(true);
+      authService
+        .refreshToken$()
+        .pipe(
+          finalize(() => {
+            refreshManager.setRefreshInProgress(false);
+          }),
+        )
+        .subscribe();
+    }
   }
 
-  const authReq = req.clone({
-    setHeaders: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  const authReq = createAuthRequest(req, authService);
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {

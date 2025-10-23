@@ -10,7 +10,7 @@ export const credentialsInterceptor: HttpInterceptorFn = (
   req: HttpRequest<unknown>,
   next: HttpHandlerFn,
 ): Observable<HttpEvent<unknown>> => {
-  if (req.withCredentials === true) {
+  if (req.withCredentials) {
     return next(req);
   }
 
@@ -20,6 +20,5 @@ export const credentialsInterceptor: HttpInterceptorFn = (
       'Content-Type': 'application/json',
     },
   });
-
   return next(modifiedReq);
 };

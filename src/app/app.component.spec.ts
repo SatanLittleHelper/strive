@@ -4,6 +4,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { TuiRoot } from '@taiga-ui/core';
+import { of } from 'rxjs';
 import { AuthService } from '@/features/auth';
 import { TelegramService, ThemeService, SwUpdateService, UserStoreService } from '@/shared';
 import { configureZonelessTestingModule } from '@/test-setup';
@@ -48,10 +49,16 @@ describe('AppComponent', () => {
 
     swUpdateServiceSpy = jasmine.createSpyObj('SwUpdateService', ['checkForUpdate', 'init']);
 
-    const userStoreSpy = jasmine.createSpyObj('UserStoreService', ['clearUser'], {
-      user: jasmine.createSpy().and.returnValue(null),
-      isAuthenticated: jasmine.createSpy().and.returnValue(false),
-    });
+    const userStoreSpy = jasmine.createSpyObj(
+      'UserStoreService',
+      ['clearUser', 'fetchUser$', 'initializeFromCache'],
+      {
+        user: jasmine.createSpy().and.returnValue(null),
+        isAuthenticated: jasmine.createSpy().and.returnValue(false),
+      },
+    );
+
+    userStoreSpy.fetchUser$.and.returnValue(of(null));
 
     configureZonelessTestingModule({
       imports: [AppComponent, MockTuiRootComponent],
