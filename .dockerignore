@@ -1,0 +1,13 @@
+node_modules
+dist
+.git
+.nx
+.angular
+tmp
+.env
+.claude
+.agents
+coverage
+playwright-report
+.env.*
+!.env.example

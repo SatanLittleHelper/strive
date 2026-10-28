@@ -1,85 +1,72 @@
 # Strive
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.15.
+Nx монорепозиторий с двумя приложениями с нуля:
 
-## Quick Start
+- `apps/web` — Angular 22, standalone, zoneless, Signals, lazy routing и Tailwind CSS.
+- `apps/api` — NestJS 12, проверка конфигурации, pino, валидация и единый формат HTTP-ответов.
+- `apps/web-e2e` — тестовый проект Playwright для Chromium, Firefox и WebKit.
+
+Unit-тесты обоих приложений используют Vitest. У API дополнительно проверяется реальный HTTP-сервер и граф DI. Фронтенд проверяет состояния ожидания, успешного подключения и ошибки.
+
+## Подготовка
+
+Требуются Node.js 24.16.0 и npm 11.13.0. Версия Node закреплена в `.nvmrc`.
 
 ```bash
-# Install dependencies
-npm install
+npm ci
+npx playwright install --with-deps
+```
 
-# Start development server
+## Разработка
+
+```bash
 npm start
+```
 
-# Build for production
+Angular доступен на <http://127.0.0.1:4200>, API — на <http://127.0.0.1:3000/api/health>. Dev-сервер Angular проксирует `/api/**` к NestJS. На странице отображается состояние подключения.
+
+Приложения также запускаются отдельно:
+
+```bash
+npm run start:web
+npm run start:api
+```
+
+Необязательные переменные окружения перечислены в `.env.example`. NestJS читает `.env` в корне. При изменении порта API обновите также `apps/web/proxy.conf.json`. Для читаемых логов задайте `LOG_PRETTY=true`, для JSON-логов — `false`.
+
+## Проверки
+
+```bash
 npm run build
-
-# Generate PWA icons
-npm run generate:icons
+npm run typecheck
+npm run lint
+npm test
+npm run test:coverage
+npm run e2e
 ```
 
-## Development server
-
-To start a local development server, run:
+Точечный запуск:
 
 ```bash
-ng serve
+npx nx run api:test
+npx nx run web:test --include=apps/web/src/app/health/health.service.spec.ts
+npx nx run web-e2e:e2e --project=chromium
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Playwright самостоятельно запускает оба приложения и останавливает их после тестов. Порты 3000 и 4200 должны быть свободны. Трассировки сохраняются при ошибках. Тестовый проект не является третьим пользовательским приложением.
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Docker
 
 ```bash
-ng generate component component-name
+make up
+make logs
+make down
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Сайт доступен на <http://localhost:8080>. Nginx раздаёт Angular и проксирует `/api/` к API в сети Compose. Порт API наружу не публикуется. Docker-сборка использует `devops/Dockerfile` с целями `api` и `web`.
 
-```bash
-ng generate --help
-```
+## Особенности Nx
 
-## Building
+Nx и его плагины закреплены на одной версии. Сборка Angular использует официальный `@angular/build`. Для NestJS 12 используются обычные задачи Nx: текущий `@nx/nest` ограничен NestJS ниже 12. Сборка API выполняется TypeScript, локальный перезапуск — через `tsx watch`.
 
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## PWA Icons
-
-This project includes PWA (Progressive Web App) support with a comprehensive icon set. To update the app icons:
-
-1. Replace the logo file at `public/icons/logo.svg`
-2. Run `npm run generate:icons`
-3. Commit the generated icons
-
-For detailed instructions, see [PWA Icons Guide](docs/PWA-ICONS.md).
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Старый код, зависимости Taiga UI, Telegram, PWA, Karma и Jasmine удалены. Git-история и настройки AI-инструментов сохранены.

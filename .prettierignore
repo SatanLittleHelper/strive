@@ -1,7 +1,8 @@
-dist
 node_modules
+dist
 coverage
-.angular
-.idea
-.cursor
-
+tmp
+.nx
+package-lock.json
+.claude
+.agents

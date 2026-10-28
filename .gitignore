@@ -40,3 +40,16 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+.angular
+
+__screenshots__/
+
+# Nx and tests
+.nx/
+**/test-results/
+**/playwright-report/
+**/coverage/
+.env
+.env.*
+!.env.example

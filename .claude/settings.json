@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/ai-dev-kit/rules/hooks/enforce-commit-rules.js\""
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "polish@ai-dev-kit": true
+  },
+  "extraKnownMarketplaces": {
+    "ai-dev-kit": {
+      "source": {
+        "source": "github",
+        "repo": "SatanLittleHelper/ai-dev-kit"
+      }
+    }
+  }
+}
