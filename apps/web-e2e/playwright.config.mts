@@ -9,14 +9,14 @@ export default defineConfig({
   testDir: './src',
   fullyParallel: true,
   forbidOnly: isCI,
-  retries: isCI ? 2 : 0,
+  retries: isCI ? 1 : 0,
   workers: isCI ? 2 : undefined,
   reporter: [
     ['list'],
     ['html', { open: 'never', outputFolder: `${workspaceRoot}/tmp/playwright/report` }],
   ],
   outputDir: '../../tmp/playwright/test-results',
-  use: { baseURL: 'http://127.0.0.1:4200', trace: 'retain-on-failure' },
+  use: { baseURL: 'http://127.0.0.1:4200', trace: 'on-first-retry' },
   webServer: [
     {
       command: 'npx nx run api:build && node dist/apps/api/main.js',
@@ -35,7 +35,12 @@ export default defineConfig({
   ],
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+    // firefox и webkit запускаются только локально, чтобы CI не ставил лишние браузеры
+    ...(isCI
+      ? []
+      : [
+          { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+          { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+        ]),
   ],
 });
