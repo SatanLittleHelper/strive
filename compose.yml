@@ -1,4 +1,30 @@
 services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: strive
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-strive}
+      POSTGRES_DB: strive
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U strive -d strive']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  migrate:
+    build:
+      context: .
+      dockerfile: devops/Dockerfile
+      target: migrate
+    environment:
+      DATABASE_URL: postgresql://strive:${POSTGRES_PASSWORD:-strive}@postgres:5432/strive
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: 'no'
   api:
     build:
       context: .
@@ -9,6 +35,12 @@ services:
       PORT: 3000
       LOG_LEVEL: ${LOG_LEVEL:-info}
       LOG_PRETTY: 'false'
+      DATABASE_URL: postgresql://strive:${POSTGRES_PASSWORD:-strive}@postgres:5432/strive
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     healthcheck:
       test:
         [
@@ -30,3 +62,6 @@ services:
     depends_on:
       api:
         condition: service_healthy
+
+volumes:
+  postgres-data:

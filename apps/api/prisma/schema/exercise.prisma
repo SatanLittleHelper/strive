@@ -1,0 +1,5 @@
+model exercise {
+  id                BigInt             @id @default(autoincrement())
+  name              String             @unique
+  workout_exercises workout_exercise[]
+}

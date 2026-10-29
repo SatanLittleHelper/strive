@@ -1,0 +1,28 @@
+{
+  "name": "api-interfaces",
+  "projectType": "library",
+  "sourceRoot": "libs/api-interfaces/src",
+  "tags": ["type:lib"],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "outputs": ["{projectRoot}/dist"],
+      "options": {
+        "command": "tsc -p libs/api-interfaces/tsconfig.json"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p libs/api-interfaces/tsconfig.json --noEmit"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint libs/api-interfaces"
+      }
+    }
+  }
+}

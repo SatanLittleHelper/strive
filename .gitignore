@@ -50,6 +50,8 @@ __screenshots__/
 **/test-results/
 **/playwright-report/
 **/coverage/
+/apps/api/src/generated
+/libs/*/dist
 .env
 .env.*
 !.env.example

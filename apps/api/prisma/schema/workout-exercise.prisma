@@ -1,0 +1,13 @@
+model workout_exercise {
+  workout_id      BigInt
+  exercise_id     BigInt
+  position        Int
+  target_sets     Int
+  target_reps_min Int
+  target_reps_max Int
+  workout         workout  @relation(fields: [workout_id], references: [id], onDelete: Cascade)
+  exercise        exercise @relation(fields: [exercise_id], references: [id], onDelete: Restrict)
+
+  @@id([workout_id, exercise_id])
+  @@unique([workout_id, position])
+}
