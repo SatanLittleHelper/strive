@@ -1,11 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
 import { TuiRoot } from '@taiga-ui/core';
-import { AppHeaderComponent } from './layout';
+import { AppShellComponent } from './layout';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, TuiRoot, AppHeaderComponent],
+  imports: [TuiRoot, AppShellComponent],
   templateUrl: './app.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },

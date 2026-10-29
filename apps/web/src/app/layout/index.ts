@@ -1,1 +1,2 @@
-export { AppHeaderComponent } from './app-header';
+export { AppShellComponent } from './app-shell';
+export { BottomNavComponent } from './bottom-nav';
