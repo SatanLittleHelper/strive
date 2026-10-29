@@ -6,8 +6,8 @@
 /out-tsc
 /bazel-out
 
-# Node
-/node_modules
+# Node (в том числе вложенные node_modules, например apps/api/node_modules)
+node_modules
 npm-debug.log
 yarn-error.log
 
@@ -52,6 +52,11 @@ __screenshots__/
 **/coverage/
 /apps/api/src/generated
 /libs/*/dist
+.vitest/
+.codex-implement/
+
+# Артефакты рабочего процесса: спеки и планы не коммитятся, постоянная документация лежит в docs/roadmap
+/docs/superpowers/
 .env
 .env.*
 !.env.example
