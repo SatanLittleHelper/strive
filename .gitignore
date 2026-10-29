@@ -54,6 +54,8 @@ __screenshots__/
 /libs/*/dist
 .vitest/
 .codex-implement/
+.playwright-mcp/
+.superpowers/
 
 # Артефакты рабочего процесса: спеки и планы не коммитятся, постоянная документация лежит в docs/roadmap
 /docs/superpowers/

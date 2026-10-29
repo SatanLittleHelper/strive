@@ -1,0 +1,12 @@
+<nav class="mx-auto flex max-w-180 md:px-2" aria-label="Основная навигация">
+	@for (item of items; track item.path) {
+		<a
+			class="flex h-nav flex-1 items-center justify-center text-sm font-medium text-text-muted aria-[current=page]:text-accent aria-[current=page]:underline aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-8 md:h-12 md:flex-none md:px-4"
+			[routerLink]="item.path"
+			routerLinkActive
+			ariaCurrentWhenActive="page"
+			[routerLinkActiveOptions]="{ exact: !!item.exact }"
+			>{{ item.label }}</a
+		>
+	}
+</nav>

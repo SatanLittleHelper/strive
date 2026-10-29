@@ -1,1 +1,43 @@
 @import 'tailwindcss';
+
+/*
+ * Токены дизайна: один источник правды для Tailwind и Taiga UI.
+ * `--color-on-accent` и `--radius-*` читает Taiga через `--tui-*` ниже, не удалять как неиспользуемые.
+ * `--spacing-nav` — высота нижней навигации: от неё считается и сама панель, и отступ контента под ней.
+ */
+@theme {
+  --spacing-nav: 3.5rem;
+  --color-bg: #0f1115;
+  --color-surface: #1a1e26;
+  --color-border: #232833;
+  --color-muted: #2a303b;
+  --color-text: #f2f4f8;
+  --color-text-muted: #9aa3b2;
+  --color-accent: #c6ff3d;
+  --color-on-accent: #0f1115;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+}
+
+/* Селектор с именем элемента специфичнее правила Taiga `[tuiTheme='dark']`, поэтому победа не зависит от порядка подключения стилей. */
+tui-root[tuiTheme='dark'] {
+  --tui-background-base: var(--color-bg);
+  --tui-background-base-alt: var(--color-surface);
+  --tui-background-elevation-1: var(--color-surface);
+  --tui-background-elevation-2: var(--color-surface);
+  --tui-background-neutral-1: var(--color-muted);
+  --tui-border-normal: var(--color-border);
+  --tui-text-primary: var(--color-text);
+  --tui-text-secondary: var(--color-text-muted);
+  --tui-background-accent-1: var(--color-accent);
+  --tui-text-primary-on-accent-1: var(--color-on-accent);
+  --tui-radius-m: var(--radius-md);
+  --tui-radius-l: var(--radius-lg);
+}
+
+@layer base {
+  body {
+    background: var(--color-bg);
+    color: var(--color-text);
+  }
+}
