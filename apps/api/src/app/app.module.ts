@@ -2,24 +2,16 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { LoggerModule } from 'nestjs-pino';
-import Joi from 'joi';
-import { AppController } from './app.controller.js';
 import { ApiExceptionFilter } from '../common/api-exception-filter.js';
 import { ApiResponseInterceptor } from '../common/api-response.interceptor.js';
+import { envValidationSchema } from '../config/env.validation/index.js';
+import { HealthModule } from '../health/index.js';
+import { PrismaModule } from '../prisma/index.js';
+import { WorkoutsModule } from '../workouts/index.js';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      validationSchema: Joi.object({
-        PORT: Joi.number().port().default(3000),
-        HOST: Joi.string().default('127.0.0.1'),
-        LOG_LEVEL: Joi.string()
-          .valid('fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent')
-          .default('info'),
-        LOG_PRETTY: Joi.string().valid('true', 'false').default('false'),
-      }),
-    }),
+    ConfigModule.forRoot({ isGlobal: true, validationSchema: envValidationSchema }),
     LoggerModule.forRoot({
       pinoHttp: {
         level: process.env['LOG_LEVEL'] ?? 'info',
@@ -31,8 +23,10 @@ import { ApiResponseInterceptor } from '../common/api-response.interceptor.js';
           : {}),
       },
     }),
+    PrismaModule,
+    HealthModule,
+    WorkoutsModule,
   ],
-  controllers: [AppController],
   providers: [
     { provide: APP_FILTER, useClass: ApiExceptionFilter },
     { provide: APP_INTERCEPTOR, useClass: ApiResponseInterceptor },

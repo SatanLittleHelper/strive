@@ -20,7 +20,11 @@
             "input": "apps/web/public"
           }
         ],
-        "styles": ["apps/web/src/styles.css"]
+        "styles": [
+          "@taiga-ui/styles/taiga-ui-theme.less",
+          "@taiga-ui/styles/taiga-ui-fonts.less",
+          "apps/web/src/styles.css"
+        ]
       },
       "configurations": {
         "production": {
@@ -63,15 +67,18 @@
       "options": {
         "host": "127.0.0.1",
         "port": 4200,
-        "proxyConfig": "apps/web/proxy.conf.json"
-      }
+        "proxyConfig": "apps/web/proxy.conf.json",
+        "prebundle": { "exclude": ["@strive/api-interfaces"] }
+      },
+      "dependsOn": ["^build"]
     },
     "test": {
       "executor": "@angular/build:unit-test",
       "options": {
         "watch": false,
         "tsConfig": "apps/web/tsconfig.spec.json"
-      }
+      },
+      "dependsOn": ["^build"]
     },
     "lint": {
       "executor": "nx:run-commands",
@@ -83,7 +90,9 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "ngc -p apps/web/tsconfig.app.json --noEmit && tsc -p apps/web/tsconfig.spec.json --noEmit"
-      }
+      },
+      "dependsOn": ["^build"]
     }
-  }
+  },
+  "implicitDependencies": ["api-interfaces"]
 }

@@ -17,7 +17,7 @@ test('API возвращает состояние и обрабатывает н
   expect(health.ok()).toBeTruthy();
   expect(await health.json()).toMatchObject({
     success: true,
-    data: { service: 'api', status: 'ok' },
+    data: { status: 'ok', info: { database: { status: 'up' } } },
   });
   const missing = await request.get('http://127.0.0.1:3000/api/missing');
   expect(missing.status()).toBe(404);

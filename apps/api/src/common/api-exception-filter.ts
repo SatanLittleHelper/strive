@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import type { Response } from 'express';
-import type { ApiResponse } from './api.types.js';
+import type { ApiResponse } from '@strive/api-interfaces';
 
 @Catch()
 export class ApiExceptionFilter implements ExceptionFilter {

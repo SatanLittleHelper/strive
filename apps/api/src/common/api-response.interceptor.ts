@@ -5,7 +5,7 @@ import {
   type NestInterceptor,
 } from '@nestjs/common';
 import { map, type Observable } from 'rxjs';
-import type { ApiResponse } from './api.types.js';
+import type { ApiResponse } from '@strive/api-interfaces';
 
 @Injectable()
 export class ApiResponseInterceptor implements NestInterceptor {

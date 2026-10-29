@@ -1,0 +1,11 @@
+model workout_session {
+  id          BigInt       @id @default(autoincrement())
+  device_id   String       @db.Uuid
+  workout_id  BigInt
+  started_at  DateTime     @default(now()) @db.Timestamptz(6)
+  finished_at DateTime?    @db.Timestamptz(6)
+  updated_at  DateTime     @default(now()) @updatedAt @db.Timestamptz(6)
+  set_results set_result[]
+
+  @@index([device_id, started_at])
+}

@@ -3,6 +3,8 @@ dist
 coverage
 tmp
 .nx
+apps/api/src/generated
+libs/*/dist
 package-lock.json
 .claude
 .agents
