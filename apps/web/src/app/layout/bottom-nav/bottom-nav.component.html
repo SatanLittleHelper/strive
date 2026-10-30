@@ -1,12 +1,16 @@
-<nav class="mx-auto flex max-w-180 md:px-2" aria-label="Основная навигация">
-	@for (item of items; track item.path) {
-		<a
-			class="flex h-nav flex-1 items-center justify-center text-sm font-medium text-text-muted aria-[current=page]:text-accent aria-[current=page]:underline aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-8 md:h-12 md:flex-none md:px-4"
-			[routerLink]="item.path"
-			routerLinkActive
-			ariaCurrentWhenActive="page"
-			[routerLinkActiveOptions]="{ exact: !!item.exact }"
-			>{{ item.label }}</a
-		>
-	}
+<!-- Значения [--tui-*] подобраны под Taiga UI 5.30.0: --tui-tab-margin не часть публичного API, при обновлении сверить вид панели и e2e-тест центровки подписей -->
+<nav class="mx-auto max-w-180 md:px-2" aria-label="Основная навигация">
+	<tui-tabs class="[--tui-duration:0s] max-md:[--tui-tab-margin:0]" size="l">
+		@for (item of items; track item.path) {
+			<a
+				ariaCurrentWhenActive="page"
+				class="max-md:flex-1"
+				routerLinkActive
+				tuiTab
+				[routerLink]="item.path"
+				[routerLinkActiveOptions]="{ exact: !!item.exact }"
+				><span class="max-md:mx-auto">{{ item.label }}</span></a
+			>
+		}
+	</tui-tabs>
 </nav>

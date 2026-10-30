@@ -1,0 +1,56 @@
+<section class="grid gap-4">
+	<a routerLink="/workouts" tuiLink>← Тренировки</a>
+	@switch (state()) {
+		@case ('loading') {
+			<div role="status" aria-label="Загрузка тренировки" class="grid gap-3">
+				@for (row of skeletonRows; track row) {
+					<div aria-hidden="true" tuiCell="l" [tuiSkeleton]="true">
+						<span tuiTitle>Название упражнения</span>
+					</div>
+				}
+			</div>
+		}
+		@case ('error') {
+			@if (notFound()) {
+				<app-empty-state message="Тренировка не найдена" />
+			} @else {
+				<app-error-state message="Не удалось загрузить тренировку" (retry)="workout.reload()" />
+			}
+		}
+		@case ('ready') {
+			@if (workout.value(); as details) {
+				<header tuiHeader>
+					<h1 tuiTitle="l">
+						{{ details.name }}
+						@if (details.description) {
+							<span tuiSubtitle>{{ details.description }}</span>
+						}
+					</h1>
+				</header>
+				<ol appearance="neutral" tuiCardLarge>
+					@for (item of details.exercises; track item.position) {
+						<li tuiCell="l">
+							<span tuiTitle>{{ item.exercise.name }}</span>
+							<strong>{{ formatPlan(item) }}</strong>
+						</li>
+					}
+				</ol>
+				<div class="sticky bottom-[calc(var(--spacing-nav)+0.75rem)] grid gap-2 md:static">
+					<button
+						appearance="primary"
+						aria-describedby="start-hint"
+						disabled
+						size="l"
+						tuiButton
+						type="button"
+					>
+						Начать
+					</button>
+					<p id="start-hint" class="text-center" tuiTitle>
+						<span tuiSubtitle>Запись тренировки появится в следующем этапе</span>
+					</p>
+				</div>
+			}
+		}
+	}
+</section>

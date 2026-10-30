@@ -7,3 +7,10 @@ export type {
   HealthResponse,
   HealthStatus,
 } from './api.types.js';
+export type {
+  Exercise,
+  Workout,
+  WorkoutExercise,
+  WorkoutIdRequest,
+  WorkoutSummary,
+} from './workout.types.js';

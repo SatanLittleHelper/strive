@@ -1,0 +1,32 @@
+<section class="grid gap-4">
+	<h1 tuiTitle="l">Тренировки</h1>
+	@switch (state()) {
+		@case ('loading') {
+			<div role="status" aria-label="Загрузка тренировок" class="grid gap-3">
+				@for (row of skeletonRows; track row) {
+					<div aria-hidden="true" appearance="neutral" tuiCardLarge [tuiSkeleton]="true">
+						<header tuiHeader>
+							<h2 tuiTitle>
+								Тренировка
+								<span tuiSubtitle>Описание тренировки</span>
+							</h2>
+						</header>
+					</div>
+				}
+			</div>
+		}
+		@case ('error') {
+			<app-error-state message="Не удалось загрузить тренировки" (retry)="workouts.reload()" />
+		}
+		@case ('empty') {
+			<app-empty-state message="Тренировок пока нет" />
+		}
+		@case ('ready') {
+			<ul class="grid gap-3">
+				@for (workout of workouts.value(); track workout.id) {
+					<li><app-workout-card [workout]="workout" /></li>
+				}
+			</ul>
+		}
+	}
+</section>
