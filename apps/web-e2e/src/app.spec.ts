@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { API_URL } from './e2e.constants';
 
 test('показывает стартовую страницу и состояние API', async ({ page }) => {
   await page.goto('/');
@@ -13,13 +14,13 @@ test('показывает ошибку подключения к API', async ({
 });
 
 test('API возвращает состояние и обрабатывает неизвестный маршрут', async ({ request }) => {
-  const health = await request.get('http://127.0.0.1:3000/api/health');
+  const health = await request.get(`${API_URL}/api/health`);
   expect(health.ok()).toBeTruthy();
   expect(await health.json()).toMatchObject({
     success: true,
     data: { status: 'ok', info: { database: { status: 'up' } } },
   });
-  const missing = await request.get('http://127.0.0.1:3000/api/missing');
+  const missing = await request.get(`${API_URL}/api/missing`);
   expect(missing.status()).toBe(404);
   expect(await missing.json()).toMatchObject({ success: false, data: null });
 });

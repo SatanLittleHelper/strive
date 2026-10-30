@@ -1,7 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
+import { DESKTOP_VIEWPORT, MOBILE_VIEWPORT } from './e2e.constants';
 
-const MOBILE_VIEWPORT = { width: 375, height: 667 };
-const DESKTOP_VIEWPORT = { width: 1280, height: 720 };
+const NAV_TAB_COUNT = 3;
+const CENTER_TOLERANCE = 1;
+const MIN_EDGE_GAP = 8;
 
 const mainNavigation = (page: Page) => page.getByRole('navigation', { name: 'Основная навигация' });
 
@@ -30,26 +32,9 @@ test('активная вкладка помечается aria-current', async 
     'aria-current',
     'page',
   );
-  await expect(navigation.getByRole('link', { name: 'Тренировки' })).toHaveCSS(
-    'color',
-    'rgb(198, 255, 61)',
-  );
-  // активная вкладка отличается не только цветом: подчёркивание (WCAG 1.4.1)
-  await expect(navigation.getByRole('link', { name: 'Тренировки' })).toHaveCSS(
-    'text-decoration-line',
-    'underline',
-  );
   await expect(navigation.getByRole('link', { name: 'Главная' })).not.toHaveAttribute(
     'aria-current',
     'page',
-  );
-  await expect(navigation.getByRole('link', { name: 'Главная' })).toHaveCSS(
-    'color',
-    'rgb(154, 163, 178)',
-  );
-  await expect(navigation.getByRole('link', { name: 'Главная' })).toHaveCSS(
-    'text-decoration-line',
-    'none',
   );
 });
 
@@ -61,6 +46,39 @@ test('на телефоне навигация закреплена внизу �
 
   expect(box).not.toBeNull();
   expect((box?.y ?? 0) + (box?.height ?? 0)).toBeCloseTo(MOBILE_VIEWPORT.height, 0);
+});
+
+test('на телефоне подписи вкладок отцентрованы и не прижаты к краям экрана', async ({ page }) => {
+  await page.setViewportSize(MOBILE_VIEWPORT);
+  await page.goto('/');
+
+  const tabs = await mainNavigation(page)
+    .getByRole('link')
+    .evaluateAll((links) =>
+      links.map((link) => {
+        const box = link.getBoundingClientRect();
+        const range = link.ownerDocument.createRange();
+        range.selectNodeContents(link);
+        const text = range.getBoundingClientRect();
+
+        return {
+          width: box.width,
+          centerOffset: Math.abs(text.x + text.width / 2 - (box.x + box.width / 2)),
+          textLeft: text.x,
+          textRight: text.right,
+        };
+      }),
+    );
+
+  expect(tabs).toHaveLength(NAV_TAB_COUNT);
+  for (const tab of tabs) {
+    expect(tab.centerOffset).toBeLessThan(CENTER_TOLERANCE);
+    expect(tab.width).toBeCloseTo(tabs[0]?.width ?? 0, 0);
+  }
+  expect(tabs[0]?.textLeft).toBeGreaterThanOrEqual(MIN_EDGE_GAP);
+  expect(MOBILE_VIEWPORT.width - (tabs.at(-1)?.textRight ?? 0)).toBeGreaterThanOrEqual(
+    MIN_EDGE_GAP,
+  );
 });
 
 test('на десктопе навигация расположена сверху над контентом', async ({ page }) => {

@@ -1,9 +1,9 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
-import { API_GLOBAL_PREFIX } from '@strive/api-interfaces';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { INestApplication } from '@nestjs/common';
 import { getDatabaseUrl } from '../test-support/index.js';
+import { configureApp } from './app.setup.js';
 
 describe('HTTP API и граф зависимостей', () => {
   const state: { app?: INestApplication; url?: string } = {};
@@ -13,7 +13,7 @@ describe('HTTP API и граф зависимостей', () => {
     process.env['DATABASE_URL'] = getDatabaseUrl();
     const { AppModule } = await import('./app.module.js');
     const app = await NestFactory.create(AppModule, { logger: false });
-    app.setGlobalPrefix(API_GLOBAL_PREFIX);
+    configureApp(app);
     await app.listen(0, '127.0.0.1');
     state.app = app;
     state.url = await app.getUrl();

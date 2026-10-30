@@ -11,7 +11,7 @@ test('страница использует тёмную тему на токе�
 test('вторичный текст на заглушке раздела использует приглушённый цвет токена', async ({
   page,
 }) => {
-  await page.goto('/workouts');
+  await page.goto('/history');
 
   await expect(page.getByText('Раздел появится в следующих этапах.')).toHaveCSS(
     'color',

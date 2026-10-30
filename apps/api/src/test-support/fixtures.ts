@@ -5,6 +5,7 @@ import type {
   SessionFixture,
   SetResultFixture,
   WorkoutExerciseFixture,
+  WorkoutOptions,
 } from './fixtures.types.js';
 
 const CATALOG_WORKOUT_ID = 1;
@@ -32,19 +33,25 @@ async function insertReturningId({
   return String(result.rows[0]?.id);
 }
 
-export function insertExercise(client: pg.Client): Promise<string> {
+export function insertExercise(
+  client: pg.Client,
+  name = `Упражнение ${randomUUID()}`,
+): Promise<string> {
   return insertReturningId({
     client,
     sql: `INSERT INTO exercise (name) VALUES ($1) RETURNING id`,
-    values: [`Упражнение ${randomUUID()}`],
+    values: [name],
   });
 }
 
-export function insertWorkout(client: pg.Client): Promise<string> {
+export function insertWorkout(
+  client: pg.Client,
+  { name = `Тренировка ${randomUUID()}`, description = null }: WorkoutOptions = {},
+): Promise<string> {
   return insertReturningId({
     client,
-    sql: `INSERT INTO workout (name) VALUES ($1) RETURNING id`,
-    values: [`Тренировка ${randomUUID()}`],
+    sql: `INSERT INTO workout (name, description) VALUES ($1, $2) RETURNING id`,
+    values: [name, description],
   });
 }
 

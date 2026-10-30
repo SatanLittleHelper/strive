@@ -1,0 +1,13 @@
+<a appearance="neutral" tuiCardLarge [routerLink]="['/workouts', workout().id]">
+	<header tuiHeader>
+		<h2 tuiTitle>
+			{{ workout().name }}
+			@if (workout().description) {
+				<span tuiSubtitle>{{ workout().description }}</span>
+			}
+		</h2>
+	</header>
+	<footer>
+		<span appearance="neutral" tuiBadge>{{ exerciseCount() }}</span>
+	</footer>
+</a>

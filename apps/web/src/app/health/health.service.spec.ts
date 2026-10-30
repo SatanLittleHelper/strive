@@ -18,24 +18,18 @@ describe('Состояние API', () => {
   it('показывает ожидание до получения ответа', () => {
     const service = TestBed.inject(HealthService);
     expect(service.status()).toBe('Проверка API…');
-    TestBed.inject(HttpTestingController)
-      .expectOne('/api/health')
-      .flush({ success: true, data: { status: 'ok' } });
+    TestBed.inject(HttpTestingController).expectOne('/api/health').flush({ status: 'ok' });
   });
 
   it('показывает доступность после успешной проверки', () => {
     const service = TestBed.inject(HealthService);
-    TestBed.inject(HttpTestingController)
-      .expectOne('/api/health')
-      .flush({ success: true, data: { status: 'ok' } });
+    TestBed.inject(HttpTestingController).expectOne('/api/health').flush({ status: 'ok' });
     expect(service.status()).toBe('API работает');
   });
 
-  it('обрабатывает неуспешный ответ API', () => {
+  it('обрабатывает ответ API со статусом не ok', () => {
     const service = TestBed.inject(HealthService);
-    TestBed.inject(HttpTestingController)
-      .expectOne('/api/health')
-      .flush({ success: false, data: null });
+    TestBed.inject(HttpTestingController).expectOne('/api/health').flush({ status: 'error' });
     expect(service.status()).toBe('API недоступен');
   });
 

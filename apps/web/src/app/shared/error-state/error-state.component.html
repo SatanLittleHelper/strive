@@ -1,0 +1,13 @@
+<div appearance="neutral" role="alert" tuiCardLarge>
+	<header tuiHeader>
+		<h2 tuiTitle>
+			{{ message() }}
+			<span tuiSubtitle>Проверьте соединение и попробуйте ещё раз</span>
+		</h2>
+	</header>
+	<footer>
+		<button appearance="primary" size="m" tuiButton type="button" (click)="retry.emit()">
+			Повторить
+		</button>
+	</footer>
+</div>

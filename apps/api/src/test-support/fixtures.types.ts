@@ -28,3 +28,8 @@ export interface WorkoutExerciseFixture {
   targetRepsMin?: number;
   targetRepsMax?: number;
 }
+
+export interface WorkoutOptions {
+  name?: string;
+  description?: string | null;
+}
