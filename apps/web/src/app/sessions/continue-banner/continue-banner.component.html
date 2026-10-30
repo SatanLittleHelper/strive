@@ -1,0 +1,10 @@
+@if (!active.isLoading() && !active.error()) {
+	@if (active.value()?.session; as session) {
+		<aside tuiCardLarge appearance="neutral" class="grid gap-3" aria-label="Незавершённая тренировка">
+			<h2 tuiTitle>
+				Тренировка не завершена<span tuiSubtitle>{{ session.workout.name }}</span>
+			</h2>
+			<a tuiButton routerLink="/session">Продолжить</a>
+		</aside>
+	}
+}

@@ -36,19 +36,19 @@
 					}
 				</ol>
 				<div class="sticky bottom-[calc(var(--spacing-nav)+0.75rem)] grid gap-2 md:static">
+					@if (startError()) {
+						<div tuiNotification appearance="negative" role="alert">{{ startError() }}</div>
+					}
 					<button
 						appearance="primary"
-						aria-describedby="start-hint"
-						disabled
+						[disabled]="starting()"
+						(click)="start()"
 						size="l"
 						tuiButton
 						type="button"
 					>
-						Начать
+						{{ starting() ? 'Запуск…' : 'Начать' }}
 					</button>
-					<p id="start-hint" class="text-center" tuiTitle>
-						<span tuiSubtitle>Запись тренировки появится в следующем этапе</span>
-					</p>
 				</div>
 			}
 		}

@@ -14,3 +14,13 @@ export type {
   WorkoutIdRequest,
   WorkoutSummary,
 } from './workout.types.js';
+export { SET_RESULT_LIMITS } from './set-result.constants.js';
+export type {
+  ActiveSessionResponse,
+  SaveSetResultRequest,
+  SessionIdRequest,
+  SetResult,
+  SetResultParamsRequest,
+  StartSessionRequest,
+  WorkoutSession,
+} from './workout-session.types.js';

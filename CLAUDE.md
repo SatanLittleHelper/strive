@@ -32,6 +32,8 @@ NestJS: префикс `/api`, проверка `/api/health`, проверяе�
 
 **Исключение из правил dev-kit (миграции):** схема БД ведётся schema-first через `prisma migrate` (файлы схемы `apps/api/prisma/schema/*.prisma` — по файлу на модель — редактируются вручную, миграции — `apps/api/prisma/migrations`, одна таблица — одна миграция), а не Flyway + `prisma db pull`, как требуют `rules/nestjs/prisma.md` и `rules/nestjs/flyway.md`. Из-за этого в проекте **разрешён `@updatedAt`**: колонки `updated_at` объявляются как `DateTime @default(now()) @updatedAt @db.Timestamptz(6)` (правило «без `@updatedAt`, явный `updated_at: new Date()`» из `prisma.md` здесь не действует). Остальные правила Prisma и репозиториев (snake_case, `Timestamptz`, `get*`/`find*`, ORM только в репозитории) действуют.
 
+Сессии тренировок доступны под `DeviceIdGuard`: `GET /api/sessions/active`, `POST /api/sessions`, `GET /api/sessions/:id`, `PUT /api/sessions/:id/sets/:exerciseId/:setNumber`, `POST /api/sessions/:id/finish`. Экран `/session` сохраняет и правит подходы, а главная показывает баннер «Продолжить» для активной сессии устройства.
+
 Не коммить автоматически. Сохраняй незакоммиченные пользовательские изменения.
 
 @.claude/ai-dev-kit/rules/RULES.md

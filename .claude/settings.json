@@ -13,7 +13,8 @@
     ]
   },
   "enabledPlugins": {
-    "polish@ai-dev-kit": true
+    "polish@ai-dev-kit": true,
+    "pr-flow@ai-dev-kit": true
   },
   "extraKnownMarketplaces": {
     "ai-dev-kit": {

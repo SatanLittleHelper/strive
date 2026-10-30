@@ -1,0 +1,80 @@
+<div class="grid gap-3">
+	<button
+		appearance="secondary"
+		tuiButton
+		type="button"
+		class="w-full"
+		[attr.aria-expanded]="expanded()"
+		[disabled]="disabled() || saving()"
+		(click)="toggle()"
+	>
+		Подход {{ setNumber() }}
+		@if (result(); as saved) {
+			<span tuiBadge appearance="positive">Выполнен</span>
+			<span>{{ saved.weight }} кг × {{ saved.reps }}</span>
+		}
+	</button>
+	@if (expanded()) {
+		<form
+			class="grid gap-3"
+			novalidate
+			(ngSubmit)="save()"
+			[attr.aria-label]="'Подход ' + setNumber()"
+		>
+			<div class="grid grid-cols-2 gap-3">
+				<tui-textfield>
+					<label tuiLabel>Вес, кг</label>
+					<input
+						tuiInputNumber
+						name="weight"
+						[min]="0"
+						[max]="limits.weightMax"
+						[step]="0.5"
+						[disabled]="saving() || disabled()"
+						[(ngModel)]="weight"
+					/>
+				</tui-textfield>
+				<tui-textfield>
+					<label tuiLabel>Повторы</label>
+					<input
+						tuiInputNumber
+						name="reps"
+						[min]="limits.repsMin"
+						[max]="limits.repsMax"
+						[step]="1"
+						[disabled]="saving() || disabled()"
+						[(ngModel)]="reps"
+					/>
+				</tui-textfield>
+			</div>
+			<tui-textfield>
+				<label tuiLabel>RPE (1–5, необязательно)</label>
+				<input
+					tuiInputNumber
+					name="rpe"
+					[min]="limits.rpeMin"
+					[max]="limits.rpeMax"
+					[step]="1"
+					[disabled]="saving() || disabled()"
+					[(ngModel)]="rpe"
+				/>
+			</tui-textfield>
+			<tui-textfield>
+				<label tuiLabel>Заметка</label>
+				<textarea
+					tuiTextarea
+					name="note"
+					[maxLength]="limits.noteMaxLength"
+					[disabled]="saving() || disabled()"
+					[(ngModel)]="note"
+				></textarea>
+			</tui-textfield>
+			@if (error()) {
+				<div tuiNotification appearance="negative" role="alert">{{ error() }}</div>
+			}
+			<button tuiButton type="submit" [disabled]="saving() || disabled()">
+				{{ saving() ? 'Сохранение…' : 'Сохранить подход' }}
+			</button>
+		</form>
+	}
+</div>

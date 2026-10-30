@@ -78,12 +78,12 @@ test.describe('каталог с мокнутым API', () => {
     await expect(exercises.nth(1)).toContainText('2 × 5');
   });
 
-  test('кнопка «Начать» видна над нижней навигацией и пока недоступна', async ({ page }) => {
+  test('кнопка «Начать» доступна и видна над нижней навигацией', async ({ page }) => {
     await page.route('**/api/workouts/1', (route) => route.fulfill({ json: ok(DETAILS) }));
     await page.goto('/workouts/1');
 
     const start = page.getByRole('button', { name: 'Начать' });
-    await expect(start).toBeDisabled();
+    await expect(start).toBeEnabled();
     const startBox = await start.boundingBox();
     const navigationBox = await page
       .getByRole('navigation', { name: 'Основная навигация' })

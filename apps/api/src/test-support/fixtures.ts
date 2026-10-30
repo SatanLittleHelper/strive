@@ -72,11 +72,15 @@ export function insertWorkoutExercise({
   );
 }
 
-export function insertSession({ client, deviceId }: SessionFixture): Promise<string> {
+export function insertSession({
+  client,
+  deviceId,
+  workoutId = String(CATALOG_WORKOUT_ID),
+}: SessionFixture): Promise<string> {
   return insertReturningId({
     client,
     sql: `INSERT INTO workout_session (device_id, workout_id) VALUES ($1, $2) RETURNING id`,
-    values: [deviceId, CATALOG_WORKOUT_ID],
+    values: [deviceId, workoutId],
   });
 }
 
@@ -87,14 +91,16 @@ export async function finishSession({ client, sessionId }: FinishSessionFixture)
 export function insertSetResult({
   client,
   sessionId,
+  exerciseId = String(CATALOG_EXERCISE_ID),
   setNumber = DEFAULT_SET_NUMBER,
   weight = DEFAULT_WEIGHT,
   reps = DEFAULT_REPS,
   rpe = null,
+  note = null,
 }: SetResultFixture): Promise<pg.QueryResult> {
   return client.query(
-    `INSERT INTO set_result (session_id, exercise_id, set_number, weight, reps, rpe)
-     VALUES ($1, $2, $3, $4, $5, $6)`,
-    [sessionId, CATALOG_EXERCISE_ID, setNumber, weight, reps, rpe],
+    `INSERT INTO set_result (session_id, exercise_id, set_number, weight, reps, rpe, note)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    [sessionId, exerciseId, setNumber, weight, reps, rpe, note],
   );
 }
