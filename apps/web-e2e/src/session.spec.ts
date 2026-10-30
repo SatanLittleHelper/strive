@@ -200,6 +200,7 @@ test.describe('экран сессии с мокнутым API', () => {
     await page.getByRole('button', { name: 'Завершить', exact: true }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Завершить', exact: true }).click();
     await expect(page.getByRole('alert')).toContainText('Не удалось завершить тренировку');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Завершить', exact: true })).toBeEnabled();
     expect(finishes).toEqual(['POST']);
   });
