@@ -7,11 +7,17 @@
       "skillPath": "skills/angular-best-practices/SKILL.md",
       "computedHash": "8a0f0f438f5fc7ec25cae5b336f587156089e03f1cb9de436bc323e9f11e1416"
     },
+    "nestjs-best-practices": {
+      "source": "kadajett/agent-nestjs-skills",
+      "sourceType": "github",
+      "skillPath": "skills/nestjs-best-practices/SKILL.md",
+      "computedHash": "58f8a630637be3acce1f118c747d68160346ada8a43d76cb52a5b4c4edaa2d37"
+    },
     "roadmap": {
       "source": "SatanLittleHelper/ai-dev-kit",
       "sourceType": "github",
       "skillPath": "skills/roadmap/SKILL.md",
-      "computedHash": "f3a08cb257bb0d7e5c3ab3c94f8c877a486cbec0b827d7d39f84db99326e9f6e"
+      "computedHash": "46d5562644436b7b9415c4bb4455af7e6b25b998a1b461576f6056b988b50890"
     },
     "scaffolding-nestjs-app": {
       "source": "SatanLittleHelper/ai-dev-kit",
@@ -29,13 +35,13 @@
       "source": "SatanLittleHelper/ai-dev-kit",
       "sourceType": "github",
       "skillPath": "skills/testing-changes/SKILL.md",
-      "computedHash": "d82f30d277bf4c8e336722d071d4f63807e534fb8e744a37bd13d8ce1065c747"
+      "computedHash": "cfbe01e033539b8c2328e9ba62a581c6dda687d35b69aeae086b156380dace63"
     },
     "update-ai-dev-kit": {
       "source": "SatanLittleHelper/ai-dev-kit",
       "sourceType": "github",
       "skillPath": "skills/update-ai-dev-kit/SKILL.md",
-      "computedHash": "9f765e16faa51c8182ec2bf57d8f04ced3f703b41eda77c92602d0ce8f1bc8b8"
+      "computedHash": "4ea3006c42eb8fda3f98754184570068bcdfd02cdee800c5da8444c3928a28e7"
     }
   }
 }

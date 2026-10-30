@@ -18,6 +18,11 @@ export const appRoutes: Routes = [
     loadComponent: () =>
       import('./workouts/workout-details').then((module) => module.WorkoutDetailsComponent),
   },
+  {
+    path: 'session',
+    loadComponent: () =>
+      import('./sessions/active-session').then((module) => module.ActiveSessionComponent),
+  },
   { path: 'history', loadComponent: loadPlaceholder, data: { heading: 'История' } },
   { path: '**', redirectTo: '' },
 ];
