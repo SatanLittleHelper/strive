@@ -10,7 +10,11 @@ import {
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
-import type { ActiveSessionResponse, WorkoutSession } from '@strive/api-interfaces';
+import type {
+  ActiveSessionResponse,
+  SessionHistoryResponse,
+  WorkoutSession,
+} from '@strive/api-interfaces';
 import { VALIDATION_PIPE_OPTIONS } from '../common/validation-pipe.constants.js';
 import { DeviceId, DeviceIdGuard } from '../device-id/index.js';
 import { SaveSetResultDto } from './save-set-result.dto.js';
@@ -45,6 +49,15 @@ export class SessionsController {
     params: SessionIdDto,
   ): Promise<WorkoutSession> {
     return this.sessions.getOwned(deviceId, params.id);
+  }
+
+  @Get(':id/history')
+  history(
+    @DeviceId() deviceId: string,
+    @Param(new ValidationPipe({ ...VALIDATION_PIPE_OPTIONS, expectedType: SessionIdDto }))
+    params: SessionIdDto,
+  ): Promise<SessionHistoryResponse> {
+    return this.sessions.getHistory(deviceId, params.id);
   }
 
   @Put(':id/sets/:exerciseId/:setNumber')

@@ -97,6 +97,7 @@ describe('WorkoutRepository', () => {
           sets: SQUAT_PLAN.targetSets,
           repsMin: SQUAT_PLAN.targetRepsMin,
           repsMax: SQUAT_PLAN.targetRepsMax,
+          weight: null,
         },
         {
           exercise: { id: Number(deadliftId), name: DEADLIFT },
@@ -104,6 +105,7 @@ describe('WorkoutRepository', () => {
           sets: DEADLIFT_PLAN.targetSets,
           repsMin: DEADLIFT_PLAN.targetRepsMin,
           repsMax: DEADLIFT_PLAN.targetRepsMax,
+          weight: null,
         },
       ],
     });

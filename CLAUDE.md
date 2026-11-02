@@ -15,7 +15,9 @@
 - `make db-up` / `npm run db:migrate` — локальный Postgres и применение миграций; `npm run db:migrate:dev -- --name <имя>` — новая миграция; `npm run db:generate` — Prisma-клиент.
 - Не добавляй `PORT` и `HOST` в `.env`: Nx передаёт `PORT` Angular dev-серверу, и тот занимает порт API.
 - `npx nx run web:test --include=apps/web/src/app/health/health.service.spec.ts` — отдельный frontend spec.
-- `npm run e2e` — Playwright, оба приложения запускаются автоматически.
+- `npm run e2e` — Playwright, оба приложения запускаются автоматически; порты 3000 и 4200 должны быть свободны (остановите `npm start`).
+- `npx nx run api:test -- apps/api/src/path/to/file.spec.ts` — тест API на один spec (нужен Docker). Флаги Nx (`--skip-nx-cache`, `--output-style=static`) ставьте до `--`: всё после него уходит в Vitest.
+- `npm run e2e -- apps/web-e2e/src/file.spec.ts --project=chromium` — Playwright на один spec и один проект; свайп-кейсы: `--project=chromium-touch`.
 - `npm run test:coverage` — покрытие Vitest.
 
 ## Архитектура
@@ -32,7 +34,7 @@ NestJS: префикс `/api`, проверка `/api/health`, проверяе�
 
 **Исключение из правил dev-kit (миграции):** схема БД ведётся schema-first через `prisma migrate` (файлы схемы `apps/api/prisma/schema/*.prisma` — по файлу на модель — редактируются вручную, миграции — `apps/api/prisma/migrations`, одна таблица — одна миграция), а не Flyway + `prisma db pull`, как требуют `rules/nestjs/prisma.md` и `rules/nestjs/flyway.md`. Из-за этого в проекте **разрешён `@updatedAt`**: колонки `updated_at` объявляются как `DateTime @default(now()) @updatedAt @db.Timestamptz(6)` (правило «без `@updatedAt`, явный `updated_at: new Date()`» из `prisma.md` здесь не действует). Остальные правила Prisma и репозиториев (snake_case, `Timestamptz`, `get*`/`find*`, ORM только в репозитории) действуют.
 
-Сессии тренировок доступны под `DeviceIdGuard`: `GET /api/sessions/active`, `POST /api/sessions`, `GET /api/sessions/:id`, `PUT /api/sessions/:id/sets/:exerciseId/:setNumber`, `POST /api/sessions/:id/finish`. Экран `/session` сохраняет и правит подходы, а главная показывает баннер «Продолжить» для активной сессии устройства.
+Сессии тренировок доступны под `DeviceIdGuard`: `GET /api/sessions/active`, `POST /api/sessions`, `GET /api/sessions/:id`, `PUT /api/sessions/:id/sets/:exerciseId/:setNumber`, `POST /api/sessions/:id/finish`. Экран `/workouts/session` сохраняет и правит подходы, а главная показывает баннер «Продолжить» для активной сессии устройства. `GET /api/sessions/:id/history` отдаёт до 10 последних завершённых записей устройства на каждое упражнение; в плане упражнения есть необязательный `target_weight` (миграция `seed_target_weights` задаёт стартовые веса). Экран тренировки находится по адресу `/workouts/session`.
 
 Не коммить автоматически. Сохраняй незакоммиченные пользовательские изменения.
 

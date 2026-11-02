@@ -34,13 +34,14 @@ export default defineConfig({
     },
   ],
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] }, grepInvert: /@touch/ },
+    { name: 'chromium-touch', use: { ...devices['Pixel 7'] }, grep: /@touch/ },
     // firefox и webkit запускаются только локально, чтобы CI не ставил лишние браузеры
     ...(isCI
       ? []
       : [
-          { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-          { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+          { name: 'firefox', use: { ...devices['Desktop Firefox'] }, grepInvert: /@touch/ },
+          { name: 'webkit', use: { ...devices['Desktop Safari'] }, grepInvert: /@touch/ },
         ]),
   ],
 });

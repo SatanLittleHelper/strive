@@ -31,7 +31,8 @@
 						[max]="limits.weightMax"
 						[step]="0.5"
 						[disabled]="saving() || disabled()"
-						[(ngModel)]="weight"
+						[ngModel]="form().weight"
+						(ngModelChange)="patch({ weight: $event })"
 					/>
 				</tui-textfield>
 				<tui-textfield>
@@ -43,7 +44,8 @@
 						[max]="limits.repsMax"
 						[step]="1"
 						[disabled]="saving() || disabled()"
-						[(ngModel)]="reps"
+						[ngModel]="form().reps"
+						(ngModelChange)="patch({ reps: $event })"
 					/>
 				</tui-textfield>
 			</div>
@@ -56,7 +58,8 @@
 					[max]="limits.rpeMax"
 					[step]="1"
 					[disabled]="saving() || disabled()"
-					[(ngModel)]="rpe"
+					[ngModel]="form().rpe"
+					(ngModelChange)="patch({ rpe: $event })"
 				/>
 			</tui-textfield>
 			<tui-textfield>
@@ -66,7 +69,8 @@
 					name="note"
 					[maxLength]="limits.noteMaxLength"
 					[disabled]="saving() || disabled()"
-					[(ngModel)]="note"
+					[ngModel]="form().note"
+					(ngModelChange)="patch({ note: $event })"
 				></textarea>
 			</tui-textfield>
 			@if (error()) {

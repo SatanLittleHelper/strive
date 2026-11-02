@@ -41,3 +41,18 @@ export interface SaveSetResultRequest {
   rpe?: number | null;
   note?: string | null;
 }
+
+export interface ExerciseHistoryEntry {
+  sessionId: number;
+  finishedAt: string;
+  sets: SetResult[];
+}
+
+export interface ExerciseHistory {
+  exerciseId: number;
+  entries: ExerciseHistoryEntry[];
+}
+
+export interface SessionHistoryResponse {
+  exercises: ExerciseHistory[];
+}

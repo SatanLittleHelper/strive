@@ -2,10 +2,17 @@ import 'reflect-metadata';
 import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { DEVICE_ID_HEADER, type ApiResponse, type WorkoutSession } from '@strive/api-interfaces';
+import {
+  DEVICE_ID_HEADER,
+  type ApiResponse,
+  type SessionHistoryResponse,
+  type WorkoutSession,
+} from '@strive/api-interfaces';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { configureApp } from '../app/app.setup.js';
 import {
+  finishSession,
+  insertSetResult,
   getDatabaseUrl,
   insertExercise,
   insertSession,
@@ -31,7 +38,7 @@ describe('HTTP сессий тренировок', () => {
   const state: { app?: INestApplication; url?: string } = {};
 
   beforeAll(async () => {
-    for (const method of ['active', 'start', 'get', 'saveSet', 'finish']) {
+    for (const method of ['active', 'start', 'get', 'history', 'saveSet', 'finish']) {
       Reflect.deleteMetadata('design:paramtypes', SessionsController.prototype, method);
     }
     process.env['LOG_PRETTY'] = 'false';
@@ -231,5 +238,80 @@ describe('HTTP сессий тренировок', () => {
     ]) {
       expect(await request(options)).toMatchObject({ status: NOT_FOUND });
     }
+  });
+  async function sessionWithHistory(): Promise<{ currentId: string; exerciseId: number }> {
+    const { workoutId, exerciseId } = await catalog();
+    const pastId = await insertSession({
+      client: getClient(),
+      deviceId: DEVICE_ID,
+      workoutId: String(workoutId),
+    });
+    await insertSetResult({
+      client: getClient(),
+      sessionId: pastId,
+      exerciseId: String(exerciseId),
+      weight: 55,
+      reps: 8,
+    });
+    await finishSession({ client: getClient(), sessionId: pastId });
+    const currentId = await insertSession({
+      client: getClient(),
+      deviceId: DEVICE_ID,
+      workoutId: String(workoutId),
+    });
+
+    return { currentId, exerciseId: Number(exerciseId) };
+  }
+
+  it('отдаёт историю подходов в контрактной форме', async () => {
+    const { currentId, exerciseId } = await sessionWithHistory();
+
+    const response = await request({ path: `/${currentId}/history` });
+
+    expect(response.status).toBe(OK);
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        exercises: [
+          {
+            exerciseId,
+            entries: [
+              {
+                sets: [{ exerciseId, setNumber: 1, weight: 55, reps: 8, rpe: null, note: null }],
+              },
+            ],
+          },
+        ],
+      },
+    });
+    const body = response.body as ApiResponse<SessionHistoryResponse>;
+    expect(body.data?.exercises[0]?.entries[0]?.finishedAt).toMatch(
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
+    );
+    expect(Number.isNaN(Date.parse(body.data?.exercises[0]?.entries[0]?.finishedAt ?? ''))).toBe(
+      false,
+    );
+  });
+
+  it('отвечает 400 на историю без заголовка устройства', async () => {
+    const { currentId } = await sessionWithHistory();
+
+    const response = await request({ path: `/${currentId}/history`, deviceId: null });
+
+    expect(response.status).toBe(BAD_REQUEST);
+  });
+
+  it('отвечает 404 на историю сессии другого устройства', async () => {
+    const { currentId } = await sessionWithHistory();
+
+    const response = await request({ path: `/${currentId}/history`, deviceId: OTHER_DEVICE_ID });
+
+    expect(response.status).toBe(NOT_FOUND);
+  });
+
+  it('отвечает 400 на историю с некорректным id сессии', async () => {
+    const response = await request({ path: '/0/history' });
+
+    expect(response.status).toBe(BAD_REQUEST);
   });
 });

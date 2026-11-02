@@ -3,6 +3,7 @@ import { inject, Service } from '@angular/core';
 import type {
   ActiveSessionResponse,
   SaveSetResultRequest,
+  SessionHistoryResponse,
   WorkoutSession,
 } from '@strive/api-interfaces';
 import { tap, type Observable } from 'rxjs';
@@ -13,6 +14,12 @@ export class SessionsService {
   private readonly http = inject(HttpClient);
 
   readonly active = httpResource<ActiveSessionResponse>(() => `${SESSIONS_URL}/active`);
+
+  readonly history = httpResource<SessionHistoryResponse>(() => {
+    const session = this.active.hasValue() ? this.active.value().session : null;
+
+    return session ? `${SESSIONS_URL}/${session.id}/history` : undefined;
+  });
 
   start(workoutId: number): Observable<WorkoutSession> {
     return this.http

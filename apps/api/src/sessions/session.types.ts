@@ -14,3 +14,5 @@ export interface SaveSetParams {
   exerciseId: number;
   setNumber: number;
 }
+
+export type SetResultRow = Prisma.set_resultGetPayload<Record<string, never>>;

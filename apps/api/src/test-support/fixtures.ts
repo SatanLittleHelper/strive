@@ -63,12 +63,13 @@ export function insertWorkoutExercise({
   targetSets = DEFAULT_TARGET_SETS,
   targetRepsMin = DEFAULT_REPS_MIN,
   targetRepsMax = DEFAULT_REPS_MAX,
+  targetWeight = null,
 }: WorkoutExerciseFixture): Promise<pg.QueryResult> {
   return client.query(
     `INSERT INTO workout_exercise
-       (workout_id, exercise_id, position, target_sets, target_reps_min, target_reps_max)
-     VALUES ($1, $2, $3, $4, $5, $6)`,
-    [workoutId, exerciseId, position, targetSets, targetRepsMin, targetRepsMax],
+       (workout_id, exercise_id, position, target_sets, target_reps_min, target_reps_max, target_weight)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    [workoutId, exerciseId, position, targetSets, targetRepsMin, targetRepsMax, targetWeight],
   );
 }
 
@@ -84,8 +85,15 @@ export function insertSession({
   });
 }
 
-export async function finishSession({ client, sessionId }: FinishSessionFixture): Promise<void> {
-  await client.query(`UPDATE workout_session SET finished_at = now() WHERE id = $1`, [sessionId]);
+export async function finishSession({
+  client,
+  sessionId,
+  finishedAt = null,
+}: FinishSessionFixture): Promise<void> {
+  await client.query(
+    `UPDATE workout_session SET finished_at = COALESCE($2::timestamptz, now()) WHERE id = $1`,
+    [sessionId, finishedAt],
+  );
 }
 
 export function insertSetResult({
