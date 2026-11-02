@@ -1,0 +1,58 @@
+<section class="grid gap-4">
+	@switch (state()) {
+		@case ('loading') {
+			<p role="status" tuiTitle>Загрузка тренировки…</p>
+		}
+		@case ('error') {
+			<app-error-state message="Не удалось загрузить активную тренировку" (retry)="active.reload()" />
+		}
+		@case ('empty') {
+			<app-empty-state message="Нет активной тренировки" />
+			<a routerLink="/workouts" tuiLink>Выбрать тренировку</a>
+		}
+		@case ('ready') {
+			@if (session(); as current) {
+				<header tuiHeader>
+					<h1 tuiTitle="l">{{ current.workout.name }}<span tuiSubtitle>Выполнение тренировки</span></h1>
+				</header>
+				<p tuiTitle aria-live="polite">Выполнено {{ completed() }}/{{ total() }}</p>
+				@for (item of exercises(); track item.exercise.id) {
+					<section
+						tuiCardLarge
+						appearance="neutral"
+						class="grid gap-3"
+						[attr.aria-label]="item.exercise.name"
+					>
+						<h2 tuiTitle>
+							{{ item.exercise.name }}<span tuiSubtitle>{{ formatPlan(item) }}</span>
+						</h2>
+						@for (setNumber of item.setNumbers; track setNumber) {
+							<app-set-row
+								[sessionId]="current.id"
+								[exerciseId]="item.exercise.id"
+								[setNumber]="setNumber"
+								[result]="findResult(current, item.exercise.id, setNumber)"
+								[disabled]="finishing() || confirming() || pendingSaves() > 0"
+								(pendingChange)="pendingChange($event)"
+							/>
+						}
+					</section>
+				}
+				@if (error()) {
+					<div tuiNotification appearance="negative" role="alert">{{ error() }}</div>
+				}
+				<div class="sticky bottom-[calc(var(--spacing-nav)+0.75rem)] grid gap-2 md:static">
+					<button
+						tuiButton
+						type="button"
+						size="l"
+						[disabled]="finishing() || confirming() || pendingSaves() > 0"
+						(click)="requestFinish()"
+					>
+						{{ finishing() ? 'Завершение…' : 'Завершить' }}
+					</button>
+				</div>
+			}
+		}
+	}
+</section>

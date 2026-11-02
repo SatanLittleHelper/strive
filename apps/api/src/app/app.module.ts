@@ -7,6 +7,7 @@ import { ApiResponseInterceptor } from '../common/api-response.interceptor.js';
 import { envValidationSchema } from '../config/env.validation/index.js';
 import { HealthModule } from '../health/index.js';
 import { PrismaModule } from '../prisma/index.js';
+import { SessionsModule } from '../sessions/index.js';
 import { WorkoutsModule } from '../workouts/index.js';
 
 @Module({
@@ -26,6 +27,7 @@ import { WorkoutsModule } from '../workouts/index.js';
     PrismaModule,
     HealthModule,
     WorkoutsModule,
+    SessionsModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: ApiExceptionFilter },

@@ -3,6 +3,7 @@ import type pg from 'pg';
 export interface SessionFixture {
   client: pg.Client;
   deviceId: string;
+  workoutId?: string;
 }
 
 export interface FinishSessionFixture {
@@ -13,10 +14,12 @@ export interface FinishSessionFixture {
 export interface SetResultFixture {
   client: pg.Client;
   sessionId: string;
+  exerciseId?: string;
   setNumber?: number;
   weight?: number;
   reps?: number;
   rpe?: number | null;
+  note?: string | null;
 }
 
 export interface WorkoutExerciseFixture {
