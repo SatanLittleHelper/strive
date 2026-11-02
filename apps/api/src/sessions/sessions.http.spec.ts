@@ -48,7 +48,16 @@ describe('HTTP сессий тренировок', () => {
   const state: { app?: INestApplication; url?: string } = {};
 
   beforeAll(async () => {
-    for (const method of ['active', 'list', 'start', 'get', 'summary', 'history', 'saveSet', 'finish']) {
+    for (const method of [
+      'active',
+      'list',
+      'start',
+      'get',
+      'summary',
+      'history',
+      'saveSet',
+      'finish',
+    ]) {
       Reflect.deleteMetadata('design:paramtypes', SessionsController.prototype, method);
     }
     process.env['LOG_PRETTY'] = 'false';

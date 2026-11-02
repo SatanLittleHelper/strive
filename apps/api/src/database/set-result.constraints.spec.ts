@@ -97,10 +97,9 @@ describe('Ограничения таблицы set_result', () => {
     await expect(
       getClient().query('DELETE FROM exercise WHERE id = $1', [exerciseId]),
     ).rejects.toMatchObject({ code: FOREIGN_KEY_VIOLATION });
-    const remaining = await getClient().query(
-      'SELECT 1 FROM set_result WHERE exercise_id = $1',
-      [exerciseId],
-    );
+    const remaining = await getClient().query('SELECT 1 FROM set_result WHERE exercise_id = $1', [
+      exerciseId,
+    ]);
     expect(remaining.rowCount).toBe(1);
   });
 });

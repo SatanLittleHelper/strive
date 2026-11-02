@@ -272,7 +272,11 @@ describe('Репозиторий сессий', () => {
     it('[I5] возвращает только завершённые сессии', async () => {
       const { workoutId } = await catalog();
       const finishedId = await createFinished({ workoutId, finishedAt: FIRST_FINISHED_AT });
-      await insertSession({ client: getClient(), deviceId: DEVICE_ID, workoutId: String(workoutId) });
+      await insertSession({
+        client: getClient(),
+        deviceId: DEVICE_ID,
+        workoutId: String(workoutId),
+      });
 
       const sessions = await repository().findFinished(DEVICE_ID);
 
