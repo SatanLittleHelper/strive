@@ -17,6 +17,7 @@ const INVALID_IDS = ['abc', '0', '-1', '1.5', '99999999999999999999'];
 const WORKOUT = { name: 'Тренировка HTTP', description: 'Проверка контракта' };
 const EXERCISE_NAME = 'Жим';
 const PLAN = { targetSets: 4, targetRepsMin: 8, targetRepsMax: 10 };
+const TARGET_WEIGHT = 62.5;
 
 describe('HTTP каталога тренировок', () => {
   const getClient = useDatabaseClient();
@@ -104,6 +105,31 @@ describe('HTTP каталога тренировок', () => {
     expect(await get(`/api/workouts/${id}`)).toMatchObject({
       status: HttpStatus.BAD_REQUEST,
       body: { success: false, data: null },
+    });
+  });
+  it('отдаёт целевой вес упражнения числом', async () => {
+    const workoutId = await insertWorkout(getClient(), WORKOUT);
+    const exerciseId = await insertExercise(getClient(), EXERCISE_NAME);
+    await insertWorkoutExercise({
+      client: getClient(),
+      workoutId,
+      exerciseId,
+      ...PLAN,
+      targetWeight: TARGET_WEIGHT,
+    });
+
+    expect(await get(`/api/workouts/${workoutId}`)).toMatchObject({
+      status: HttpStatus.OK,
+      body: { data: { exercises: [{ weight: TARGET_WEIGHT }] } },
+    });
+  });
+
+  it('отдаёт weight: null для упражнения без целевого веса', async () => {
+    const workoutId = await insertCatalogWorkout();
+
+    expect(await get(`/api/workouts/${workoutId}`)).toMatchObject({
+      status: HttpStatus.OK,
+      body: { data: { exercises: [{ weight: null }] } },
     });
   });
 });

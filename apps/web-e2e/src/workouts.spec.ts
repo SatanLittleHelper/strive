@@ -20,8 +20,16 @@ const DETAILS = {
       sets: 3,
       repsMin: 6,
       repsMax: 8,
+      weight: null,
     },
-    { exercise: { id: 2, name: 'Жим лёжа' }, position: 2, sets: 2, repsMin: 5, repsMax: 5 },
+    {
+      exercise: { id: 2, name: 'Жим лёжа' },
+      position: 2,
+      sets: 2,
+      repsMin: 5,
+      repsMax: 5,
+      weight: null,
+    },
   ],
 };
 

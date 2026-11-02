@@ -1,0 +1,50 @@
+<section
+	tuiCardLarge
+	appearance="neutral"
+	class="grid gap-3"
+	[attr.aria-label]="item().exercise.name"
+>
+	<h2 tuiTitle>
+		{{ item().exercise.name }}<span tuiSubtitle>{{ formatPlan(item()) }}</span>
+	</h2>
+	@for (row of rows(); track row.setNumber) {
+		<app-set-row
+			[sessionId]="session().id"
+			[exerciseId]="item().exercise.id"
+			[setNumber]="row.setNumber"
+			[defaults]="row.defaults"
+			[fillRequest]="fillRequest()"
+			[result]="row.result"
+			[open]="row.open"
+			[disabled]="disabled()"
+			(pendingChange)="pendingChange.emit($event)"
+		/>
+	}
+	@if (history(); as past) {
+		@if (past.entries.length > 0) {
+			<tui-accordion>
+				<button tuiAccordion type="button">Прошлые тренировки</button>
+				<tui-expand>
+					<div class="grid gap-3">
+						@for (entry of past.entries; track entry.sessionId) {
+							<p tuiTitle>{{ entry.finishedAt | date: 'dd.MM.yyyy' }}</p>
+							@for (set of entry.sets; track set.setNumber) {
+								<button
+									tuiCell
+									type="button"
+									[disabled]="disabled() || activeSetNumber() === null"
+									(click)="applyHistory(set)"
+								>
+									<span tuiTitle>
+										{{ set.weight }} кг × {{ set.reps }}
+										<span tuiSubtitle>Подход {{ set.setNumber }} · RPE {{ set.rpe ?? '—' }}</span>
+									</span>
+								</button>
+							}
+						}
+					</div>
+				</tui-expand>
+			</tui-accordion>
+		}
+	}
+</section>

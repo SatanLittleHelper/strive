@@ -14,14 +14,14 @@ export const appRoutes: Routes = [
       import('./workouts/workout-list').then((module) => module.WorkoutListComponent),
   },
   {
+    path: 'workouts/session',
+    loadComponent: () =>
+      import('./sessions/active-session').then((module) => module.ActiveSessionComponent),
+  },
+  {
     path: 'workouts/:id',
     loadComponent: () =>
       import('./workouts/workout-details').then((module) => module.WorkoutDetailsComponent),
-  },
-  {
-    path: 'session',
-    loadComponent: () =>
-      import('./sessions/active-session').then((module) => module.ActiveSessionComponent),
   },
   { path: 'history', loadComponent: loadPlaceholder, data: { heading: 'История' } },
   { path: '**', redirectTo: '' },

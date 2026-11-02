@@ -81,11 +81,11 @@ export class WorkoutDetailsComponent {
       )
       .subscribe({
         next: () => {
-          void this.router.navigateByUrl('/session');
+          void this.router.navigateByUrl('/workouts/session');
         },
         error: (error: unknown) => {
           if (error instanceof HttpErrorResponse && error.status === SESSION_CONFLICT_STATUS) {
-            void this.router.navigateByUrl('/session');
+            void this.router.navigateByUrl('/workouts/session');
             return;
           }
 

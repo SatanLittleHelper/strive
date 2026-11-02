@@ -10,6 +10,8 @@ const UNIQUE_VIOLATION = '23505';
 const CHECK_VIOLATION = '23514';
 const REPS_MIN = 10;
 const REPS_MAX_BELOW_MIN = 8;
+const NEGATIVE_WEIGHT = -1;
+const ZERO_WEIGHT = 0;
 
 describe('Ограничения таблицы workout_exercise', () => {
   const getClient = useDatabaseClient();
@@ -73,6 +75,29 @@ describe('Ограничения таблицы workout_exercise', () => {
         workoutId: otherWorkoutId,
         exerciseId: parents.exerciseId,
       }),
+    ).resolves.toBeDefined();
+  });
+  it('не допускает отрицательный целевой вес', async () => {
+    const parents = await createParents();
+
+    await expect(
+      insertWorkoutExercise({ client: getClient(), ...parents, targetWeight: NEGATIVE_WEIGHT }),
+    ).rejects.toMatchObject({ code: CHECK_VIOLATION });
+  });
+
+  it('допускает план без целевого веса', async () => {
+    const parents = await createParents();
+
+    await expect(
+      insertWorkoutExercise({ client: getClient(), ...parents, targetWeight: null }),
+    ).resolves.toBeDefined();
+  });
+
+  it('допускает нулевой целевой вес', async () => {
+    const parents = await createParents();
+
+    await expect(
+      insertWorkoutExercise({ client: getClient(), ...parents, targetWeight: ZERO_WEIGHT }),
     ).resolves.toBeDefined();
   });
 });

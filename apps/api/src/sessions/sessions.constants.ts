@@ -6,3 +6,6 @@ export const SESSION_INCLUDE = {
 
 export const MIN_SESSION_ID = 1;
 export const MIN_SET_NUMBER = 1;
+
+export const HISTORY_ENTRIES_PER_EXERCISE = 10;
+export const HISTORY_SESSIONS_LIMIT = 100;

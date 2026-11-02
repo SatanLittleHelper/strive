@@ -5,6 +5,7 @@ model workout_exercise {
   target_sets     Int
   target_reps_min Int
   target_reps_max Int
+  target_weight   Decimal? @db.Decimal(6, 2)
   workout         workout  @relation(fields: [workout_id], references: [id], onDelete: Cascade)
   exercise        exercise @relation(fields: [exercise_id], references: [id], onDelete: Restrict)
 

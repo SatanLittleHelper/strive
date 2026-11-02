@@ -9,6 +9,7 @@ export interface SessionFixture {
 export interface FinishSessionFixture {
   client: pg.Client;
   sessionId: string;
+  finishedAt?: string | null;
 }
 
 export interface SetResultFixture {
@@ -30,6 +31,7 @@ export interface WorkoutExerciseFixture {
   targetSets?: number;
   targetRepsMin?: number;
   targetRepsMax?: number;
+  targetWeight?: number | null;
 }
 
 export interface WorkoutOptions {

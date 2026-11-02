@@ -14,10 +14,13 @@ export type {
   WorkoutIdRequest,
   WorkoutSummary,
 } from './workout.types.js';
-export { SET_RESULT_LIMITS } from './set-result.constants.js';
+export { DEFAULT_RPE, SET_RESULT_LIMITS } from './set-result.constants.js';
 export type {
   ActiveSessionResponse,
+  ExerciseHistory,
+  ExerciseHistoryEntry,
   SaveSetResultRequest,
+  SessionHistoryResponse,
   SessionIdRequest,
   SetResult,
   SetResultParamsRequest,

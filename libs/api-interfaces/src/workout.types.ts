@@ -9,6 +9,7 @@ export interface WorkoutExercise {
   sets: number;
   repsMin: number;
   repsMax: number;
+  weight: number | null;
 }
 
 export interface WorkoutSummary {

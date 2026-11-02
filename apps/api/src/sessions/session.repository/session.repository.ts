@@ -5,13 +5,21 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import type { SaveSetResultRequest, WorkoutSession } from '@strive/api-interfaces';
+import type {
+  SaveSetResultRequest,
+  SessionHistoryResponse,
+  WorkoutSession,
+} from '@strive/api-interfaces';
 import { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/index.js';
 import { toWorkout, WORKOUT_INCLUDE } from '../../workouts/index.js';
-import { toSession } from '../session.mapper.js';
+import { toSession, toSetResult } from '../session.mapper.js';
 import type { SaveSetParams, SessionRow } from '../session.types.js';
-import { SESSION_INCLUDE } from '../sessions.constants.js';
+import {
+  SESSION_INCLUDE,
+  HISTORY_ENTRIES_PER_EXERCISE,
+  HISTORY_SESSIONS_LIMIT,
+} from '../sessions.constants.js';
 
 @Injectable()
 export class SessionRepository {
@@ -118,6 +126,49 @@ export class SessionRepository {
     }
 
     return this.getOwned(deviceId, sessionId);
+  }
+
+  async getHistory(deviceId: string, sessionId: number): Promise<SessionHistoryResponse> {
+    const session = await this.getOwned(deviceId, sessionId);
+    const exerciseIds = session.workout.exercises.map((item) => item.exercise.id);
+    const exerciseKeys = exerciseIds.map((id) => BigInt(id));
+
+    const rows = await this.prisma.workout_session.findMany({
+      where: {
+        device_id: deviceId,
+        finished_at: { not: null },
+        id: { not: BigInt(sessionId) },
+        set_results: { some: { exercise_id: { in: exerciseKeys } } },
+      },
+      orderBy: { finished_at: 'desc' },
+      take: HISTORY_SESSIONS_LIMIT,
+      include: {
+        set_results: {
+          where: { exercise_id: { in: exerciseKeys } },
+          orderBy: [{ exercise_id: 'asc' }, { set_number: 'asc' }],
+        },
+      },
+    });
+
+    return {
+      exercises: exerciseIds.map((exerciseId) => ({
+        exerciseId,
+        entries: rows
+          .flatMap((row) => {
+            const sets = row.set_results.filter((set) => Number(set.exercise_id) === exerciseId);
+            if (sets.length === 0 || row.finished_at === null) return [];
+
+            return [
+              {
+                sessionId: Number(row.id),
+                finishedAt: row.finished_at.toISOString(),
+                sets: sets.map(toSetResult),
+              },
+            ];
+          })
+          .slice(0, HISTORY_ENTRIES_PER_EXERCISE),
+      })),
+    };
   }
 
   private async mapSession(row: SessionRow): Promise<WorkoutSession> {

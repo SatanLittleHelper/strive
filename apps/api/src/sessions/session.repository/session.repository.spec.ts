@@ -4,6 +4,9 @@ import type { ConfigService } from '@nestjs/config';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { PrismaService } from '../../prisma/index.js';
 import {
+  finishSession,
+  insertSession,
+  insertSetResult,
   getDatabaseUrl,
   insertExercise,
   insertWorkout,
@@ -18,6 +21,14 @@ const UNKNOWN_ID = 999;
 const TARGET_SETS = 3;
 const SET_NUMBER = 1;
 const RESULT = { weight: 60.25, reps: 8, rpe: 3, note: 'Легко' };
+
+const HISTORY_LIMIT = 10;
+const OVER_LIMIT_SESSIONS = HISTORY_LIMIT + 1;
+const FIRST_FINISHED_AT = '2026-10-01T10:00:00Z';
+const SECOND_FINISHED_AT = '2026-10-02T10:00:00Z';
+const THIRD_FINISHED_AT = '2026-10-03T10:00:00Z';
+const DAY_MS = 24 * 60 * 60 * 1000;
+const BASE_FINISHED_MS = Date.parse('2026-09-01T10:00:00Z');
 
 describe('Репозиторий сессий', () => {
   const getClient = useDatabaseClient();
@@ -186,5 +197,255 @@ describe('Репозиторий сессий', () => {
       ),
     ).rejects.toBeInstanceOf(ConflictException);
     expect((await repository().start(DEVICE_ID, workoutId)).id).not.toBe(session.id);
+  });
+  describe('История подходов', () => {
+    async function finishedSession({
+      workoutId,
+      exerciseId,
+      finishedAt,
+      deviceId = DEVICE_ID,
+      setNumbers = [1],
+    }: {
+      workoutId: number;
+      exerciseId: number;
+      finishedAt: string;
+      deviceId?: string;
+      setNumbers?: number[];
+    }): Promise<string> {
+      const sessionId = await insertSession({
+        client: getClient(),
+        deviceId,
+        workoutId: String(workoutId),
+      });
+      for (const setNumber of setNumbers) {
+        await insertSetResult({
+          client: getClient(),
+          sessionId,
+          exerciseId: String(exerciseId),
+          setNumber,
+        });
+      }
+      await finishSession({ client: getClient(), sessionId, finishedAt });
+      return sessionId;
+    }
+
+    async function currentSession(workoutId: number, deviceId = DEVICE_ID): Promise<number> {
+      return Number(
+        await insertSession({ client: getClient(), deviceId, workoutId: String(workoutId) }),
+      );
+    }
+
+    function entriesOf(
+      history: Awaited<ReturnType<SessionRepository['getHistory']>>,
+      exerciseId: number,
+    ) {
+      return history.exercises.find((item) => item.exerciseId === exerciseId)?.entries ?? [];
+    }
+
+    it('не включает незавершённую сессию устройства', async () => {
+      const { workoutId, exerciseId } = await catalog();
+      const first = await finishedSession({ workoutId, exerciseId, finishedAt: FIRST_FINISHED_AT });
+      const requested = await finishedSession({
+        workoutId,
+        exerciseId,
+        finishedAt: SECOND_FINISHED_AT,
+      });
+      const active = await currentSession(workoutId);
+      await insertSetResult({
+        client: getClient(),
+        sessionId: String(active),
+        exerciseId: String(exerciseId),
+      });
+
+      const history = await repository().getHistory(DEVICE_ID, Number(requested));
+
+      expect(entriesOf(history, exerciseId).map((entry) => entry.sessionId)).toEqual([
+        Number(first),
+      ]);
+    });
+
+    it('не включает саму запрошенную сессию', async () => {
+      const { workoutId, exerciseId } = await catalog();
+      const first = await finishedSession({ workoutId, exerciseId, finishedAt: FIRST_FINISHED_AT });
+      const requested = await finishedSession({
+        workoutId,
+        exerciseId,
+        finishedAt: SECOND_FINISHED_AT,
+      });
+
+      const history = await repository().getHistory(DEVICE_ID, Number(requested));
+
+      expect(entriesOf(history, exerciseId).map((entry) => entry.sessionId)).toEqual([
+        Number(first),
+      ]);
+    });
+
+    it('не показывает сессии другого устройства', async () => {
+      const { workoutId, exerciseId } = await catalog();
+      await finishedSession({
+        workoutId,
+        exerciseId,
+        finishedAt: FIRST_FINISHED_AT,
+        deviceId: OTHER_DEVICE_ID,
+      });
+      const current = await currentSession(workoutId);
+
+      const history = await repository().getHistory(DEVICE_ID, current);
+
+      expect(entriesOf(history, exerciseId)).toEqual([]);
+    });
+
+    it('отдаёт записи от новых к старым', async () => {
+      const { workoutId, exerciseId } = await catalog();
+      const oldest = await finishedSession({
+        workoutId,
+        exerciseId,
+        finishedAt: FIRST_FINISHED_AT,
+      });
+      const newest = await finishedSession({
+        workoutId,
+        exerciseId,
+        finishedAt: THIRD_FINISHED_AT,
+      });
+      const middle = await finishedSession({
+        workoutId,
+        exerciseId,
+        finishedAt: SECOND_FINISHED_AT,
+      });
+      const current = await currentSession(workoutId);
+
+      const history = await repository().getHistory(DEVICE_ID, current);
+
+      expect(entriesOf(history, exerciseId).map((entry) => entry.sessionId)).toEqual([
+        Number(newest),
+        Number(middle),
+        Number(oldest),
+      ]);
+    });
+
+    it('ограничивает историю упражнения десятью записями', async () => {
+      const { workoutId, exerciseId } = await catalog();
+      const ids: string[] = [];
+      for (let index = 0; index < OVER_LIMIT_SESSIONS; index += 1) {
+        const finishedAt = new Date(BASE_FINISHED_MS + index * DAY_MS).toISOString();
+        ids.push(await finishedSession({ workoutId, exerciseId, finishedAt }));
+      }
+      const current = await currentSession(workoutId);
+
+      const entries = entriesOf(await repository().getHistory(DEVICE_ID, current), exerciseId);
+
+      expect(entries).toHaveLength(HISTORY_LIMIT);
+      expect(entries.map((entry) => entry.sessionId)).not.toContain(Number(ids[0]));
+    });
+
+    it('группирует подходы по упражнениям тренировки', async () => {
+      const { workoutId, exerciseId } = await catalog();
+      const secondExerciseId = Number(await insertExercise(getClient()));
+      await insertWorkoutExercise({
+        client: getClient(),
+        workoutId: String(workoutId),
+        exerciseId: String(secondExerciseId),
+        position: 2,
+      });
+      const sessionId = await finishedSession({
+        workoutId,
+        exerciseId,
+        finishedAt: FIRST_FINISHED_AT,
+      });
+      await insertSetResult({
+        client: getClient(),
+        sessionId,
+        exerciseId: String(secondExerciseId),
+      });
+      const current = await currentSession(workoutId);
+
+      const history = await repository().getHistory(DEVICE_ID, current);
+
+      expect(history.exercises.map((item) => item.exerciseId)).toEqual([
+        exerciseId,
+        secondExerciseId,
+      ]);
+      expect(entriesOf(history, exerciseId)[0]?.sets.map((set) => set.exerciseId)).toEqual([
+        exerciseId,
+      ]);
+      expect(entriesOf(history, secondExerciseId)[0]?.sets.map((set) => set.exerciseId)).toEqual([
+        secondExerciseId,
+      ]);
+    });
+
+    it('отдаёт пустой список для упражнения без истории', async () => {
+      const { workoutId, exerciseId } = await catalog();
+      const secondExerciseId = Number(await insertExercise(getClient()));
+      await insertWorkoutExercise({
+        client: getClient(),
+        workoutId: String(workoutId),
+        exerciseId: String(secondExerciseId),
+        position: 2,
+      });
+      await finishedSession({ workoutId, exerciseId, finishedAt: FIRST_FINISHED_AT });
+      const current = await currentSession(workoutId);
+
+      const history = await repository().getHistory(DEVICE_ID, current);
+
+      expect(entriesOf(history, secondExerciseId)).toEqual([]);
+    });
+
+    it('не возвращает подходы упражнений вне тренировки', async () => {
+      const { workoutId, exerciseId } = await catalog();
+      const foreignExerciseId = Number(await insertExercise(getClient()));
+      const sessionId = await finishedSession({
+        workoutId,
+        exerciseId,
+        finishedAt: FIRST_FINISHED_AT,
+      });
+      await insertSetResult({
+        client: getClient(),
+        sessionId,
+        exerciseId: String(foreignExerciseId),
+      });
+      const current = await currentSession(workoutId);
+
+      const history = await repository().getHistory(DEVICE_ID, current);
+
+      expect(history.exercises.map((item) => item.exerciseId)).toEqual([exerciseId]);
+      expect(entriesOf(history, exerciseId)[0]?.sets).toHaveLength(1);
+    });
+
+    it('включает сессии другой тренировки с тем же упражнением', async () => {
+      const { workoutId, exerciseId } = await catalog();
+      const otherWorkoutId = Number(await insertWorkout(getClient()));
+      await insertWorkoutExercise({
+        client: getClient(),
+        workoutId: String(otherWorkoutId),
+        exerciseId: String(exerciseId),
+      });
+      const fromOther = await finishedSession({
+        workoutId: otherWorkoutId,
+        exerciseId,
+        finishedAt: FIRST_FINISHED_AT,
+      });
+      const current = await currentSession(workoutId);
+
+      const history = await repository().getHistory(DEVICE_ID, current);
+
+      expect(entriesOf(history, exerciseId).map((entry) => entry.sessionId)).toEqual([
+        Number(fromOther),
+      ]);
+    });
+
+    it('не отдаёт историю чужой сессии', async () => {
+      const { workoutId } = await catalog();
+      const foreign = await currentSession(workoutId, OTHER_DEVICE_ID);
+
+      await expect(repository().getHistory(DEVICE_ID, foreign)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+
+    it('не отдаёт историю несуществующей сессии', async () => {
+      await expect(repository().getHistory(DEVICE_ID, UNKNOWN_ID)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
   });
 });

@@ -16,39 +16,54 @@
 					<h1 tuiTitle="l">{{ current.workout.name }}<span tuiSubtitle>Выполнение тренировки</span></h1>
 				</header>
 				<p tuiTitle aria-live="polite">Выполнено {{ completed() }}/{{ total() }}</p>
-				@for (item of exercises(); track item.exercise.id) {
-					<section
-						tuiCardLarge
-						appearance="neutral"
-						class="grid gap-3"
-						[attr.aria-label]="item.exercise.name"
-					>
-						<h2 tuiTitle>
-							{{ item.exercise.name }}<span tuiSubtitle>{{ formatPlan(item) }}</span>
-						</h2>
-						@for (setNumber of item.setNumbers; track setNumber) {
-							<app-set-row
-								[sessionId]="current.id"
-								[exerciseId]="item.exercise.id"
-								[setNumber]="setNumber"
-								[result]="findResult(current, item.exercise.id, setNumber)"
-								[disabled]="finishing() || confirming() || pendingSaves() > 0"
+				<progress
+					tuiProgressBar
+					size="s"
+					aria-label="Выполнено упражнений"
+					[segments]="exercises().length"
+					[value]="completedExercises()"
+					[max]="exercises().length"
+				></progress>
+				<p tuiTitle>Упражнение {{ currentIndex() + 1 }} из {{ exercises().length }}</p>
+				@if (currentExercise(); as item) {
+					<div (tuiSwipe)="onSwipe($event)">
+						<!-- Однокомпонентный @for пересоздаёт шаг при смене упражнения: сбрасывается запрос подстановки и состояние истории -->
+						@for (step of [item]; track step.exercise.id) {
+							<app-exercise-step
+								[session]="current"
+								[item]="step"
+								[history]="histories().get(step.exercise.id)"
+								[disabled]="busy()"
 								(pendingChange)="pendingChange($event)"
 							/>
 						}
-					</section>
+					</div>
 				}
+				<div class="grid grid-cols-2 gap-2">
+					<button
+						tuiButton
+						type="button"
+						appearance="secondary"
+						[disabled]="currentIndex() === 0 || busy()"
+						(click)="go('right')"
+					>
+						Назад
+					</button>
+					<button
+						tuiButton
+						type="button"
+						appearance="secondary"
+						[disabled]="currentIndex() >= exercises().length - 1 || busy()"
+						(click)="go('left')"
+					>
+						Далее
+					</button>
+				</div>
 				@if (error()) {
 					<div tuiNotification appearance="negative" role="alert">{{ error() }}</div>
 				}
 				<div class="sticky bottom-[calc(var(--spacing-nav)+0.75rem)] grid gap-2 md:static">
-					<button
-						tuiButton
-						type="button"
-						size="l"
-						[disabled]="finishing() || confirming() || pendingSaves() > 0"
-						(click)="requestFinish()"
-					>
+					<button tuiButton type="button" size="l" [disabled]="busy()" (click)="requestFinish()">
 						{{ finishing() ? 'Завершение…' : 'Завершить' }}
 					</button>
 				</div>

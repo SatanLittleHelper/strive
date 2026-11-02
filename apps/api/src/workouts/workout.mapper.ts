@@ -21,6 +21,7 @@ export function toWorkout(row: WorkoutRow): Workout {
       sets: item.target_sets,
       repsMin: item.target_reps_min,
       repsMax: item.target_reps_max,
+      weight: item.target_weight === null ? null : Number(item.target_weight),
     })),
   };
 }

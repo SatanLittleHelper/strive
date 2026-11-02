@@ -4,20 +4,27 @@ import {
   computed,
   DestroyRef,
   inject,
+  linkedSignal,
   signal,
+  untracked,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
+import { TuiSwipe, type TuiSwipeEvent } from '@taiga-ui/cdk';
 import { TuiButton, TuiDialogService, TuiLink, TuiNotification, TuiTitle } from '@taiga-ui/core';
-import { TUI_CONFIRM } from '@taiga-ui/kit';
-import { TuiCardLarge, TuiHeader } from '@taiga-ui/layout';
+import { TUI_CONFIRM, TuiProgress } from '@taiga-ui/kit';
+import { TuiHeader } from '@taiga-ui/layout';
 import { finalize } from 'rxjs';
 import { getResourceViewState } from '../../api/resource-view-state';
 import { EmptyStateComponent } from '../../shared/empty-state';
 import { ErrorStateComponent } from '../../shared/error-state';
-import { formatPlan } from '../../workouts/format-plan';
-import { countCompletedSets, findResult, SessionsService } from '..';
-import { SetRowComponent } from '../set-row';
+import {
+  countCompletedSets,
+  getFirstUnfinishedExerciseIndex,
+  getSwipeStep,
+  SessionsService,
+} from '..';
+import { ExerciseStepComponent } from '../exercise-step';
 
 @Component({
   selector: 'app-active-session',
@@ -27,11 +34,12 @@ import { SetRowComponent } from '../set-row';
     TuiLink,
     TuiNotification,
     TuiTitle,
-    TuiCardLarge,
     TuiHeader,
+    TuiSwipe,
+    TuiProgress,
     EmptyStateComponent,
     ErrorStateComponent,
-    SetRowComponent,
+    ExerciseStepComponent,
   ],
   templateUrl: './active-session.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -54,22 +62,43 @@ export class ActiveSessionComponent {
     const session = this.session();
     return session ? countCompletedSets(session) : 0;
   });
-  protected readonly exercises = computed(
-    () =>
-      this.session()?.workout.exercises.map((item) => ({
-        ...item,
-        setNumbers: Array.from({ length: item.sets }, (_, index) => index + 1),
-      })) ?? [],
-  );
+  protected readonly exercises = computed(() => this.session()?.workout.exercises ?? []);
   protected readonly total = computed(() =>
-    this.exercises().reduce((total, item) => total + item.sets, 0),
+    this.exercises().reduce((sum, item) => sum + item.sets, 0),
   );
+  protected readonly currentIndex = linkedSignal({
+    source: () => this.session()?.id ?? null,
+    computation: () => {
+      const session = untracked(() => this.session());
+
+      return session ? getFirstUnfinishedExerciseIndex(session) : 0;
+    },
+  });
+  protected readonly currentExercise = computed(() => this.exercises()[this.currentIndex()]);
+  protected readonly completedExercises = computed(() => {
+    const session = this.session();
+    if (!session) return 0;
+
+    return this.exercises().filter(
+      (item) =>
+        session.results.filter((result) => result.exerciseId === item.exercise.id).length >=
+        item.sets,
+    ).length;
+  });
+  protected readonly busy = computed(
+    () => this.finishing() || this.confirming() || this.pendingSaves() > 0,
+  );
+  protected readonly histories = computed(() => {
+    const history = this.sessions.history;
+
+    return new Map(
+      (history.hasValue() ? history.value().exercises : []).map((item) => [item.exerciseId, item]),
+    );
+  });
   protected readonly finishing = signal(false);
   protected readonly confirming = signal(false);
   protected readonly pendingSaves = signal(0);
   protected readonly error = signal('');
-  protected readonly formatPlan = formatPlan;
-  protected readonly findResult = findResult;
 
   constructor() {
     // Возврат через роутер должен перечитать сервер даже у уже созданного singleton-сервиса.
@@ -80,8 +109,27 @@ export class ActiveSessionComponent {
     this.pendingSaves.update((count) => count + (pending ? 1 : -1));
   }
 
+  protected go(direction: 'left' | 'right'): void {
+    if (this.busy()) return;
+
+    this.currentIndex.update((index) =>
+      getSwipeStep({ index, count: this.exercises().length, direction }),
+    );
+  }
+
+  protected onSwipe(event: TuiSwipeEvent): void {
+    if (this.busy()) return;
+
+    const target = event.events[0]?.target;
+    if (target instanceof Element && target.closest('input, textarea')) return;
+
+    this.currentIndex.update((index) =>
+      getSwipeStep({ index, count: this.exercises().length, direction: event.direction }),
+    );
+  }
+
   protected requestFinish(): void {
-    if (this.finishing() || this.confirming() || this.pendingSaves() > 0) return;
+    if (this.busy()) return;
     if (this.completed() >= this.total()) {
       this.finish();
       return;

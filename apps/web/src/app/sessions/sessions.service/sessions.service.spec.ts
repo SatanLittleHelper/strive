@@ -2,8 +2,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ApplicationRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import type { WorkoutSession } from '@strive/api-interfaces';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import type { SessionHistoryResponse, WorkoutSession } from '@strive/api-interfaces';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SessionsService } from './sessions.service';
 
 const SESSION_ID = 42;
@@ -19,6 +19,32 @@ const SESSION: WorkoutSession = {
   results: [],
 };
 
+const HISTORY_SESSION_ID = 7;
+const HISTORY: SessionHistoryResponse = {
+  exercises: [
+    {
+      exerciseId: EXERCISE_ID,
+      entries: [
+        {
+          sessionId: 5,
+          finishedAt: '2026-10-29T12:00:00.000Z',
+          sets: [
+            {
+              exerciseId: EXERCISE_ID,
+              setNumber: SET_NUMBER,
+              weight: 55,
+              reps: 8,
+              rpe: 4,
+              note: null,
+              completedAt: '2026-10-29T11:00:00.000Z',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
 describe('Сервис сессий', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -26,7 +52,12 @@ describe('Сервис сессий', () => {
     });
   });
   afterEach(() => {
-    TestBed.inject(HttpTestingController).verify();
+    TestBed.tick();
+    const http = TestBed.inject(HttpTestingController);
+    for (const request of http.match((request) => request.url.endsWith('/history'))) {
+      request.flush({ exercises: [] });
+    }
+    http.verify();
   });
 
   async function service(): Promise<SessionsService> {
@@ -47,6 +78,12 @@ describe('Сервис сессий', () => {
     TestBed.inject(HttpTestingController)
       .expectOne('/api/sessions/active')
       .flush({ session: SESSION });
+    await vi.waitFor(() => {
+      TestBed.tick();
+      TestBed.inject(HttpTestingController)
+        .expectOne(`/api/sessions/${SESSION_ID}/history`)
+        .flush({ exercises: [] });
+    });
     await TestBed.inject(ApplicationRef).whenStable();
     expect(sessions.active.value()).toEqual({ session: SESSION });
   });
@@ -101,5 +138,27 @@ describe('Сервис сессий', () => {
       .flush({}, { status: conflict, statusText: 'Conflict' });
     expect(statuses).toEqual([conflict]);
     expect(sessions.active.value()).toEqual({ session: SESSION });
+  });
+  it('не запрашивает историю, пока нет активной сессии', async () => {
+    const sessions = await service();
+
+    TestBed.inject(HttpTestingController).expectNone(`/api/sessions/${HISTORY_SESSION_ID}/history`);
+    expect(sessions.history.value()).toBeUndefined();
+  });
+
+  it('загружает историю активной сессии', async () => {
+    const sessions = TestBed.inject(SessionsService);
+    TestBed.tick();
+    const http = TestBed.inject(HttpTestingController);
+    http
+      .expectOne('/api/sessions/active')
+      .flush({ session: { ...SESSION, id: HISTORY_SESSION_ID } });
+    await vi.waitFor(() => {
+      TestBed.tick();
+      http.expectOne(`/api/sessions/${HISTORY_SESSION_ID}/history`).flush(HISTORY);
+    });
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(sessions.history.value()).toEqual(HISTORY);
   });
 });

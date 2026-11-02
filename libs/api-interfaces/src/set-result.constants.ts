@@ -6,3 +6,5 @@ export const SET_RESULT_LIMITS = {
   rpeMax: 5,
   noteMaxLength: 500,
 } as const;
+
+export const DEFAULT_RPE = 3;
