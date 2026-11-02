@@ -1,6 +1,0 @@
-#!/usr/bin/env sh
-set -e
-
-echo "Running tests..." >&2
-
-npx vitest run --coverage

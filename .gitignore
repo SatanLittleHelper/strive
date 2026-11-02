@@ -57,8 +57,12 @@ __screenshots__/
 .playwright-mcp/
 .superpowers/
 
-# Артефакты рабочего процесса: спеки и планы не коммитятся, постоянная документация лежит в docs/roadmap
+# Артефакты рабочего процесса: спеки и планы не коммитятся, постоянная документация лежит в docs/<slug>/
 /docs/superpowers/
 .env
 .env.*
 !.env.example
+
+# Installed skills (managed by npx skills, pinned via skills-lock.json)
+/.agents/skills/
+/.claude/skills/
