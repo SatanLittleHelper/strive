@@ -18,6 +18,21 @@ export interface WorkoutSession {
   results: SetResult[];
 }
 
+export interface SessionSummary {
+  id: number;
+  workoutId: number;
+  workoutName: string;
+  startedAt: string;
+  finishedAt: string;
+  exerciseCount: number;
+  setCount: number;
+  totalVolume: number;
+}
+
+export interface SessionListResponse {
+  sessions: WorkoutSession[];
+}
+
 export interface ActiveSessionResponse {
   session: WorkoutSession | null;
 }

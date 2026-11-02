@@ -1,0 +1,1 @@
+export const VOLUME_ROUNDING_FACTOR = 100;

@@ -29,6 +29,17 @@ const SECOND_FINISHED_AT = '2026-10-02T10:00:00Z';
 const THIRD_FINISHED_AT = '2026-10-03T10:00:00Z';
 const DAY_MS = 24 * 60 * 60 * 1000;
 const BASE_FINISHED_MS = Date.parse('2026-09-01T10:00:00Z');
+const PLAN_WORKOUT_NAME = 'Тренировка X';
+const FIRST_POSITION = 1;
+const SECOND_POSITION = 2;
+const SESSION_LIST_LIMIT = 20;
+const OVER_LIST_LIMIT = SESSION_LIST_LIMIT + 1;
+const NUMERIC_WEIGHT = 60.25;
+const NUMERIC_REPS = 8;
+const FIRST_SET_NUMBER = 1;
+const THREE_SETS = 3;
+const LIST_WORKOUT_NAME = 'Тренировка X';
+const OTHER_LIST_WORKOUT_NAME = 'Тренировка Y';
 
 describe('Репозиторий сессий', () => {
   const getClient = useDatabaseClient();
@@ -198,6 +209,192 @@ describe('Репозиторий сессий', () => {
     ).rejects.toBeInstanceOf(ConflictException);
     expect((await repository().start(DEVICE_ID, workoutId)).id).not.toBe(session.id);
   });
+  it('[I13] отдаёт сессию с названием и упражнениями плана по позициям', async () => {
+    const workoutId = await insertWorkout(getClient(), { name: PLAN_WORKOUT_NAME });
+    const secondExerciseId = await insertExercise(getClient());
+    const firstExerciseId = await insertExercise(getClient());
+    for (const [exerciseId, position] of [
+      [secondExerciseId, SECOND_POSITION],
+      [firstExerciseId, FIRST_POSITION],
+    ] as const) {
+      await insertWorkoutExercise({
+        client: getClient(),
+        workoutId,
+        exerciseId,
+        position,
+        targetSets: TARGET_SETS,
+      });
+    }
+    const sessionId = await insertSession({ client: getClient(), deviceId: DEVICE_ID, workoutId });
+    await finishSession({ client: getClient(), sessionId });
+
+    const session = await repository().getOwned(DEVICE_ID, Number(sessionId));
+
+    expect(session.workout.name).toBe(PLAN_WORKOUT_NAME);
+    expect(session.workout.exercises).toMatchObject([
+      { position: FIRST_POSITION, sets: TARGET_SETS, exercise: { id: Number(firstExerciseId) } },
+      { position: SECOND_POSITION, sets: TARGET_SETS, exercise: { id: Number(secondExerciseId) } },
+    ]);
+  });
+
+  describe('Список завершённых сессий', () => {
+    interface ListedSet {
+      exerciseId: string;
+      setNumber: number;
+      weight?: number;
+      reps?: number;
+    }
+
+    async function createFinished({
+      workoutId,
+      finishedAt,
+      deviceId = DEVICE_ID,
+      sets = [],
+    }: {
+      workoutId: number;
+      finishedAt: string;
+      deviceId?: string;
+      sets?: ListedSet[];
+    }): Promise<number> {
+      const sessionId = await insertSession({
+        client: getClient(),
+        deviceId,
+        workoutId: String(workoutId),
+      });
+      for (const item of sets) {
+        await insertSetResult({ client: getClient(), sessionId, ...item });
+      }
+      await finishSession({ client: getClient(), sessionId, finishedAt });
+
+      return Number(sessionId);
+    }
+
+    it('[I5] возвращает только завершённые сессии', async () => {
+      const { workoutId } = await catalog();
+      const finishedId = await createFinished({ workoutId, finishedAt: FIRST_FINISHED_AT });
+      await insertSession({
+        client: getClient(),
+        deviceId: DEVICE_ID,
+        workoutId: String(workoutId),
+      });
+
+      const sessions = await repository().findFinished(DEVICE_ID);
+
+      expect(sessions.map((session) => session.id)).toEqual([finishedId]);
+      expect(sessions[0]?.finishedAt).not.toBeNull();
+    });
+
+    it('[I6] не возвращает сессии другого устройства', async () => {
+      const { workoutId } = await catalog();
+      const ownId = await createFinished({ workoutId, finishedAt: FIRST_FINISHED_AT });
+      await createFinished({
+        workoutId,
+        finishedAt: SECOND_FINISHED_AT,
+        deviceId: OTHER_DEVICE_ID,
+      });
+
+      const sessions = await repository().findFinished(DEVICE_ID);
+
+      expect(sessions.map((session) => session.id)).toEqual([ownId]);
+    });
+
+    it('[I7] сортирует от новых к старым по finished_at', async () => {
+      const { workoutId } = await catalog();
+      const first = await createFinished({ workoutId, finishedAt: FIRST_FINISHED_AT });
+      const third = await createFinished({ workoutId, finishedAt: THIRD_FINISHED_AT });
+      const second = await createFinished({ workoutId, finishedAt: SECOND_FINISHED_AT });
+
+      const sessions = await repository().findFinished(DEVICE_ID);
+
+      expect(sessions.map((session) => session.id)).toEqual([third, second, first]);
+    });
+
+    it('[I8] ограничивает список последними 20 сессиями', async () => {
+      const { workoutId } = await catalog();
+      const ids: number[] = [];
+      for (let day = 0; day < OVER_LIST_LIMIT; day += 1) {
+        const finishedAt = new Date(BASE_FINISHED_MS + day * DAY_MS).toISOString();
+        ids.push(await createFinished({ workoutId, finishedAt }));
+      }
+
+      const sessions = await repository().findFinished(DEVICE_ID);
+
+      expect(sessions).toHaveLength(SESSION_LIST_LIMIT);
+      expect(sessions[0]?.id).toBe(ids[SESSION_LIST_LIMIT]);
+      expect(sessions.at(-1)?.id).toBe(ids[1]);
+      expect(sessions.map((session) => session.id)).not.toContain(ids[0]);
+    });
+
+    it('[I9] подставляет название тренировки своей сессии', async () => {
+      const ownWorkoutId = await insertWorkout(getClient(), { name: LIST_WORKOUT_NAME });
+      await insertWorkout(getClient(), { name: OTHER_LIST_WORKOUT_NAME });
+      await createFinished({ workoutId: Number(ownWorkoutId), finishedAt: FIRST_FINISHED_AT });
+
+      const sessions = await repository().findFinished(DEVICE_ID);
+
+      expect(sessions[0]?.workout).toMatchObject({
+        id: Number(ownWorkoutId),
+        name: LIST_WORKOUT_NAME,
+      });
+    });
+
+    it('[I10] не смешивает подходы разных сессий', async () => {
+      const { workoutId, exerciseId } = await catalog();
+      const key = String(exerciseId);
+      await createFinished({
+        workoutId,
+        finishedAt: FIRST_FINISHED_AT,
+        sets: [{ exerciseId: key, setNumber: 1 }],
+      });
+      await createFinished({
+        workoutId,
+        finishedAt: SECOND_FINISHED_AT,
+        sets: Array.from({ length: THREE_SETS }, (_, index) => ({
+          exerciseId: key,
+          setNumber: index + 1,
+        })),
+      });
+
+      const sessions = await repository().findFinished(DEVICE_ID);
+
+      expect(sessions.map((session) => session.results.length)).toEqual([THREE_SETS, 1]);
+    });
+
+    it('[I11] отдаёт вес и повторы подхода числами', async () => {
+      const { workoutId, exerciseId } = await catalog();
+      await createFinished({
+        workoutId,
+        finishedAt: FIRST_FINISHED_AT,
+        sets: [
+          {
+            exerciseId: String(exerciseId),
+            setNumber: FIRST_SET_NUMBER,
+            weight: NUMERIC_WEIGHT,
+            reps: NUMERIC_REPS,
+          },
+        ],
+      });
+
+      const sessions = await repository().findFinished(DEVICE_ID);
+
+      expect(sessions[0]?.results[0]).toMatchObject({
+        setNumber: FIRST_SET_NUMBER,
+        weight: NUMERIC_WEIGHT,
+        reps: NUMERIC_REPS,
+      });
+    });
+
+    it('[I12] оставляет завершённую сессию без подходов в списке', async () => {
+      const { workoutId } = await catalog();
+      const sessionId = await createFinished({ workoutId, finishedAt: FIRST_FINISHED_AT });
+
+      const sessions = await repository().findFinished(DEVICE_ID);
+
+      expect(sessions.map((session) => session.id)).toEqual([sessionId]);
+      expect(sessions[0]?.results).toEqual([]);
+    });
+  });
+
   describe('История подходов', () => {
     async function finishedSession({
       workoutId,

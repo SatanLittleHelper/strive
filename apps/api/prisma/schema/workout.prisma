@@ -3,4 +3,5 @@ model workout {
   name              String             @unique
   description       String?
   workout_exercises workout_exercise[]
+  sessions          workout_session[]
 }

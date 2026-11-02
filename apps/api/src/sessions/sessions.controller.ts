@@ -13,12 +13,15 @@ import {
 import type {
   ActiveSessionResponse,
   SessionHistoryResponse,
+  SessionListResponse,
+  SessionSummary,
   WorkoutSession,
 } from '@strive/api-interfaces';
 import { VALIDATION_PIPE_OPTIONS } from '../common/validation-pipe.constants.js';
 import { DeviceId, DeviceIdGuard } from '../device-id/index.js';
 import { SaveSetResultDto } from './save-set-result.dto.js';
 import { SessionIdDto } from './session-id.dto.js';
+import { toSessionSummary } from './session-summary/index.js';
 import { SessionRepository } from './session.repository/index.js';
 import { SetResultParamsDto } from './set-result-params.dto.js';
 import { StartSessionDto } from './start-session.dto.js';
@@ -31,6 +34,11 @@ export class SessionsController {
   @Get('active')
   async active(@DeviceId() deviceId: string): Promise<ActiveSessionResponse> {
     return { session: await this.sessions.findActive(deviceId) };
+  }
+
+  @Get()
+  async list(@DeviceId() deviceId: string): Promise<SessionListResponse> {
+    return { sessions: await this.sessions.findFinished(deviceId) };
   }
 
   @Post()
@@ -49,6 +57,15 @@ export class SessionsController {
     params: SessionIdDto,
   ): Promise<WorkoutSession> {
     return this.sessions.getOwned(deviceId, params.id);
+  }
+
+  @Get(':id/summary')
+  async summary(
+    @DeviceId() deviceId: string,
+    @Param(new ValidationPipe({ ...VALIDATION_PIPE_OPTIONS, expectedType: SessionIdDto }))
+    params: SessionIdDto,
+  ): Promise<SessionSummary> {
+    return toSessionSummary(await this.sessions.getFinished(deviceId, params.id));
   }
 
   @Get(':id/history')
