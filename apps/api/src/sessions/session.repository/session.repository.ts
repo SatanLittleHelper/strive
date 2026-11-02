@@ -12,11 +12,12 @@ import type {
 } from '@strive/api-interfaces';
 import { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/index.js';
-import { toWorkout, WORKOUT_INCLUDE } from '../../workouts/index.js';
 import { toSession, toSetResult } from '../session.mapper.js';
-import type { SaveSetParams, SessionRow } from '../session.types.js';
+import { isFinishedSession } from '../session.types.js';
+import type { FinishedWorkoutSession, SaveSetParams } from '../session.types.js';
 import {
   SESSION_INCLUDE,
+  SESSION_LIST_LIMIT,
   HISTORY_ENTRIES_PER_EXERCISE,
   HISTORY_SESSIONS_LIMIT,
 } from '../sessions.constants.js';
@@ -31,13 +32,13 @@ export class SessionRepository {
       include: SESSION_INCLUDE,
     });
 
-    return row === null ? null : this.mapSession(row);
+    return row === null ? null : toSession(row);
   }
 
   async start(deviceId: string, workoutId: number): Promise<WorkoutSession> {
     const workout = await this.prisma.workout.findUnique({
       where: { id: workoutId },
-      include: WORKOUT_INCLUDE,
+      select: { id: true },
     });
 
     if (workout === null) throw new NotFoundException('Тренировка не найдена');
@@ -48,7 +49,7 @@ export class SessionRepository {
         include: SESSION_INCLUDE,
       });
 
-      return toSession({ row, workout: toWorkout(workout) });
+      return toSession(row);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
         throw new ConflictException('Уже есть активная тренировка');
@@ -66,7 +67,26 @@ export class SessionRepository {
 
     if (row === null) throw new NotFoundException('Сессия не найдена');
 
-    return this.mapSession(row);
+    return toSession(row);
+  }
+
+  async getFinished(deviceId: string, sessionId: number): Promise<FinishedWorkoutSession> {
+    const session = await this.getOwned(deviceId, sessionId);
+
+    if (!isFinishedSession(session)) throw new ConflictException('Тренировка ещё не завершена');
+
+    return session;
+  }
+
+  async findFinished(deviceId: string): Promise<WorkoutSession[]> {
+    const rows = await this.prisma.workout_session.findMany({
+      where: { device_id: deviceId, finished_at: { not: null } },
+      orderBy: [{ finished_at: 'desc' }, { id: 'desc' }],
+      take: SESSION_LIST_LIMIT,
+      include: SESSION_INCLUDE,
+    });
+
+    return rows.map((row) => toSession(row));
   }
 
   async saveSetResult(
@@ -169,15 +189,5 @@ export class SessionRepository {
           .slice(0, HISTORY_ENTRIES_PER_EXERCISE),
       })),
     };
-  }
-
-  private async mapSession(row: SessionRow): Promise<WorkoutSession> {
-    const workout = await this.prisma.workout.findUnique({
-      where: { id: row.workout_id },
-      include: WORKOUT_INCLUDE,
-    });
-    if (workout === null) throw new NotFoundException('Тренировка не найдена');
-
-    return toSession({ row, workout: toWorkout(workout) });
   }
 }

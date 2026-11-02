@@ -22,6 +22,8 @@ export type {
   SaveSetResultRequest,
   SessionHistoryResponse,
   SessionIdRequest,
+  SessionListResponse,
+  SessionSummary,
   SetResult,
   SetResultParamsRequest,
   StartSessionRequest,

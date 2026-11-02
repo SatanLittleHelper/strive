@@ -6,6 +6,7 @@ import {
   DEVICE_ID_HEADER,
   type ApiResponse,
   type SessionHistoryResponse,
+  type SessionListResponse,
   type WorkoutSession,
 } from '@strive/api-interfaces';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -32,13 +33,22 @@ const CONFLICT = 409;
 const UNKNOWN_ID = 999;
 const TARGET_SETS = 3;
 const RESULT = { weight: 60.25, reps: 8, rpe: 3, note: 'Хороший подход' };
+const HISTORY_WORKOUT_NAME = 'Тренировка X';
+const OTHER_HISTORY_WORKOUT_NAME = 'Тренировка Y';
+const HISTORY_FIRST_SET = { weight: 60, reps: 8 };
+const HISTORY_SECOND_SET = { weight: 50, reps: 10 };
+const HISTORY_SET_COUNT = 2;
+const HISTORY_EXERCISE_COUNT = 1;
+const HISTORY_TOTAL_VOLUME =
+  HISTORY_FIRST_SET.weight * HISTORY_FIRST_SET.reps +
+  HISTORY_SECOND_SET.weight * HISTORY_SECOND_SET.reps;
 
 describe('HTTP сессий тренировок', () => {
   const getClient = useDatabaseClient();
   const state: { app?: INestApplication; url?: string } = {};
 
   beforeAll(async () => {
-    for (const method of ['active', 'start', 'get', 'history', 'saveSet', 'finish']) {
+    for (const method of ['active', 'list', 'start', 'get', 'summary', 'history', 'saveSet', 'finish']) {
       Reflect.deleteMetadata('design:paramtypes', SessionsController.prototype, method);
     }
     process.env['LOG_PRETTY'] = 'false';
@@ -90,9 +100,11 @@ describe('HTTP сессий тренировок', () => {
   }
 
   it.each([
+    { path: '' },
     { path: '/active' },
     { method: 'POST' },
     { path: '/1' },
+    { path: '/1/summary' },
     { path: '/1/sets/1/1', method: 'PUT' },
     { path: '/1/finish', method: 'POST' },
   ])('требует заголовок устройства: %j', async (options) => {
@@ -313,5 +325,160 @@ describe('HTTP сессий тренировок', () => {
     const response = await request({ path: '/0/history' });
 
     expect(response.status).toBe(BAD_REQUEST);
+  });
+
+  describe('История и сводка', () => {
+    async function finishedSession({
+      deviceId = DEVICE_ID,
+      sets = [HISTORY_FIRST_SET, HISTORY_SECOND_SET],
+      workoutName = HISTORY_WORKOUT_NAME,
+    }: {
+      deviceId?: string;
+      sets?: Array<{ weight: number; reps: number }>;
+      workoutName?: string;
+    } = {}) {
+      const workoutId = await insertWorkout(getClient(), { name: workoutName });
+      const exerciseId = await insertExercise(getClient());
+      await insertWorkoutExercise({
+        client: getClient(),
+        workoutId,
+        exerciseId,
+        targetSets: TARGET_SETS,
+      });
+      const sessionId = await insertSession({ client: getClient(), deviceId, workoutId });
+      for (const [index, set] of sets.entries()) {
+        await insertSetResult({
+          client: getClient(),
+          sessionId,
+          exerciseId,
+          setNumber: index + 1,
+          ...set,
+        });
+      }
+      await finishSession({ client: getClient(), sessionId });
+
+      return { sessionId, exerciseId: Number(exerciseId) };
+    }
+
+    it('[E1] отдаёт массив завершённых сессий с подходами и без тоннажа', async () => {
+      const { exerciseId } = await finishedSession();
+
+      const response = await request({});
+
+      expect(response).toMatchObject({
+        status: OK,
+        body: {
+          data: {
+            sessions: [
+              {
+                workout: {
+                  name: HISTORY_WORKOUT_NAME,
+                  exercises: [{ exercise: { id: exerciseId } }],
+                },
+                finishedAt: expect.any(String),
+                results: [HISTORY_FIRST_SET, HISTORY_SECOND_SET],
+              },
+            ],
+          },
+        },
+      });
+      const body = response.body as ApiResponse<SessionListResponse>;
+      if (!body.data) throw new Error('Список сессий не получен');
+      const [session] = body.data.sessions;
+      for (const field of ['totalVolume', 'setCount', 'exerciseCount']) {
+        expect(session).not.toHaveProperty(field);
+      }
+    });
+
+    it('[E3] отдаёт пустой список для нового устройства', async () => {
+      expect(await request({})).toMatchObject({ status: OK, body: { data: { sessions: [] } } });
+    });
+
+    it('[E4] не показывает в списке сессии другого устройства', async () => {
+      await finishedSession({
+        deviceId: OTHER_DEVICE_ID,
+        workoutName: OTHER_HISTORY_WORKOUT_NAME,
+      });
+      const own = await finishedSession();
+
+      expect(await request({})).toMatchObject({
+        status: OK,
+        body: { data: { sessions: [{ id: Number(own.sessionId) }] } },
+      });
+    });
+
+    it('[E5] отдаёт сводку завершённой тренировки с тоннажем', async () => {
+      const { sessionId } = await finishedSession();
+
+      const response = await request({ path: `/${sessionId}/summary` });
+
+      expect(response).toMatchObject({
+        status: OK,
+        body: {
+          data: {
+            id: Number(sessionId),
+            workoutName: HISTORY_WORKOUT_NAME,
+            setCount: HISTORY_SET_COUNT,
+            exerciseCount: HISTORY_EXERCISE_COUNT,
+            totalVolume: HISTORY_TOTAL_VOLUME,
+            finishedAt: expect.any(String),
+          },
+        },
+      });
+    });
+
+    it('[E6] отвечает 409 для ещё не завершённой сессии', async () => {
+      const { workoutId } = await catalog();
+      const sessionId = await insertSession({
+        client: getClient(),
+        deviceId: DEVICE_ID,
+        workoutId: String(workoutId),
+      });
+
+      expect(await request({ path: `/${sessionId}/summary` })).toMatchObject({
+        status: CONFLICT,
+      });
+    });
+
+    it('[E7] отвечает 404 на сводку чужой сессии', async () => {
+      const { sessionId } = await finishedSession({ deviceId: OTHER_DEVICE_ID });
+
+      expect(await request({ path: `/${sessionId}/summary` })).toMatchObject({
+        status: NOT_FOUND,
+      });
+    });
+
+    it('[E8] отвечает 404 на сводку несуществующей сессии', async () => {
+      expect(await request({ path: `/${UNKNOWN_ID}/summary` })).toMatchObject({
+        status: NOT_FOUND,
+      });
+    });
+
+    it('[E9] отвечает 400 на нечисловой id в сводке', async () => {
+      expect(await request({ path: '/abc/summary' })).toMatchObject({ status: BAD_REQUEST });
+    });
+
+    it('[E10] отдаёт детали завершённой тренировки по id', async () => {
+      const { sessionId } = await finishedSession();
+
+      const response = await request({ path: `/${sessionId}` });
+
+      expect(response).toMatchObject({
+        status: OK,
+        body: {
+          data: {
+            finishedAt: expect.any(String),
+            workout: { name: HISTORY_WORKOUT_NAME },
+            results: [HISTORY_FIRST_SET, HISTORY_SECOND_SET],
+          },
+        },
+      });
+    });
+
+    it('[E11] отвечает 404 на детали чужой завершённой тренировки', async () => {
+      const { sessionId } = await finishedSession({ deviceId: OTHER_DEVICE_ID });
+
+      expect(await request({ path: `/${sessionId}` })).toMatchObject({ status: NOT_FOUND });
+    });
   });
 });

@@ -17,6 +17,9 @@ CREATE TABLE "set_result" (
 ALTER TABLE "set_result" ADD CONSTRAINT "set_result_session_id_fkey" FOREIGN KEY ("session_id") REFERENCES "workout_session"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 
+-- AddForeignKey
+ALTER TABLE "set_result" ADD CONSTRAINT "set_result_exercise_id_fkey" FOREIGN KEY ("exercise_id") REFERENCES "exercise"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
 -- CheckConstraint
 ALTER TABLE "set_result"
   ADD CONSTRAINT "set_result_values_check"

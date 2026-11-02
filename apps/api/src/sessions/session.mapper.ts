@@ -1,5 +1,6 @@
 import type { SetResult, WorkoutSession } from '@strive/api-interfaces';
-import type { SessionMapping, SetResultRow } from './session.types.js';
+import { toWorkout } from '../workouts/index.js';
+import type { SessionRow, SetResultRow } from './session.types.js';
 
 export function toSetResult(result: SetResultRow): SetResult {
   return {
@@ -13,10 +14,10 @@ export function toSetResult(result: SetResultRow): SetResult {
   };
 }
 
-export function toSession({ row, workout }: SessionMapping): WorkoutSession {
+export function toSession(row: SessionRow): WorkoutSession {
   return {
     id: Number(row.id),
-    workout,
+    workout: toWorkout(row.workout),
     startedAt: row.started_at.toISOString(),
     finishedAt: row.finished_at?.toISOString() ?? null,
     results: row.set_results.map(toSetResult),

@@ -10,6 +10,9 @@ CREATE TABLE "workout_session" (
     CONSTRAINT "workout_session_pkey" PRIMARY KEY ("id")
 );
 
+-- AddForeignKey
+ALTER TABLE "workout_session" ADD CONSTRAINT "workout_session_workout_id_fkey" FOREIGN KEY ("workout_id") REFERENCES "workout"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
 -- CreateIndex
 CREATE INDEX "workout_session_device_id_started_at_idx" ON "workout_session"("device_id", "started_at");
 

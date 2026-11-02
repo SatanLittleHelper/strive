@@ -5,6 +5,7 @@ model workout_session {
   started_at  DateTime     @default(now()) @db.Timestamptz(6)
   finished_at DateTime?    @db.Timestamptz(6)
   updated_at  DateTime     @default(now()) @updatedAt @db.Timestamptz(6)
+  workout     workout      @relation(fields: [workout_id], references: [id], onDelete: Restrict)
   set_results set_result[]
 
   @@index([device_id, started_at])

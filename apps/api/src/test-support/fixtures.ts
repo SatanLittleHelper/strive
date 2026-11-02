@@ -8,9 +8,6 @@ import type {
   WorkoutOptions,
 } from './fixtures.types.js';
 
-const CATALOG_WORKOUT_ID = 1;
-const CATALOG_EXERCISE_ID = 1;
-
 const DEFAULT_SET_NUMBER = 1;
 const DEFAULT_WEIGHT = 60;
 const DEFAULT_REPS = 8;
@@ -73,15 +70,17 @@ export function insertWorkoutExercise({
   );
 }
 
-export function insertSession({
+export async function insertSession({
   client,
   deviceId,
-  workoutId = String(CATALOG_WORKOUT_ID),
+  workoutId,
 }: SessionFixture): Promise<string> {
+  const ownerWorkoutId = workoutId ?? (await insertWorkout(client));
+
   return insertReturningId({
     client,
     sql: `INSERT INTO workout_session (device_id, workout_id) VALUES ($1, $2) RETURNING id`,
-    values: [deviceId, workoutId],
+    values: [deviceId, ownerWorkoutId],
   });
 }
 
@@ -96,19 +95,21 @@ export async function finishSession({
   );
 }
 
-export function insertSetResult({
+export async function insertSetResult({
   client,
   sessionId,
-  exerciseId = String(CATALOG_EXERCISE_ID),
+  exerciseId,
   setNumber = DEFAULT_SET_NUMBER,
   weight = DEFAULT_WEIGHT,
   reps = DEFAULT_REPS,
   rpe = null,
   note = null,
 }: SetResultFixture): Promise<pg.QueryResult> {
+  const resultExerciseId = exerciseId ?? (await insertExercise(client));
+
   return client.query(
     `INSERT INTO set_result (session_id, exercise_id, set_number, weight, reps, rpe, note)
      VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-    [sessionId, exerciseId, setNumber, weight, reps, rpe, note],
+    [sessionId, resultExerciseId, setNumber, weight, reps, rpe, note],
   );
 }
