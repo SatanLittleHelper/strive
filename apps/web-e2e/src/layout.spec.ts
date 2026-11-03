@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { DESKTOP_VIEWPORT, MOBILE_VIEWPORT } from './e2e.constants';
+import { mockSessionList } from './support/history.fixtures';
 
 const NAV_TAB_COUNT = 3;
 const CENTER_TOLERANCE = 1;
@@ -8,6 +9,7 @@ const MIN_EDGE_GAP = 8;
 const mainNavigation = (page: Page) => page.getByRole('navigation', { name: 'Основная навигация' });
 
 test('навигация открывает разделы Главная, Тренировки и История', async ({ page }) => {
+  await mockSessionList(page, []);
   await page.goto('/history');
   const navigation = mainNavigation(page);
 
@@ -134,6 +136,7 @@ test('нижний отступ контента на телефоне не ме
 });
 
 test('название приложения в шапке возвращает на главную', async ({ page }) => {
+  await mockSessionList(page, []);
   await page.goto('/history');
 
   await page.getByRole('link', { name: 'Strive' }).click();

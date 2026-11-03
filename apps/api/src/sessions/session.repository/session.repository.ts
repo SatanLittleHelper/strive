@@ -13,8 +13,13 @@ import type {
 import { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/index.js';
 import { toSession, toSetResult } from '../session.mapper.js';
+import { toFinishedSessionExercises } from '../session-exercises.helpers.js';
 import { isFinishedSession } from '../session.types.js';
-import type { FinishedWorkoutSession, SaveSetParams } from '../session.types.js';
+import type {
+  FinishedSessionExercises,
+  FinishedWorkoutSession,
+  SaveSetParams,
+} from '../session.types.js';
 import {
   SESSION_INCLUDE,
   SESSION_LIST_LIMIT,
@@ -76,6 +81,13 @@ export class SessionRepository {
     if (!isFinishedSession(session)) throw new ConflictException('Тренировка ещё не завершена');
 
     return session;
+  }
+
+  async getFinishedWithExercises(
+    deviceId: string,
+    sessionId: number,
+  ): Promise<FinishedSessionExercises> {
+    return toFinishedSessionExercises(await this.getFinished(deviceId, sessionId));
   }
 
   async findFinished(deviceId: string): Promise<WorkoutSession[]> {
