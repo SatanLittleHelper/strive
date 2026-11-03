@@ -40,6 +40,16 @@ const FIRST_SET_NUMBER = 1;
 const THREE_SETS = 3;
 const LIST_WORKOUT_NAME = 'Тренировка X';
 const OTHER_LIST_WORKOUT_NAME = 'Тренировка Y';
+const THIRD_POSITION = 3;
+const SECOND_SET_NUMBER = 2;
+const THIRD_SET_NUMBER = 3;
+const BENCH_NAME = 'Жим';
+const ROW_NAME = 'Тяга';
+const SQUAT_NAME = 'Присед';
+const FRACTIONAL_WEIGHT = 62.5;
+const FIRST_WEIGHT = 60;
+const SECOND_WEIGHT = 65;
+const OTHER_SESSION_WEIGHT = 100;
 
 describe('Репозиторий сессий', () => {
   const getClient = useDatabaseClient();
@@ -643,6 +653,204 @@ describe('Репозиторий сессий', () => {
       await expect(repository().getHistory(DEVICE_ID, UNKNOWN_ID)).rejects.toBeInstanceOf(
         NotFoundException,
       );
+    });
+  });
+
+  describe('Завершённая сессия с упражнениями', () => {
+    interface SetInput {
+      exerciseId: string;
+      setNumber: number;
+      weight?: number;
+      reps?: number;
+    }
+
+    async function addPlanExercise({
+      workoutId,
+      name,
+      position,
+    }: {
+      workoutId: string;
+      name: string;
+      position: number;
+    }): Promise<string> {
+      const exerciseId = await insertExercise(getClient(), name);
+      await insertWorkoutExercise({ client: getClient(), workoutId, exerciseId, position });
+
+      return exerciseId;
+    }
+
+    async function createPlan() {
+      const workoutId = await insertWorkout(getClient());
+
+      return {
+        workoutId,
+        benchId: await addPlanExercise({ workoutId, name: BENCH_NAME, position: FIRST_POSITION }),
+        rowId: await addPlanExercise({ workoutId, name: ROW_NAME, position: SECOND_POSITION }),
+        squatId: await addPlanExercise({ workoutId, name: SQUAT_NAME, position: THIRD_POSITION }),
+      };
+    }
+
+    async function createSession({
+      workoutId,
+      sets = [],
+      deviceId = DEVICE_ID,
+      finished = true,
+    }: {
+      workoutId: string;
+      sets?: SetInput[];
+      deviceId?: string;
+      finished?: boolean;
+    }): Promise<number> {
+      const sessionId = await insertSession({ client: getClient(), deviceId, workoutId });
+      for (const set of sets) {
+        await insertSetResult({ client: getClient(), sessionId, ...set });
+      }
+      if (finished) await finishSession({ client: getClient(), sessionId });
+
+      return Number(sessionId);
+    }
+
+    async function readExercises(sessionId: number) {
+      const { exercises } = await repository().getFinishedWithExercises(DEVICE_ID, sessionId);
+
+      return exercises;
+    }
+
+    it('[H2-I1] отдаёт упражнения в порядке плана с именем и подходами', async () => {
+      const { workoutId, benchId, squatId } = await createPlan();
+      const sessionId = await createSession({
+        workoutId,
+        sets: [
+          { exerciseId: squatId, setNumber: FIRST_SET_NUMBER },
+          { exerciseId: benchId, setNumber: FIRST_SET_NUMBER },
+          { exerciseId: benchId, setNumber: SECOND_SET_NUMBER },
+        ],
+      });
+
+      const exercises = await readExercises(sessionId);
+
+      expect(
+        exercises.map((item) => ({
+          exerciseId: item.exerciseId,
+          name: item.name,
+          setNumbers: item.sets.map((set) => set.setNumber),
+        })),
+      ).toEqual([
+        {
+          exerciseId: Number(benchId),
+          name: BENCH_NAME,
+          setNumbers: [FIRST_SET_NUMBER, SECOND_SET_NUMBER],
+        },
+        { exerciseId: Number(squatId), name: SQUAT_NAME, setNumbers: [FIRST_SET_NUMBER] },
+      ]);
+    });
+
+    it('[H2-I2] упорядочивает подходы упражнения по номеру подхода', async () => {
+      const { workoutId, benchId } = await createPlan();
+      const sessionId = await createSession({
+        workoutId,
+        sets: [
+          { exerciseId: benchId, setNumber: THIRD_SET_NUMBER },
+          { exerciseId: benchId, setNumber: FIRST_SET_NUMBER },
+          { exerciseId: benchId, setNumber: SECOND_SET_NUMBER },
+        ],
+      });
+
+      const [bench] = await readExercises(sessionId);
+
+      expect(bench?.sets.map((set) => set.setNumber)).toEqual([
+        FIRST_SET_NUMBER,
+        SECOND_SET_NUMBER,
+        THIRD_SET_NUMBER,
+      ]);
+    });
+
+    it('[H2-I3] не включает упражнение плана без подходов', async () => {
+      const { workoutId, benchId, squatId } = await createPlan();
+      const sessionId = await createSession({
+        workoutId,
+        sets: [
+          { exerciseId: benchId, setNumber: FIRST_SET_NUMBER },
+          { exerciseId: squatId, setNumber: FIRST_SET_NUMBER },
+        ],
+      });
+
+      const exercises = await readExercises(sessionId);
+
+      expect(exercises.map((item) => item.name)).toEqual([BENCH_NAME, SQUAT_NAME]);
+    });
+
+    it('[H2-I4] не смешивает подходы разных сессий', async () => {
+      const { workoutId, benchId } = await createPlan();
+      const firstId = await createSession({
+        workoutId,
+        sets: [
+          { exerciseId: benchId, setNumber: FIRST_SET_NUMBER, weight: FIRST_WEIGHT },
+          { exerciseId: benchId, setNumber: SECOND_SET_NUMBER, weight: SECOND_WEIGHT },
+        ],
+      });
+      await createSession({
+        workoutId,
+        sets: [
+          { exerciseId: benchId, setNumber: FIRST_SET_NUMBER, weight: OTHER_SESSION_WEIGHT },
+          { exerciseId: benchId, setNumber: SECOND_SET_NUMBER, weight: OTHER_SESSION_WEIGHT },
+          { exerciseId: benchId, setNumber: THIRD_SET_NUMBER, weight: OTHER_SESSION_WEIGHT },
+        ],
+      });
+
+      const [bench] = await readExercises(firstId);
+
+      expect(bench?.sets.map((set) => set.weight)).toEqual([FIRST_WEIGHT, SECOND_WEIGHT]);
+    });
+
+    it('[H2-I5] отдаёт вес и повторы подхода числами', async () => {
+      const { workoutId, benchId } = await createPlan();
+      const sessionId = await createSession({
+        workoutId,
+        sets: [
+          {
+            exerciseId: benchId,
+            setNumber: FIRST_SET_NUMBER,
+            weight: FRACTIONAL_WEIGHT,
+            reps: NUMERIC_REPS,
+          },
+        ],
+      });
+
+      const [bench] = await readExercises(sessionId);
+
+      expect(bench?.sets[0]).toMatchObject({ weight: FRACTIONAL_WEIGHT, reps: NUMERIC_REPS });
+    });
+
+    it('[H2-I6] отдаёт пустой список упражнений для завершённой сессии без подходов', async () => {
+      const { workoutId } = await createPlan();
+      const sessionId = await createSession({ workoutId });
+
+      expect(await readExercises(sessionId)).toEqual([]);
+    });
+
+    it('[H2-I7] не читает чужую сессию', async () => {
+      const { workoutId } = await createPlan();
+      const foreignId = await createSession({ workoutId, deviceId: OTHER_DEVICE_ID });
+
+      await expect(
+        repository().getFinishedWithExercises(DEVICE_ID, foreignId),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('[H2-I8] не читает несуществующую сессию', async () => {
+      await expect(
+        repository().getFinishedWithExercises(DEVICE_ID, UNKNOWN_ID),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('[H2-I9] не читает незавершённую сессию как завершённую', async () => {
+      const { workoutId } = await createPlan();
+      const activeId = await createSession({ workoutId, finished: false });
+
+      await expect(
+        repository().getFinishedWithExercises(DEVICE_ID, activeId),
+      ).rejects.toBeInstanceOf(ConflictException);
     });
   });
 });

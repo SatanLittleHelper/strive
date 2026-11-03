@@ -65,7 +65,7 @@ export class SessionsController {
     @Param(new ValidationPipe({ ...VALIDATION_PIPE_OPTIONS, expectedType: SessionIdDto }))
     params: SessionIdDto,
   ): Promise<SessionSummary> {
-    return toSessionSummary(await this.sessions.getFinished(deviceId, params.id));
+    return toSessionSummary(await this.sessions.getFinishedWithExercises(deviceId, params.id));
   }
 
   @Get(':id/history')

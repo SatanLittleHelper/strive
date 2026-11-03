@@ -20,6 +20,7 @@ export type {
   ExerciseHistory,
   ExerciseHistoryEntry,
   SaveSetResultRequest,
+  SessionExerciseResults,
   SessionHistoryResponse,
   SessionIdRequest,
   SessionListResponse,

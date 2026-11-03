@@ -1,6 +1,6 @@
-import type { SetResult } from '@strive/api-interfaces';
+import type { SessionExerciseResults, SetResult } from '@strive/api-interfaces';
 import { describe, expect, it } from 'vitest';
-import type { FinishedWorkoutSession } from '../session.types.js';
+import type { FinishedSessionExercises } from '../session.types.js';
 import { toSessionSummary } from './session-summary.helpers.js';
 
 const SESSION_ID = 7;
@@ -8,30 +8,26 @@ const WORKOUT_ID = 3;
 const WORKOUT_NAME = 'Тренировка X';
 const STARTED_AT = '2026-10-01T10:00:00.000Z';
 const FINISHED_AT = '2026-10-01T11:00:00.000Z';
-const FIRST_EXERCISE_ID = 5;
-const SECOND_EXERCISE_ID = 7;
-const FOUR_SETS = 4;
-const FLOAT_ARTIFACT_WEIGHT = 0.1;
-const THREE_REPS = 3;
-const FRACTIONAL_WEIGHT = 33.333;
-const ROUNDED_VOLUME = 100.3;
-const PLAIN_VOLUME = 855;
-const SET_WEIGHT = 10;
-const SET_REPS = 10;
-const TWO_EXERCISES = 2;
+const BENCH_ID = 5;
+const SQUAT_ID = 7;
+const BENCH_SETS = [
+  { weight: 60, reps: 8 },
+  { weight: 60, reps: 6 },
+];
+const SQUAT_SETS = [{ weight: 100, reps: 5 }];
+const FRACTIONAL_SETS = [{ weight: 33.333, reps: 3 }];
+const TOTAL_SETS = 3;
+const TOTAL_EXERCISES = 2;
+const TOTAL_VOLUME = 1340;
+const ROUNDED_VOLUME = 100;
 
 interface SetInput {
-  exerciseId: number;
   weight: number;
   reps: number;
 }
 
-function plainSet(exerciseId: number): SetInput {
-  return { exerciseId, weight: SET_WEIGHT, reps: SET_REPS };
-}
-
-function set({ exerciseId, weight, reps }: SetInput, index: number): SetResult {
-  return {
+function toSets(exerciseId: number, inputs: SetInput[]): SetResult[] {
+  return inputs.map(({ weight, reps }, index) => ({
     exerciseId,
     setNumber: index + 1,
     weight,
@@ -39,65 +35,50 @@ function set({ exerciseId, weight, reps }: SetInput, index: number): SetResult {
     rpe: null,
     note: null,
     completedAt: FINISHED_AT,
-  };
+  }));
 }
 
-function session(sets: SetInput[]): FinishedWorkoutSession {
+function exercise(exerciseId: number, inputs: SetInput[]): SessionExerciseResults {
+  return { exerciseId, name: `Упражнение ${exerciseId}`, sets: toSets(exerciseId, inputs) };
+}
+
+function view(exercises: SessionExerciseResults[]): FinishedSessionExercises {
   return {
     id: SESSION_ID,
-    workout: { id: WORKOUT_ID, name: WORKOUT_NAME, description: null, exercises: [] },
+    workout: { id: WORKOUT_ID, name: WORKOUT_NAME },
     startedAt: STARTED_AT,
     finishedAt: FINISHED_AT,
-    results: sets.map(set),
+    exercises,
   };
 }
 
+const TWO_EXERCISES = [exercise(BENCH_ID, BENCH_SETS), exercise(SQUAT_ID, SQUAT_SETS)];
+
 describe('toSessionSummary', () => {
-  it('[U1] считает число подходов', () => {
-    const sets = Array.from({ length: FOUR_SETS }, () => plainSet(FIRST_EXERCISE_ID));
-
-    expect(toSessionSummary(session(sets)).setCount).toBe(FOUR_SETS);
+  it('[H2-U1] считает подходы по всем упражнениям', () => {
+    expect(toSessionSummary(view(TWO_EXERCISES)).setCount).toBe(TOTAL_SETS);
   });
 
-  it('[U2] считает упражнения без повторов', () => {
-    const summary = toSessionSummary(
-      session([
-        plainSet(FIRST_EXERCISE_ID),
-        plainSet(FIRST_EXERCISE_ID),
-        plainSet(SECOND_EXERCISE_ID),
-      ]),
-    );
-
-    expect(summary.exerciseCount).toBe(TWO_EXERCISES);
+  it('[H2-U2] считает упражнения по элементам exercises', () => {
+    expect(toSessionSummary(view(TWO_EXERCISES)).exerciseCount).toBe(TOTAL_EXERCISES);
   });
 
-  it('[U3] суммирует вес × повторы по всем подходам', () => {
-    const summary = toSessionSummary(
-      session([
-        { exerciseId: FIRST_EXERCISE_ID, weight: 60, reps: 8 },
-        { exerciseId: FIRST_EXERCISE_ID, weight: 62.5, reps: 6 },
-      ]),
-    );
-
-    expect(summary.totalVolume).toBe(PLAIN_VOLUME);
+  it('[H2-U3] суммирует вес × повторы по всем подходам', () => {
+    expect(toSessionSummary(view(TWO_EXERCISES)).totalVolume).toBe(TOTAL_VOLUME);
   });
 
-  it('[U4] округляет тоннаж до двух знаков', () => {
-    const summary = toSessionSummary(
-      session([
-        { exerciseId: FIRST_EXERCISE_ID, weight: FLOAT_ARTIFACT_WEIGHT, reps: THREE_REPS },
-        { exerciseId: FIRST_EXERCISE_ID, weight: FRACTIONAL_WEIGHT, reps: THREE_REPS },
-      ]),
-    );
+  it('[H2-U4] округляет тоннаж до двух знаков', () => {
+    const summary = toSessionSummary(view([exercise(BENCH_ID, FRACTIONAL_SETS)]));
 
     expect(summary.totalVolume).toBe(ROUNDED_VOLUME);
   });
 
-  it('[U5] даёт нули для сессии без подходов', () => {
-    expect(toSessionSummary(session([]))).toMatchObject({
-      setCount: 0,
+  it('[H2-U5] даёт нули и пустой список для сессии без упражнений', () => {
+    expect(toSessionSummary(view([]))).toMatchObject({
       exerciseCount: 0,
+      setCount: 0,
       totalVolume: 0,
+      exercises: [],
     });
   });
 });

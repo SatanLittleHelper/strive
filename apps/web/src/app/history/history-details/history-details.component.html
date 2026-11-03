@@ -1,0 +1,57 @@
+<section class="grid gap-4">
+	<a routerLink="/history" tuiLink>← История</a>
+	@switch (state()) {
+		@case ('loading') {
+			<div role="status" aria-label="Загрузка тренировки" class="grid gap-3">
+				@for (row of skeletonRows; track row) {
+					<div aria-hidden="true" tuiCell="l" [tuiSkeleton]="true">
+						<span tuiTitle>Название упражнения</span>
+					</div>
+				}
+			</div>
+		}
+		@case ('error') {
+			@if (notFound()) {
+				<app-empty-state message="Тренировка не найдена" />
+			} @else {
+				<app-error-state message="Не удалось загрузить тренировку" (retry)="summary.reload()" />
+			}
+		}
+		@case ('ready') {
+			@if (summary.value(); as details) {
+				<header tuiHeader>
+					<h1 tuiTitle="l">
+						{{ details.workoutName }}
+						<span tuiSubtitle>{{ details.finishedAt | date: dateFormat }}</span>
+					</h1>
+				</header>
+				<div class="flex flex-wrap gap-2">
+					<span appearance="neutral" tuiBadge>
+						{{ formatDuration(details.startedAt, details.finishedAt) }}
+					</span>
+					<span appearance="neutral" tuiBadge>{{ formatVolume(details.totalVolume) }}</span>
+				</div>
+				@for (exercise of details.exercises; track exercise.exerciseId) {
+					<section appearance="neutral" tuiCardLarge>
+						<h2 tuiTitle>{{ exercise.name }}</h2>
+						<ol>
+							@for (set of exercise.sets; track set.setNumber) {
+								<li tuiCell="l">
+									<span tuiTitle>
+										{{ set.weight }} кг × {{ set.reps }}
+										@if (set.rpe !== null) {
+											<span tuiSubtitle>RPE {{ set.rpe }}</span>
+										}
+										@if (set.note) {
+											<span tuiSubtitle>{{ set.note }}</span>
+										}
+									</span>
+								</li>
+							}
+						</ol>
+					</section>
+				}
+			}
+		}
+	}
+</section>

@@ -1,8 +1,5 @@
 import type { Routes } from '@angular/router';
 
-const loadPlaceholder = () =>
-  import('./layout/section-placeholder').then((module) => module.SectionPlaceholderComponent);
-
 export const appRoutes: Routes = [
   {
     path: '',
@@ -23,6 +20,15 @@ export const appRoutes: Routes = [
     loadComponent: () =>
       import('./workouts/workout-details').then((module) => module.WorkoutDetailsComponent),
   },
-  { path: 'history', loadComponent: loadPlaceholder, data: { heading: 'История' } },
+  {
+    path: 'history',
+    loadComponent: () =>
+      import('./history/history-list').then((module) => module.HistoryListComponent),
+  },
+  {
+    path: 'history/:id',
+    loadComponent: () =>
+      import('./history/history-details').then((module) => module.HistoryDetailsComponent),
+  },
   { path: '**', redirectTo: '' },
 ];

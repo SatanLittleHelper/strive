@@ -1,9 +1,11 @@
-import { HttpClient, httpResource } from '@angular/common/http';
+import { HttpClient, httpResource, type HttpResourceRef } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import type {
   ActiveSessionResponse,
   SaveSetResultRequest,
   SessionHistoryResponse,
+  SessionListResponse,
+  SessionSummary,
   WorkoutSession,
 } from '@strive/api-interfaces';
 import { tap, type Observable } from 'rxjs';
@@ -20,6 +22,16 @@ export class SessionsService {
 
     return session ? `${SESSIONS_URL}/${session.id}/history` : undefined;
   });
+
+  getFinished(): HttpResourceRef<SessionListResponse | undefined> {
+    return httpResource<SessionListResponse>(() => SESSIONS_URL);
+  }
+
+  getSummary(id: () => string): HttpResourceRef<SessionSummary | undefined> {
+    return httpResource<SessionSummary>(
+      () => `${SESSIONS_URL}/${encodeURIComponent(id())}/summary`,
+    );
+  }
 
   start(workoutId: number): Observable<WorkoutSession> {
     return this.http

@@ -1,0 +1,48 @@
+<section class="grid gap-4">
+	<h1 tuiTitle="l">История</h1>
+	@switch (state()) {
+		@case ('loading') {
+			<div role="status" aria-label="Загрузка истории" class="grid gap-3">
+				@for (row of skeletonRows; track row) {
+					<div aria-hidden="true" appearance="neutral" tuiCardLarge [tuiSkeleton]="true">
+						<header tuiHeader>
+							<h2 tuiTitle>
+								Тренировка
+								<span tuiSubtitle>01.01.2026</span>
+							</h2>
+						</header>
+					</div>
+				}
+			</div>
+		}
+		@case ('error') {
+			<app-error-state message="Не удалось загрузить историю" (retry)="sessions.reload()" />
+		}
+		@case ('empty') {
+			<app-empty-state message="История пока пуста" />
+		}
+		@case ('ready') {
+			@if (sessions.value(); as list) {
+				<ul class="grid gap-3">
+					@for (session of list.sessions; track session.id) {
+						<li>
+							<a appearance="neutral" tuiCardLarge [routerLink]="['/history', session.id]">
+								<header tuiHeader>
+									<h2 tuiTitle>
+										{{ session.workout.name }}
+										<span tuiSubtitle>{{ session.finishedAt | date: dateFormat }}</span>
+									</h2>
+								</header>
+								<footer>
+									<span appearance="neutral" tuiBadge>
+										{{ formatSessionSummary(session.results) }}
+									</span>
+								</footer>
+							</a>
+						</li>
+					}
+				</ul>
+			}
+		}
+	}
+</section>

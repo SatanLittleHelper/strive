@@ -7,6 +7,7 @@ import {
   type ApiResponse,
   type SessionHistoryResponse,
   type SessionListResponse,
+  type SessionSummary,
   type WorkoutSession,
 } from '@strive/api-interfaces';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -42,6 +43,21 @@ const HISTORY_EXERCISE_COUNT = 1;
 const HISTORY_TOTAL_VOLUME =
   HISTORY_FIRST_SET.weight * HISTORY_FIRST_SET.reps +
   HISTORY_SECOND_SET.weight * HISTORY_SECOND_SET.reps;
+
+const SUMMARY_FIRST_EXERCISE_NAME = 'Жим';
+const SUMMARY_SECOND_EXERCISE_NAME = 'Присед';
+const SUMMARY_FIRST_SETS = [
+  { weight: 60, reps: 8, rpe: 3, note: 'Легко' },
+  { weight: 60, reps: 6 },
+];
+const SUMMARY_SECOND_SETS = [{ weight: 100, reps: 5 }];
+const SUMMARY_PLAN = [
+  { name: SUMMARY_FIRST_EXERCISE_NAME, sets: SUMMARY_FIRST_SETS },
+  { name: SUMMARY_SECOND_EXERCISE_NAME, sets: SUMMARY_SECOND_SETS },
+];
+const SUMMARY_EXERCISE_COUNT = 2;
+const SUMMARY_SET_COUNT = 3;
+const SUMMARY_TOTAL_VOLUME = 60 * 8 + 60 * 6 + 100 * 5;
 
 describe('HTTP сессий тренировок', () => {
   const getClient = useDatabaseClient();
@@ -434,6 +450,119 @@ describe('HTTP сессий тренировок', () => {
           },
         },
       });
+    });
+
+    async function finishedViaApi() {
+      const workoutId = await insertWorkout(getClient(), { name: HISTORY_WORKOUT_NAME });
+      const exerciseIds: string[] = [];
+      for (const [index, { name, sets }] of SUMMARY_PLAN.entries()) {
+        const exerciseId = await insertExercise(getClient(), name);
+        await insertWorkoutExercise({
+          client: getClient(),
+          workoutId,
+          exerciseId,
+          position: index + 1,
+          targetSets: sets.length,
+        });
+        exerciseIds.push(exerciseId);
+      }
+
+      const started = await request({ method: 'POST', body: { workoutId: Number(workoutId) } });
+      const sessionId = (started.body as ApiResponse<WorkoutSession>).data?.id;
+      if (sessionId === undefined) throw new Error('Сессия не начата');
+
+      for (const [planIndex, { sets }] of SUMMARY_PLAN.entries()) {
+        for (const [index, set] of sets.entries()) {
+          await request({
+            method: 'PUT',
+            path: `/${sessionId}/sets/${exerciseIds[planIndex]}/${index + 1}`,
+            body: set,
+          });
+        }
+      }
+      await request({ method: 'POST', path: `/${sessionId}/finish` });
+
+      const [firstId, secondId] = exerciseIds.map(Number);
+
+      return { sessionId, firstId, secondId };
+    }
+
+    it('[H2-E1] отдаёт exercises в контрактной форме', async () => {
+      const { sessionId, firstId, secondId } = await finishedViaApi();
+
+      const response = await request({ path: `/${sessionId}/summary` });
+
+      expect(response).toMatchObject({
+        status: OK,
+        body: {
+          data: {
+            exercises: [
+              {
+                exerciseId: firstId,
+                name: SUMMARY_FIRST_EXERCISE_NAME,
+                sets: [
+                  {
+                    setNumber: 1,
+                    weight: 60,
+                    reps: 8,
+                    rpe: 3,
+                    note: 'Легко',
+                    completedAt: expect.any(String),
+                  },
+                  {
+                    setNumber: 2,
+                    weight: 60,
+                    reps: 6,
+                    rpe: null,
+                    note: null,
+                    completedAt: expect.any(String),
+                  },
+                ],
+              },
+              {
+                exerciseId: secondId,
+                name: SUMMARY_SECOND_EXERCISE_NAME,
+                sets: [
+                  {
+                    setNumber: 1,
+                    weight: 100,
+                    reps: 5,
+                    rpe: null,
+                    note: null,
+                    completedAt: expect.any(String),
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      });
+    });
+
+    it('[H2-E2] согласует агрегаты с подходами в том же ответе', async () => {
+      const { sessionId } = await finishedViaApi();
+
+      const response = await request({ path: `/${sessionId}/summary` });
+
+      expect(response).toMatchObject({
+        status: OK,
+        body: {
+          data: {
+            exerciseCount: SUMMARY_EXERCISE_COUNT,
+            setCount: SUMMARY_SET_COUNT,
+            totalVolume: SUMMARY_TOTAL_VOLUME,
+          },
+        },
+      });
+      const summary = (response.body as ApiResponse<SessionSummary>).data;
+      expect(summary?.exercises).toBeInstanceOf(Array);
+      if (!summary) throw new Error('В ответе API нет сводки');
+
+      const exercises = summary.exercises;
+      const sets = exercises.flatMap((exercise) => exercise.sets);
+      expect(summary.exerciseCount).toBe(exercises.length);
+      expect(summary.setCount).toBe(sets.length);
+      expect(summary.totalVolume).toBe(sets.reduce((sum, set) => sum + set.weight * set.reps, 0));
     });
 
     it('[E6] отвечает 409 для ещё не завершённой сессии', async () => {
