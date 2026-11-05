@@ -3,31 +3,59 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   inject,
   input,
   linkedSignal,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormsModule } from '@angular/forms';
+import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { SET_RESULT_LIMITS, type SetResult } from '@strive/api-interfaces';
-import { TuiButton, TuiNotification } from '@taiga-ui/core';
+import { TuiButton, TuiError, TuiNotification, tuiValidationErrorsProvider } from '@taiga-ui/core';
 import { TuiBadge, TuiInputNumber, TuiTextarea } from '@taiga-ui/kit';
 import { finalize } from 'rxjs';
 import {
   isSameFormValues,
   SessionsService,
   toFormValues,
-  validateSetInput,
+  toSaveSetRequest,
   type SetFormValues,
 } from '..';
 import type { FillRequest } from '../session-form.types';
+import { WEIGHT_MIN } from '../sessions.constants';
+import {
+  NOTE_VALIDATORS,
+  REPS_VALIDATORS,
+  RPE_VALIDATORS,
+  WEIGHT_VALIDATORS,
+} from '../set-form.validators';
+
+const SET_ERRORS_PROVIDER = tuiValidationErrorsProvider({
+  required: 'Обязательное поле',
+  min: ({ min }: { min: number }) => `Не меньше ${min}`,
+  max: ({ max }: { max: number }) => `Не больше ${max}`,
+  integer: 'Только целое число',
+  maxDecimalPlaces: ({ places }: { places: number }) => `Не более ${places} знаков после запятой`,
+  maxlength: ({ requiredLength }: { requiredLength: number }) =>
+    `Не больше ${requiredLength} символов`,
+});
 
 @Component({
   selector: 'app-set-row',
-  imports: [FormsModule, TuiButton, TuiNotification, TuiBadge, TuiInputNumber, TuiTextarea],
+  imports: [
+    ReactiveFormsModule,
+    TuiBadge,
+    TuiButton,
+    TuiError,
+    TuiInputNumber,
+    TuiNotification,
+    TuiTextarea,
+  ],
   templateUrl: './set-row.component.html',
+  providers: [SET_ERRORS_PROVIDER],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
 })
@@ -44,10 +72,22 @@ export class SetRowComponent {
 
   private readonly sessions = inject(SessionsService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly fb = inject(NonNullableFormBuilder);
 
   protected readonly limits = SET_RESULT_LIMITS;
+  protected readonly weightMin = WEIGHT_MIN;
   protected readonly saving = signal(false);
   protected readonly error = signal('');
+
+  protected readonly form = this.fb.group({
+    weight: this.fb.control<number | null>(null, WEIGHT_VALIDATORS),
+    reps: this.fb.control<number | null>(null, REPS_VALIDATORS),
+    rpe: this.fb.control<number | null>(null, RPE_VALIDATORS),
+    note: this.fb.control('', NOTE_VALIDATORS),
+  });
+
+  private appliedFill: FillRequest | null = null;
+  private appliedValues: SetFormValues | null = null;
 
   private readonly initial = computed<SetFormValues>(() => {
     const saved = this.result();
@@ -60,52 +100,63 @@ export class SetRowComponent {
 
   protected readonly expanded = linkedSignal(() => this.open());
 
-  // Введённое пользователем не затирается пересчётом значений по умолчанию (например, когда
-  // приходит история); новый запрос подстановки из истории сбрасывает форму всегда.
-  protected readonly form = linkedSignal<
-    { values: SetFormValues; fill: FillRequest | null },
-    SetFormValues
-  >({
-    source: () => ({ values: this.initial(), fill: this.fillRequest() }),
-    computation: (source, previous) =>
-      previous &&
-      source.fill === previous.source.fill &&
-      !isSameFormValues(previous.value, previous.source.values)
-        ? previous.value
-        : source.values,
-  });
+  constructor() {
+    // введённое пользователем не затирается пересчётом значений по умолчанию (например, когда
+    // приходит история); новый запрос подстановки из истории сбрасывает форму всегда
+    effect(() => {
+      const values = this.initial();
+      const fill = this.fillRequest();
 
-  protected patch(changes: Partial<SetFormValues>): void {
-    this.form.update((values) => ({ ...values, ...changes }));
+      untracked(() => {
+        const edited =
+          this.appliedValues !== null &&
+          !isSameFormValues(this.form.getRawValue(), this.appliedValues);
+        if (fill === this.appliedFill && edited) return;
+
+        this.appliedFill = fill;
+        this.appliedValues = values;
+        this.form.reset(values);
+      });
+    });
+
+    effect(() => {
+      if (this.saving() || this.disabled()) this.form.disable({ emitEvent: false });
+      else this.form.enable({ emitEvent: false });
+    });
   }
 
   protected toggle(): void {
     if (this.disabled() || this.saving()) return;
 
     this.error.set('');
+    this.form.markAsUntouched();
     this.expanded.update((value) => !value);
   }
 
   protected save(): void {
     if (this.saving() || this.disabled()) return;
 
-    const validation = validateSetInput({
-      weight: String(this.form().weight ?? ''),
-      reps: String(this.form().reps ?? ''),
-      rpe: String(this.form().rpe ?? ''),
-      note: this.form().note,
-    });
-    if (!validation.ok) {
-      this.error.set(validation.error);
+    this.error.set('');
+
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
       return;
     }
+
+    const { weight, reps, rpe, note } = this.form.getRawValue();
+    if (weight === null || reps === null) return;
 
     this.error.set('');
     this.saving.set(true);
     this.pendingChange.emit(true);
 
     this.sessions
-      .saveSet(this.sessionId(), this.exerciseId(), this.setNumber(), validation.value)
+      .saveSet(
+        this.sessionId(),
+        this.exerciseId(),
+        this.setNumber(),
+        toSaveSetRequest({ weight, reps, rpe, note }),
+      )
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => {

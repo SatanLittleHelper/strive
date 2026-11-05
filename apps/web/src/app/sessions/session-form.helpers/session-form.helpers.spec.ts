@@ -1,6 +1,5 @@
 import {
   DEFAULT_RPE,
-  SET_RESULT_LIMITS,
   type ExerciseHistory,
   type SetResult,
   type WorkoutExercise,
@@ -10,14 +9,13 @@ import { describe, expect, it } from 'vitest';
 import {
   countCompletedSets,
   findResult,
-  validateSetInput,
+  toSaveSetRequest,
   getActiveSetNumber,
   getFirstUnfinishedExerciseIndex,
   getSetDefaults,
   getSwipeStep,
 } from './session-form.helpers';
 
-const RAW = { weight: '60.25', reps: '8', rpe: '3', note: 'Легко' };
 const EXERCISE_ID = 1;
 const SET_NUMBER = 1;
 const RESULT = {
@@ -51,60 +49,19 @@ const SESSION: WorkoutSession = {
   results: [RESULT],
 };
 
-describe('Валидация подхода', () => {
-  it('преобразует строки в запрос', () => {
-    expect(validateSetInput(RAW)).toEqual({
-      ok: true,
-      value: { weight: 60.25, reps: 8, rpe: 3, note: 'Легко' },
-    });
+describe('Запрос на сохранение подхода', () => {
+  const VALUES = { weight: 60.25, reps: 8, rpe: 3, note: 'Легко' };
+
+  it('U19 · пустой RPE превращается в «нет значения»', () => {
+    expect(toSaveSetRequest({ ...VALUES, rpe: null })).toEqual({ ...VALUES, rpe: null });
   });
 
-  it('допускает нулевой вес и незаполненные необязательные поля', () => {
-    expect(validateSetInput({ weight: '0', reps: '1', rpe: '', note: '' })).toEqual({
-      ok: true,
-      value: { weight: 0, reps: 1, rpe: null, note: null },
-    });
+  it('U20 · заметка из пробелов превращается в «нет значения»', () => {
+    expect(toSaveSetRequest({ ...VALUES, note: '   ' })).toEqual({ ...VALUES, note: null });
   });
 
-  it('принимает верхние границы', () => {
-    expect(
-      validateSetInput({
-        weight: String(SET_RESULT_LIMITS.weightMax),
-        reps: String(SET_RESULT_LIMITS.repsMax),
-        rpe: String(SET_RESULT_LIMITS.rpeMax),
-        note: 'x'.repeat(SET_RESULT_LIMITS.noteMaxLength),
-      }).ok,
-    ).toBe(true);
-  });
-
-  it.each([
-    { weight: '' },
-    { weight: ' ' },
-    { weight: '-1' },
-    { weight: '10000' },
-    { weight: 'NaN' },
-    { weight: 'Infinity' },
-    { weight: '0.001' },
-    { reps: '' },
-    { reps: '0' },
-    { reps: '1000' },
-    { reps: '1.5' },
-    { reps: 'abc' },
-    { rpe: '0' },
-    { rpe: '6' },
-    { rpe: '1.5' },
-    { rpe: 'abc' },
-    { note: 'x'.repeat(SET_RESULT_LIMITS.noteMaxLength + 1) },
-  ])('отклоняет некорректное значение %j', (invalid) => {
-    const result = validateSetInput({ ...RAW, ...invalid });
-    expect(result).toMatchObject({ ok: false, error: expect.any(String) });
-  });
-
-  it('принимает десятичную запятую', () => {
-    expect(validateSetInput({ ...RAW, weight: '60,25' })).toMatchObject({
-      ok: true,
-      value: { weight: 60.25 },
-    });
+  it('U21 · пробелы по краям заметки обрезаются, остальные значения сохраняются', () => {
+    expect(toSaveSetRequest({ ...VALUES, note: '  Легко  ' })).toEqual(VALUES);
   });
 });
 

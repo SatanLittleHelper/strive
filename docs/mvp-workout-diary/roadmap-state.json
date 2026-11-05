@@ -1,14 +1,14 @@
 {
   "feature": "mvp-workout-diary",
   "roadmapPath": "docs/mvp-workout-diary/2026-11-02-mvp-workout-diary-roadmap.md",
-  "updatedAt": "2026-11-02T00:00:00Z",
+  "updatedAt": "2026-11-03T11:52:50Z",
   "steps": [
     {"id": "A0", "title": "Фундамент", "ticket": "TBD", "dependsOn": [], "stepFolder": null, "status": "closed", "specPath": null, "testPlanPath": null, "planPath": null},
     {"id": "A1", "title": "Каталог тренировок", "ticket": "TBD", "dependsOn": ["A0"], "stepFolder": null, "status": "closed", "specPath": null, "testPlanPath": null, "planPath": null},
     {"id": "A2", "title": "Выполнение тренировки", "ticket": "TBD", "dependsOn": ["A1"], "stepFolder": null, "status": "closed", "specPath": null, "testPlanPath": null, "planPath": null},
     {"id": "H1", "title": "API истории", "ticket": "TBD", "dependsOn": ["A2"], "stepFolder": "docs/mvp-workout-diary/steps/history-api/", "status": "closed", "specPath": "docs/mvp-workout-diary/steps/history-api/2026-11-02-history-api-design.md", "testPlanPath": null, "planPath": null},
     {"id": "H2", "title": "Страницы истории", "ticket": "TBD", "dependsOn": ["H1"], "stepFolder": "docs/mvp-workout-diary/steps/history-pages/", "status": "closed", "specPath": "docs/mvp-workout-diary/steps/history-pages/2026-11-02-history-pages-design.md", "testPlanPath": null, "planPath": null},
-    {"id": "P1", "title": "Состояния и валидация", "ticket": "TBD", "dependsOn": ["H2"], "stepFolder": null, "status": "not-started", "specPath": null, "testPlanPath": null, "planPath": null},
+    {"id": "P1", "title": "Состояния и валидация", "ticket": "TBD", "dependsOn": ["H2"], "stepFolder": "docs/mvp-workout-diary/steps/states-validation/", "status": "closed", "specPath": "docs/mvp-workout-diary/steps/states-validation/2026-11-03-states-validation-design.md", "testPlanPath": null, "planPath": null},
     {"id": "P2", "title": "E2E-сценарий", "ticket": "TBD", "dependsOn": ["H2"], "stepFolder": null, "status": "not-started", "specPath": null, "testPlanPath": null, "planPath": null},
     {"id": "P3", "title": "README", "ticket": "TBD", "dependsOn": ["H2"], "stepFolder": null, "status": "not-started", "specPath": null, "testPlanPath": null, "planPath": null}
   ]

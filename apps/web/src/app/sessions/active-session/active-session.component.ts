@@ -12,8 +12,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { TuiSwipe, type TuiSwipeEvent } from '@taiga-ui/cdk';
 import { TuiButton, TuiDialogService, TuiLink, TuiNotification, TuiTitle } from '@taiga-ui/core';
-import { TUI_CONFIRM, TuiProgress } from '@taiga-ui/kit';
-import { TuiHeader } from '@taiga-ui/layout';
+import { TUI_CONFIRM, TuiProgress, TuiSkeleton } from '@taiga-ui/kit';
+import { TuiCardLarge, TuiHeader } from '@taiga-ui/layout';
 import { finalize } from 'rxjs';
 import { getResourceViewState } from '../../api/resource-view-state';
 import { EmptyStateComponent } from '../../shared/empty-state';
@@ -37,6 +37,8 @@ import { ExerciseStepComponent } from '../exercise-step';
     TuiHeader,
     TuiSwipe,
     TuiProgress,
+    TuiCardLarge,
+    TuiSkeleton,
     EmptyStateComponent,
     ErrorStateComponent,
     ExerciseStepComponent,

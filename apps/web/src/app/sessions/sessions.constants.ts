@@ -2,3 +2,6 @@ import { API_URL_PREFIX } from '../api/api.constants';
 
 export const SESSIONS_URL = `${API_URL_PREFIX}/sessions`;
 export const SESSION_CONFLICT_STATUS = 409;
+
+export const WEIGHT_MIN = 0;
+export const WEIGHT_DECIMAL_PLACES = 2;
