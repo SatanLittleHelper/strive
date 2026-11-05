@@ -7,7 +7,7 @@ Nx монорепозиторий с двумя приложениями с ну
 - `libs/api-interfaces` — общие константы заголовков и интерфейсы DTO для web и api.
 - `apps/web-e2e` — тестовый проект Playwright для Chromium, Firefox и WebKit.
 
-Unit-тесты обоих приложений используют Vitest. У API дополнительно проверяется реальный HTTP-сервер и граф DI. Фронтенд проверяет состояния ожидания, успешного подключения и ошибки.
+Unit-тесты обоих приложений используют Vitest. У API дополнительно проверяется реальный HTTP-сервер и граф DI. Страницы web проверяются сквозными сценариями Playwright.
 
 ## Подготовка
 
@@ -46,7 +46,20 @@ npm run db:migrate
 
 Новая миграция: `npm run db:migrate:dev -- --name <имя>`. Prisma-клиент генерируется командой `npm run db:generate` (Nx запускает её сам перед сборкой, запуском и тестами API). Общая библиотека `libs/api-interfaces` пересобирается командой `npx nx run api-interfaces:build`.
 
-Тесты API (`npx nx run api:test`) самостоятельно поднимают Postgres через Testcontainers, поэтому Docker должен быть запущен. Данные локальной БД хранятся в томе `postgres-data`; на проде резервные копии БД не настроены. Каталог тренировок пока моковый, в БД он не хранится.
+`npm run db:migrate` применяет все миграции из `apps/api/prisma/migrations`, включая seed: миграция `seed_catalog` заводит упражнения и тренировки «Тренировка A/B/C», а `seed_target_weights` задаёт стартовые целевые веса. Отдельной команды seed нет — каталог меняется только новой миграцией. Повторный `npm run db:migrate` безопасен: уже применённые миграции пропускаются.
+
+Первый запуск с нуля:
+
+```bash
+cp .env.example .env
+make db-up
+npm run db:migrate
+npm start
+```
+
+После этого список тренировок доступен на <http://127.0.0.1:4200> и по `GET /api/workouts`. Пользователь определяется анонимным идентификатором устройства (`X-Device-Id`), авторизации нет.
+
+Тесты API (`npx nx run api:test`) самостоятельно поднимают Postgres через Testcontainers, поэтому Docker должен быть запущен; seed в них очищается перед каждым тестом. Playwright (`npm run e2e`), наоборот, ожидает мигрированную БД с seed: перед запуском выполните `make db-up` и `npm run db:migrate`. Данные локальной БД хранятся в томе `postgres-data`; на проде резервные копии БД не настроены.
 
 ## Проверки
 
@@ -77,7 +90,7 @@ make logs
 make down
 ```
 
-Сайт доступен на <http://localhost:8080>. Nginx раздаёт Angular и проксирует `/api/` к API в сети Compose. Порт API наружу не публикуется. Docker-сборка использует `devops/Dockerfile` с целями `api`, `web` и `migrate`. `docker compose` поднимает `postgres`, одноразовый `migrate` (применяет миграции) и затем `api`.
+Сайт доступен на <http://localhost:8080>. Nginx раздаёт Angular и проксирует `/api/` к API в сети Compose. Порт API наружу не публикуется. Docker-сборка использует `devops/Dockerfile` с целями `api`, `web` и `migrate`. `docker compose` поднимает `postgres`, одноразовый `migrate` (применяет миграции вместе с seed каталога) и затем `api`.
 
 ## Особенности Nx
 
