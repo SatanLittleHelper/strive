@@ -1,19 +1,11 @@
-import type {
-  ExerciseHistory,
-  SaveSetResultRequest,
-  SetResult,
-  WorkoutExercise,
-} from '@strive/api-interfaces';
+import type { ExerciseHistory, SetResult, WorkoutExercise } from '@strive/api-interfaces';
 
-export interface RawSetInput {
-  weight: string;
-  reps: string;
-  rpe: string;
+export interface ValidSetFormValues {
+  weight: number;
+  reps: number;
+  rpe: number | null;
   note: string;
 }
-
-export type SetInputValidation =
-  { ok: true; value: SaveSetResultRequest } | { ok: false; error: string };
 
 export interface SetFormValues {
   weight: number | null;

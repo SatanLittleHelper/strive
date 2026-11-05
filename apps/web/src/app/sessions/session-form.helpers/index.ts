@@ -7,5 +7,5 @@ export {
   getSwipeStep,
   isSameFormValues,
   toFormValues,
-  validateSetInput,
+  toSaveSetRequest,
 } from './session-form.helpers';

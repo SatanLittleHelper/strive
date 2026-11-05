@@ -1,7 +1,16 @@
 <section class="grid gap-4">
 	@switch (state()) {
 		@case ('loading') {
-			<p role="status" tuiTitle>Загрузка тренировки…</p>
+			<div role="status" aria-label="Загрузка тренировки" class="grid gap-3">
+				<div aria-hidden="true" appearance="neutral" tuiCardLarge [tuiSkeleton]="true">
+					<header tuiHeader>
+						<h2 tuiTitle>
+							Тренировка
+							<span tuiSubtitle>Название упражнения</span>
+						</h2>
+					</header>
+				</div>
+			</div>
 		}
 		@case ('error') {
 			<app-error-state message="Не удалось загрузить активную тренировку" (retry)="active.reload()" />

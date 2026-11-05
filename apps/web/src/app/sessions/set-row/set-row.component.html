@@ -18,61 +18,48 @@
 		<form
 			class="grid gap-3"
 			novalidate
+			[formGroup]="form"
 			(ngSubmit)="save()"
 			[attr.aria-label]="'Подход ' + setNumber()"
 		>
 			<div class="grid grid-cols-2 gap-3">
-				<tui-textfield>
-					<label tuiLabel>Вес, кг</label>
-					<input
-						tuiInputNumber
-						name="weight"
-						[min]="0"
-						[max]="limits.weightMax"
-						[step]="0.5"
-						[disabled]="saving() || disabled()"
-						[ngModel]="form().weight"
-						(ngModelChange)="patch({ weight: $event })"
-					/>
-				</tui-textfield>
-				<tui-textfield>
-					<label tuiLabel>Повторы</label>
-					<input
-						tuiInputNumber
-						name="reps"
-						[min]="limits.repsMin"
-						[max]="limits.repsMax"
-						[step]="1"
-						[disabled]="saving() || disabled()"
-						[ngModel]="form().reps"
-						(ngModelChange)="patch({ reps: $event })"
-					/>
-				</tui-textfield>
+				<div class="grid gap-1">
+					<!-- вес ограничен min/max самой Taiga: ввод за границей обрезается без ошибки -->
+					<tui-textfield>
+						<label tuiLabel>Вес, кг</label>
+						<input
+							tuiInputNumber
+							formControlName="weight"
+							[min]="weightMin"
+							[max]="limits.weightMax"
+							[step]="0.5"
+						/>
+					</tui-textfield>
+					<tui-error formControlName="weight" />
+				</div>
+				<div class="grid gap-1">
+					<tui-textfield>
+						<label tuiLabel>Повторы</label>
+						<input tuiInputNumber formControlName="reps" [step]="1" />
+					</tui-textfield>
+					<tui-error formControlName="reps" />
+				</div>
 			</div>
-			<tui-textfield>
-				<label tuiLabel>RPE (1–5, необязательно)</label>
-				<input
-					tuiInputNumber
-					name="rpe"
-					[min]="limits.rpeMin"
-					[max]="limits.rpeMax"
-					[step]="1"
-					[disabled]="saving() || disabled()"
-					[ngModel]="form().rpe"
-					(ngModelChange)="patch({ rpe: $event })"
-				/>
-			</tui-textfield>
-			<tui-textfield>
-				<label tuiLabel>Заметка</label>
-				<textarea
-					tuiTextarea
-					name="note"
-					[maxLength]="limits.noteMaxLength"
-					[disabled]="saving() || disabled()"
-					[ngModel]="form().note"
-					(ngModelChange)="patch({ note: $event })"
-				></textarea>
-			</tui-textfield>
+			<div class="grid gap-1">
+				<tui-textfield>
+					<label tuiLabel>RPE (1–5, необязательно)</label>
+					<input tuiInputNumber formControlName="rpe" [step]="1" />
+				</tui-textfield>
+				<tui-error formControlName="rpe" />
+			</div>
+			<div class="grid gap-1">
+				<!-- maxLength не даёт ввести длинную заметку, поэтому ошибка длины здесь недостижима -->
+				<tui-textfield>
+					<label tuiLabel>Заметка</label>
+					<textarea tuiTextarea formControlName="note" [maxLength]="limits.noteMaxLength"></textarea>
+				</tui-textfield>
+				<tui-error formControlName="note" />
+			</div>
 			@if (error()) {
 				<div tuiNotification appearance="negative" role="alert">{{ error() }}</div>
 			}

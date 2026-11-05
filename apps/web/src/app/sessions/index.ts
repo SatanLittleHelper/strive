@@ -8,7 +8,7 @@ export {
   getSwipeStep,
   isSameFormValues,
   toFormValues,
-  validateSetInput,
+  toSaveSetRequest,
 } from './session-form.helpers';
 export type { SetFormValues } from './session-form.types';
 export { SESSION_CONFLICT_STATUS } from './sessions.constants';

@@ -1,4 +1,5 @@
-import { expect, test, type Route } from '@playwright/test';
+import { expect, test, type Page, type Route } from '@playwright/test';
+import { SET_RESULT_LIMITS } from '@strive/api-interfaces';
 import { swipe } from './support/swipe';
 import { MOBILE_VIEWPORT } from './e2e.constants';
 import {
@@ -36,16 +37,33 @@ test.describe('экран сессии с мокнутым API', () => {
     await expect(page.getByRole('heading', { name: /Тренировка A/ })).toBeVisible();
   });
 
-  test('загрузка и пустое состояние со ссылкой в каталог', async ({ page }) => {
+  test('E1 · во время загрузки виден скелетон со статусом', async ({ page }) => {
+    const pending: { route?: Route } = {};
+    await page.route('**/api/sessions/active', (route) => {
+      pending.route = route;
+    });
+
+    await page.goto('/workouts/session');
+
+    await expect(page.getByRole('status', { name: 'Загрузка тренировки' })).toBeVisible();
+    await expect(page.getByText('Загрузка тренировки…')).toHaveCount(0);
+  });
+
+  test('E2 · после ответа скелетон исчезает, показано пустое состояние со ссылкой в каталог', async ({
+    page,
+  }) => {
     const pending: { route?: Route } = {};
     await page.route('**/api/sessions/active', (route) => {
       pending.route = route;
     });
     await page.goto('/workouts/session');
-    await expect(page.getByRole('status')).toHaveText('Загрузка тренировки…');
+    await expect(page.getByRole('status', { name: 'Загрузка тренировки' })).toBeVisible();
     await expect.poll(() => Boolean(pending.route)).toBe(true);
     if (!pending.route) throw new Error('Запрос активной сессии не отправлен');
+
     await pending.route.fulfill({ json: ok({ session: null }) });
+
+    await expect(page.getByRole('status', { name: 'Загрузка тренировки' })).toHaveCount(0);
     await expect(page.getByText('Нет активной тренировки')).toBeVisible();
     await expect(page.getByRole('link', { name: 'Выбрать тренировку' })).toHaveAttribute(
       'href',
@@ -412,21 +430,149 @@ test.describe('предзаполнение подхода', () => {
     await expect(form.getByLabel('Вес, кг', { exact: true })).toHaveValue('');
     await expect(form.getByLabel('Повторы', { exact: true })).toHaveValue('6');
   });
+});
 
-  test('очистка предзаполненного веса даёт ошибку и не отправляет запрос', async ({ page }) => {
-    await mockActive(page);
+const LABEL_WEIGHT = 'Вес, кг';
+const LABEL_REPS = 'Повторы';
+const LABEL_RPE = 'RPE (1–5, необязательно)';
+const SAVE_BUTTON = 'Сохранить подход';
+const VALID_WEIGHT = '62.5';
+const SAVE_SET_URL = '**/api/sessions/1/sets/1/1';
+const SAVE_ERROR_MESSAGE = 'Не удалось сохранить подход';
+const ERROR_TEXT = /Обязательное поле|Не меньше|Не больше|Только целое|Не более/;
+const REPS_BELOW_MIN = String(SET_RESULT_LIMITS.repsMin - 1);
+const RPE_ABOVE_MAX = String(SET_RESULT_LIMITS.rpeMax + 1);
+
+const formOf = (page: Page) => page.getByRole('form', { name: 'Подход 1' });
+const fieldOf = (page: Page, label: string) => formOf(page).getByLabel(label, { exact: true });
+const visibleErrors = (page: Page) => formOf(page).getByText(ERROR_TEXT);
+
+const expectMarkedInvalid = (page: Page, label: string) =>
+  expect(fieldOf(page, label)).toHaveAttribute('aria-invalid', 'true');
+const expectNotMarkedInvalid = (page: Page, label: string) =>
+  expect(fieldOf(page, label)).not.toHaveAttribute('aria-invalid', 'true');
+
+test.describe('ошибки формы подхода', () => {
+  test.use({ viewport: MOBILE_VIEWPORT });
+
+  test.beforeEach(async ({ page }) => {
+    await Promise.all([mockHistory(page), mockActive(page)]);
+  });
+
+  test('E3 · пустой вес показывает ошибку под полем веса', async ({ page }) => {
+    await page.goto('/workouts/session');
+    await fillSetForm(page, { weight: '' });
+
+    await page.getByRole('button', { name: SAVE_BUTTON }).click();
+
+    await expectMarkedInvalid(page, LABEL_WEIGHT);
+    await expect(visibleErrors(page)).toHaveCount(1);
+    await expect(visibleErrors(page)).toHaveText('Обязательное поле');
+    await expectNotMarkedInvalid(page, LABEL_REPS);
+    await expectNotMarkedInvalid(page, LABEL_RPE);
+  });
+
+  test('E4 · повторы ниже минимума показывают ошибку под полем повторов', async ({ page }) => {
+    await page.goto('/workouts/session');
+    await fillSetForm(page, { reps: REPS_BELOW_MIN });
+
+    await page.getByRole('button', { name: SAVE_BUTTON }).click();
+
+    await expectMarkedInvalid(page, LABEL_REPS);
+    await expect(visibleErrors(page)).toHaveCount(1);
+    await expect(visibleErrors(page)).toHaveText(`Не меньше ${SET_RESULT_LIMITS.repsMin}`);
+    await expectNotMarkedInvalid(page, LABEL_WEIGHT);
+    await expectNotMarkedInvalid(page, LABEL_RPE);
+  });
+
+  test('E5 · RPE выше максимума показывает ошибку под полем RPE', async ({ page }) => {
+    await page.goto('/workouts/session');
+    await fillSetForm(page, { rpe: RPE_ABOVE_MAX });
+
+    await page.getByRole('button', { name: SAVE_BUTTON }).click();
+
+    await expectMarkedInvalid(page, LABEL_RPE);
+    await expect(visibleErrors(page)).toHaveCount(1);
+    await expect(visibleErrors(page)).toHaveText(`Не больше ${SET_RESULT_LIMITS.rpeMax}`);
+    await expectNotMarkedInvalid(page, LABEL_WEIGHT);
+    await expectNotMarkedInvalid(page, LABEL_REPS);
+  });
+
+  test('E6 · невалидный ввод не отправляет запрос на сохранение', async ({ page }) => {
     const writes: string[] = [];
-    await page.route('**/api/sessions/1/sets/1/1', (route) => {
+    await page.route(SAVE_SET_URL, (route) => {
       writes.push(route.request().method());
-      return route.fulfill({ status: 500, json: errorBody });
+      return route.fulfill({ status: HTTP_ERROR, json: errorBody });
     });
     await page.goto('/workouts/session');
     await fillSetForm(page, { weight: '' });
 
-    await page.getByRole('button', { name: 'Сохранить подход' }).click();
+    await page.getByRole('button', { name: SAVE_BUTTON }).click();
 
-    await expect(page.getByRole('alert')).toContainText('Вес:');
+    await expect(visibleErrors(page)).toHaveCount(1);
     expect(writes).toEqual([]);
+  });
+
+  test('E7 · исправление значения убирает ошибку поля', async ({ page }) => {
+    await page.goto('/workouts/session');
+    await fillSetForm(page, { weight: '' });
+    await page.getByRole('button', { name: SAVE_BUTTON }).click();
+    await expectMarkedInvalid(page, LABEL_WEIGHT);
+
+    await fillSetForm(page, { weight: VALID_WEIGHT });
+
+    await expectNotMarkedInvalid(page, LABEL_WEIGHT);
+    await expect(visibleErrors(page)).toHaveCount(0);
+  });
+
+  test('E8 · закрытие и повторное открытие редактора убирает ошибки', async ({ page }) => {
+    await page.goto('/workouts/session');
+    await fillSetForm(page, { weight: '' });
+    await page.getByRole('button', { name: SAVE_BUTTON }).click();
+    await expect(visibleErrors(page)).toHaveCount(1);
+
+    const toggle = page.getByRole('button', { name: /^Подход 1/ });
+    await toggle.click();
+    await toggle.click();
+
+    await expect(formOf(page)).toBeVisible();
+    await expect(visibleErrors(page)).toHaveCount(0);
+    await expectNotMarkedInvalid(page, LABEL_WEIGHT);
+  });
+
+  test('E9 · после исправления значения подход сохраняется', async ({ page }) => {
+    const saved = makeSession({ results: [savedSet({ weight: Number(VALID_WEIGHT) })] });
+    const bodies: unknown[] = [];
+    await page.route(SAVE_SET_URL, (route) => {
+      bodies.push(route.request().postDataJSON());
+      return route.fulfill({ json: ok(saved) });
+    });
+    await page.goto('/workouts/session');
+    await fillSetForm(page, { weight: '' });
+    await page.getByRole('button', { name: SAVE_BUTTON }).click();
+    await expect(visibleErrors(page)).toHaveCount(1);
+
+    await fillSetForm(page, { weight: VALID_WEIGHT });
+    await page.getByRole('button', { name: SAVE_BUTTON }).click();
+
+    await expect.poll(() => bodies.length).toBe(1);
+    expect(bodies[0]).toMatchObject({ weight: Number(VALID_WEIGHT) });
+  });
+
+  test('E10 · ошибка сервера при сохранении не показывает ошибок под полями', async ({ page }) => {
+    await page.route(SAVE_SET_URL, (route) =>
+      route.fulfill({ status: HTTP_ERROR, json: errorBody }),
+    );
+    await page.goto('/workouts/session');
+    await expect(formOf(page)).toBeVisible();
+
+    await page.getByRole('button', { name: SAVE_BUTTON }).click();
+
+    await expect(page.getByRole('alert')).toContainText(SAVE_ERROR_MESSAGE);
+    await expect(visibleErrors(page)).toHaveCount(0);
+    await expectNotMarkedInvalid(page, LABEL_WEIGHT);
+    await expectNotMarkedInvalid(page, LABEL_REPS);
+    await expectNotMarkedInvalid(page, LABEL_RPE);
   });
 });
 
