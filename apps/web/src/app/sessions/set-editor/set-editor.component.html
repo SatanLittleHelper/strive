@@ -1,0 +1,62 @@
+<form
+	class="grid gap-3"
+	novalidate
+	[attr.aria-label]="'Подход ' + setNumber()"
+	[formGroup]="form"
+	[id]="formId"
+	(ngSubmit)="save()"
+>
+	<div class="grid grid-cols-5 gap-3">
+		<div class="col-span-3 grid min-w-0 gap-1">
+			<label for="set-editor-weight" tuiLabel>Рабочий вес, кг</label>
+			<!-- вес ограничен min/max самой Taiga: ввод за границей обрезается без ошибки -->
+			<tui-textfield>
+				<input
+					formControlName="weight"
+					id="set-editor-weight"
+					inputmode="decimal"
+					tuiInputNumber
+					[max]="limits.weightMax"
+					[min]="weightMin"
+				/>
+			</tui-textfield>
+			<tui-error formControlName="weight" />
+		</div>
+		<div class="col-span-2 grid min-w-0 gap-1">
+			<label for="set-editor-reps" tuiLabel>Повторы</label>
+			<tui-textfield>
+				<input formControlName="reps" id="set-editor-reps" inputmode="numeric" tuiInputNumber />
+			</tui-textfield>
+			<tui-error formControlName="reps" />
+		</div>
+	</div>
+	<div class="grid gap-1">
+		<span tuiLabel>RPE</span>
+		<tui-segmented aria-label="RPE от 1 до 5" class="w-full" role="radiogroup" size="m">
+			@for (value of rpeValues; track value) {
+				<label class="min-w-0 flex-1">
+					<input formControlName="rpe" type="radio" [value]="value" />
+					{{ value }}
+				</label>
+			}
+		</tui-segmented>
+		<tui-error formControlName="rpe" />
+	</div>
+	<div class="grid justify-items-start gap-2">
+		<button tuiLink type="button" [attr.aria-expanded]="noteOpen()" (click)="toggleNote()">
+			{{ noteOpen() ? 'Скрыть заметку' : '+ Заметка' }}
+		</button>
+		@if (noteOpen()) {
+			<div class="grid w-full gap-1">
+				<tui-textfield>
+					<label tuiLabel>Заметка</label>
+					<textarea formControlName="note" tuiTextarea></textarea>
+				</tui-textfield>
+				<tui-error formControlName="note" />
+			</div>
+		}
+	</div>
+	@if (error()) {
+		<div appearance="negative" role="alert" tuiNotification>{{ error() }}</div>
+	}
+</form>

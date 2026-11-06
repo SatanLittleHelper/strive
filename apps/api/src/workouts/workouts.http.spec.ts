@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { HttpStatus, type INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import type { ApiResponse, Workout } from '@strive/api-interfaces';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { configureApp } from '../app/app.setup.js';
 import {
@@ -16,7 +17,7 @@ const UNKNOWN_WORKOUT_ID = 999;
 const INVALID_IDS = ['abc', '0', '-1', '1.5', '99999999999999999999'];
 const WORKOUT = { name: 'Тренировка HTTP', description: 'Проверка контракта' };
 const EXERCISE_NAME = 'Жим';
-const PLAN = { targetSets: 4, targetRepsMin: 8, targetRepsMax: 10 };
+const PLAN = { targetSets: 4, targetReps: 10 };
 const TARGET_WEIGHT = 62.5;
 
 describe('HTTP каталога тренировок', () => {
@@ -73,7 +74,9 @@ describe('HTTP каталога тренировок', () => {
   it('возвращает тренировку с планом упражнений', async () => {
     const workoutId = await insertCatalogWorkout();
 
-    expect(await get(`/api/workouts/${workoutId}`)).toMatchObject({
+    const response = await get(`/api/workouts/${workoutId}`);
+
+    expect(response).toMatchObject({
       status: HttpStatus.OK,
       body: {
         success: true,
@@ -85,13 +88,15 @@ describe('HTTP каталога тренировок', () => {
               exercise: { name: EXERCISE_NAME },
               position: 1,
               sets: PLAN.targetSets,
-              repsMin: PLAN.targetRepsMin,
-              repsMax: PLAN.targetRepsMax,
+              reps: PLAN.targetReps,
             },
           ],
         },
       },
     });
+    const exercise = (response.body as ApiResponse<Workout>).data?.exercises[0];
+    expect(exercise).not.toHaveProperty('repsMin');
+    expect(exercise).not.toHaveProperty('repsMax');
   });
 
   it('отвечает 404 для несуществующей тренировки', async () => {

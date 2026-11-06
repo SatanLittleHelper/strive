@@ -21,6 +21,10 @@ const UNKNOWN_ID = 999;
 const TARGET_SETS = 3;
 const SET_NUMBER = 1;
 const RESULT = { weight: 60.25, reps: 8, rpe: 3, note: 'Легко' };
+const EXTRA_SET = { weight: 50, reps: 6 };
+const EXTRA_SET_NUMBER = TARGET_SETS + 1;
+const MAX_SET_NUMBER = 20;
+const OVER_LIMIT_SET_NUMBER = MAX_SET_NUMBER + 1;
 
 const HISTORY_LIMIT = 10;
 const OVER_LIMIT_SESSIONS = HISTORY_LIMIT + 1;
@@ -157,10 +161,61 @@ describe('Репозиторий сессий', () => {
     );
   });
 
-  it('отклоняет упражнение вне тренировки и подход сверх плана', async () => {
+  it('сохраняет подход с номером больше плана', async () => {
     const { workoutId, exerciseId } = await catalog();
+    const session = await repository().start(DEVICE_ID, workoutId);
+
+    const saved = await repository().saveSetResult(
+      DEVICE_ID,
+      { sessionId: session.id, exerciseId, setNumber: EXTRA_SET_NUMBER },
+      EXTRA_SET,
+    );
+
+    expect(saved.results).toEqual([
+      {
+        exerciseId,
+        setNumber: EXTRA_SET_NUMBER,
+        ...EXTRA_SET,
+        rpe: null,
+        note: null,
+        completedAt: expect.any(String),
+      },
+    ]);
+  });
+
+  it('принимает подход с номером, равным пределу', async () => {
+    const { workoutId, exerciseId } = await catalog();
+    const session = await repository().start(DEVICE_ID, workoutId);
+
+    const saved = await repository().saveSetResult(
+      DEVICE_ID,
+      { sessionId: session.id, exerciseId, setNumber: MAX_SET_NUMBER },
+      EXTRA_SET,
+    );
+
+    expect(saved.results).toMatchObject([{ setNumber: MAX_SET_NUMBER }]);
+  });
+
+  it('отклоняет номер подхода выше предела', async () => {
+    const { workoutId, exerciseId } = await catalog();
+    const session = await repository().start(DEVICE_ID, workoutId);
+
+    await expect(
+      repository().saveSetResult(
+        DEVICE_ID,
+        { sessionId: session.id, exerciseId, setNumber: OVER_LIMIT_SET_NUMBER },
+        EXTRA_SET,
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    const unchanged = await repository().getOwned(DEVICE_ID, session.id);
+    expect(unchanged.results).toEqual([]);
+  });
+
+  it('отклоняет упражнение вне тренировки', async () => {
+    const { workoutId } = await catalog();
     const extraExerciseId = Number(await insertExercise(getClient()));
     const session = await repository().start(DEVICE_ID, workoutId);
+
     await expect(
       repository().saveSetResult(
         DEVICE_ID,
@@ -168,13 +223,8 @@ describe('Репозиторий сессий', () => {
         RESULT,
       ),
     ).rejects.toBeInstanceOf(BadRequestException);
-    await expect(
-      repository().saveSetResult(
-        DEVICE_ID,
-        { sessionId: session.id, exerciseId, setNumber: TARGET_SETS + 1 },
-        RESULT,
-      ),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    const unchanged = await repository().getOwned(DEVICE_ID, session.id);
+    expect(unchanged.results).toEqual([]);
   });
 
   it('сериализует одновременные сохранение и завершение, не меняет результаты после завершения', async () => {

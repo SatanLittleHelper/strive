@@ -34,6 +34,13 @@ const CONFLICT = 409;
 const UNKNOWN_ID = 999;
 const TARGET_SETS = 3;
 const RESULT = { weight: 60.25, reps: 8, rpe: 3, note: 'Хороший подход' };
+const MAX_SET_NUMBER = 20;
+const PLANNED_SET = { weight: 60, reps: 8 };
+const EXTRA_SET = { weight: 50, reps: 6 };
+const EXTRA_SET_NUMBER = TARGET_SETS + 1;
+const OVER_LIMIT_SET_NUMBER = MAX_SET_NUMBER + 1;
+const EXTRA_SETS_TOTAL_VOLUME =
+  TARGET_SETS * PLANNED_SET.weight * PLANNED_SET.reps + EXTRA_SET.weight * EXTRA_SET.reps;
 const HISTORY_WORKOUT_NAME = 'Тренировка X';
 const OTHER_HISTORY_WORKOUT_NAME = 'Тренировка Y';
 const HISTORY_FIRST_SET = { weight: 60, reps: 8 };
@@ -228,18 +235,58 @@ describe('HTTP сессий тренировок', () => {
     ).toMatchObject({ status: BAD_REQUEST });
   });
 
-  it('отклоняет упражнение вне плана и лишний подход', async () => {
+  it('принимает подход сверх плана', async () => {
     const { workoutId, exerciseId } = await catalog();
     const sessionId = await insertSession({
       client: getClient(),
       deviceId: DEVICE_ID,
       workoutId: String(workoutId),
     });
-    for (const suffix of [`${UNKNOWN_ID}/1`, `${exerciseId}/${TARGET_SETS + 1}`]) {
-      expect(
-        await request({ method: 'PUT', path: `/${sessionId}/sets/${suffix}`, body: RESULT }),
-      ).toMatchObject({ status: BAD_REQUEST });
-    }
+
+    expect(
+      await request({
+        method: 'PUT',
+        path: `/${sessionId}/sets/${exerciseId}/${EXTRA_SET_NUMBER}`,
+        body: RESULT,
+      }),
+    ).toMatchObject({
+      status: OK,
+      body: { success: true, data: { results: [{ setNumber: EXTRA_SET_NUMBER }] } },
+    });
+  });
+
+  it('отвечает 400 на номер подхода выше предела', async () => {
+    const { workoutId, exerciseId } = await catalog();
+    const sessionId = await insertSession({
+      client: getClient(),
+      deviceId: DEVICE_ID,
+      workoutId: String(workoutId),
+    });
+
+    expect(
+      await request({
+        method: 'PUT',
+        path: `/${sessionId}/sets/${exerciseId}/${OVER_LIMIT_SET_NUMBER}`,
+        body: RESULT,
+      }),
+    ).toMatchObject({ status: BAD_REQUEST, body: { success: false, data: null } });
+  });
+
+  it('отвечает 400 на упражнение вне плана', async () => {
+    const { workoutId } = await catalog();
+    const sessionId = await insertSession({
+      client: getClient(),
+      deviceId: DEVICE_ID,
+      workoutId: String(workoutId),
+    });
+
+    expect(
+      await request({
+        method: 'PUT',
+        path: `/${sessionId}/sets/${UNKNOWN_ID}/1`,
+        body: RESULT,
+      }),
+    ).toMatchObject({ status: BAD_REQUEST, body: { success: false, data: null } });
   });
 
   it.each(['abc', '0', '-1', '1.5', '99999999999999999999'])(
@@ -429,6 +476,56 @@ describe('HTTP сессий тренировок', () => {
       expect(await request({})).toMatchObject({
         status: OK,
         body: { data: { sessions: [{ id: Number(own.sessionId) }] } },
+      });
+    });
+
+    async function finishedWithExtraSet() {
+      const { workoutId, exerciseId } = await catalog();
+      const started = await request({ method: 'POST', body: { workoutId } });
+      const sessionId = (started.body as ApiResponse<WorkoutSession>).data?.id;
+      if (sessionId === undefined) throw new Error('Сессия не начата');
+
+      for (let setNumber = 1; setNumber <= TARGET_SETS; setNumber += 1) {
+        await request({
+          method: 'PUT',
+          path: `/${sessionId}/sets/${exerciseId}/${setNumber}`,
+          body: PLANNED_SET,
+        });
+      }
+      await request({
+        method: 'PUT',
+        path: `/${sessionId}/sets/${exerciseId}/${EXTRA_SET_NUMBER}`,
+        body: EXTRA_SET,
+      });
+      await request({ method: 'POST', path: `/${sessionId}/finish` });
+
+      return { workoutId, exerciseId, sessionId };
+    }
+
+    it('сводка включает подходы сверх плана', async () => {
+      const { sessionId } = await finishedWithExtraSet();
+
+      expect(await request({ path: `/${sessionId}/summary` })).toMatchObject({
+        status: OK,
+        body: { data: { setCount: EXTRA_SET_NUMBER, totalVolume: EXTRA_SETS_TOTAL_VOLUME } },
+      });
+    });
+
+    it('история упражнения включает подходы сверх плана прошлой тренировки', async () => {
+      const { workoutId, exerciseId } = await finishedWithExtraSet();
+      const started = await request({ method: 'POST', body: { workoutId } });
+      const currentId = (started.body as ApiResponse<WorkoutSession>).data?.id;
+      if (currentId === undefined) throw new Error('Сессия не начата');
+
+      const response = await request({ path: `/${currentId}/history` });
+
+      const history = (response.body as ApiResponse<SessionHistoryResponse>).data;
+      const sets = history?.exercises.find((item) => item.exerciseId === exerciseId)?.entries[0]
+        ?.sets;
+      expect(sets).toHaveLength(EXTRA_SET_NUMBER);
+      expect(sets?.[EXTRA_SET_NUMBER - 1]).toMatchObject({
+        setNumber: EXTRA_SET_NUMBER,
+        ...EXTRA_SET,
       });
     });
 

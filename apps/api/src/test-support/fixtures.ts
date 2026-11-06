@@ -13,8 +13,7 @@ const DEFAULT_WEIGHT = 60;
 const DEFAULT_REPS = 8;
 const DEFAULT_POSITION = 1;
 const DEFAULT_TARGET_SETS = 3;
-const DEFAULT_REPS_MIN = 6;
-const DEFAULT_REPS_MAX = 8;
+const DEFAULT_TARGET_REPS = 8;
 
 async function insertReturningId({
   client,
@@ -58,15 +57,14 @@ export function insertWorkoutExercise({
   exerciseId,
   position = DEFAULT_POSITION,
   targetSets = DEFAULT_TARGET_SETS,
-  targetRepsMin = DEFAULT_REPS_MIN,
-  targetRepsMax = DEFAULT_REPS_MAX,
+  targetReps = DEFAULT_TARGET_REPS,
   targetWeight = null,
 }: WorkoutExerciseFixture): Promise<pg.QueryResult> {
   return client.query(
     `INSERT INTO workout_exercise
-       (workout_id, exercise_id, position, target_sets, target_reps_min, target_reps_max, target_weight)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-    [workoutId, exerciseId, position, targetSets, targetRepsMin, targetRepsMax, targetWeight],
+       (workout_id, exercise_id, position, target_sets, target_reps, target_weight)
+     VALUES ($1, $2, $3, $4, $5, $6)`,
+    [workoutId, exerciseId, position, targetSets, targetReps, targetWeight],
   );
 }
 

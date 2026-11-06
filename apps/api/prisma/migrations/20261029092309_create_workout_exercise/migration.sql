@@ -4,8 +4,7 @@ CREATE TABLE "workout_exercise" (
     "exercise_id" BIGINT NOT NULL,
     "position" INTEGER NOT NULL,
     "target_sets" INTEGER NOT NULL,
-    "target_reps_min" INTEGER NOT NULL,
-    "target_reps_max" INTEGER NOT NULL,
+    "target_reps" INTEGER NOT NULL,
 
     CONSTRAINT "workout_exercise_pkey" PRIMARY KEY ("workout_id","exercise_id")
 );
@@ -23,4 +22,4 @@ ALTER TABLE "workout_exercise" ADD CONSTRAINT "workout_exercise_exercise_id_fkey
 -- CheckConstraint
 ALTER TABLE "workout_exercise"
   ADD CONSTRAINT "workout_exercise_targets_check"
-  CHECK (target_sets > 0 AND target_reps_min > 0 AND target_reps_max >= target_reps_min);
+  CHECK (target_sets > 0 AND target_reps > 0);

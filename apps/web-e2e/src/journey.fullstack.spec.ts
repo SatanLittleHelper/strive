@@ -30,10 +30,10 @@ test.describe('сквозной сценарий на реальном API', () 
 
     await fillSetForm(page, FIRST_SET, 1);
     await page.getByRole('button', { name: 'Сохранить подход' }).click();
-    await expect(page.getByText(/^Выполнено 1\//)).toBeVisible();
+    await expect(page.getByRole('img', { name: 'Выполнено 1 из 3 подходов' })).toBeVisible();
     await fillSetForm(page, SECOND_SET, 2);
     await page.getByRole('button', { name: 'Сохранить подход' }).click();
-    await expect(page.getByText(/^Выполнено 2\//)).toBeVisible();
+    await expect(page.getByRole('img', { name: 'Выполнено 2 из 3 подходов' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Завершить', exact: true }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Завершить', exact: true }).click();

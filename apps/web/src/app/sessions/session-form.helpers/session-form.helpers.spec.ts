@@ -38,8 +38,7 @@ const SESSION: WorkoutSession = {
         exercise: { id: EXERCISE_ID, name: 'Жим' },
         position: 1,
         sets: 3,
-        repsMin: 6,
-        repsMax: 8,
+        reps: 8,
         weight: null,
       },
     ],
@@ -82,8 +81,8 @@ const SQUAT_ID = 1;
 const BENCH_ID = 2;
 const PLAN_WEIGHT = 60;
 const PLAN_SETS = 3;
-const PLAN_REPS_MIN = 6;
-const PLAN_REPS_MAX = 8;
+const PLAN_REPS = 8;
+const OTHER_PLAN_REPS = 12;
 const SESSION_RESULT_WEIGHT = 62.5;
 const SESSION_RESULT_REPS = 7;
 const SESSION_RESULT_RPE = 4;
@@ -98,8 +97,7 @@ function planExercise(overrides: Partial<WorkoutExercise> = {}): WorkoutExercise
     exercise: { id: SQUAT_ID, name: 'Приседания' },
     position: 1,
     sets: PLAN_SETS,
-    repsMin: PLAN_REPS_MIN,
-    repsMax: PLAN_REPS_MAX,
+    reps: PLAN_REPS,
     weight: PLAN_WEIGHT,
     ...overrides,
   };
@@ -170,10 +168,22 @@ describe('Значения подхода по умолчанию', () => {
 
     expect(values).toEqual({
       weight: PLAN_WEIGHT,
-      reps: PLAN_REPS_MIN,
+      reps: PLAN_REPS,
       rpe: DEFAULT_RPE,
       note: '',
     });
+  });
+
+  it('повторы по умолчанию равны цели упражнения', () => {
+    const withOtherPlan = getSetDefaults({
+      exercise: planExercise({ reps: OTHER_PLAN_REPS }),
+      setNumber: 1,
+      results: [],
+    });
+    const withDefaultPlan = getSetDefaults({ exercise: planExercise(), setNumber: 1, results: [] });
+
+    expect(withOtherPlan.reps).toBe(OTHER_PLAN_REPS);
+    expect(withDefaultPlan.reps).toBe(PLAN_REPS);
   });
 
   it('без целевого веса берёт вес подхода с тем же номером из последней записи истории', () => {
@@ -219,7 +229,7 @@ describe('Значения подхода по умолчанию', () => {
       results: [],
     });
 
-    expect(values).toEqual({ weight: null, reps: PLAN_REPS_MIN, rpe: DEFAULT_RPE, note: '' });
+    expect(values).toEqual({ weight: null, reps: PLAN_REPS, rpe: DEFAULT_RPE, note: '' });
   });
 
   it('не копирует заметку предыдущего подхода', () => {
@@ -239,7 +249,7 @@ describe('Значения подхода по умолчанию', () => {
       results: [savedSet({ exerciseId: BENCH_ID, weight: OTHER_EXERCISE_WEIGHT, reps: 3 })],
     });
 
-    expect(values).toMatchObject({ weight: PLAN_WEIGHT, reps: PLAN_REPS_MIN });
+    expect(values).toMatchObject({ weight: PLAN_WEIGHT, reps: PLAN_REPS });
   });
 });
 

@@ -1,0 +1,27 @@
+<div class="grid justify-items-center gap-2">
+	<app-ring [color]="repsColor" [label]="repsLabel()" [max]="fullValue" [value]="fullValue">
+		<b tuiTitle>{{ reps() }}</b>
+	</app-ring>
+	<span tuiTitle class="text-center">
+		Повторы
+		<span tuiSubtitle>цель</span>
+	</span>
+</div>
+<div class="grid justify-items-center gap-2">
+	<app-ring [color]="weightColor" [label]="weightLabel()" [max]="fullValue" [value]="fullValue">
+		<b tuiTitle>{{ weightText() }}</b>
+	</app-ring>
+	<span tuiTitle class="text-center">
+		Вес, кг
+		<span tuiSubtitle>цель</span>
+	</span>
+</div>
+<div class="grid justify-items-center gap-2">
+	<app-ring [label]="setsLabel()" [max]="ringMax()" [value]="savedCount()">
+		<b tuiTitle>{{ setsText() }}</b>
+	</app-ring>
+	<span tuiTitle class="text-center">
+		Подходы
+		<span tuiSubtitle>{{ caption() }}</span>
+	</span>
+</div>

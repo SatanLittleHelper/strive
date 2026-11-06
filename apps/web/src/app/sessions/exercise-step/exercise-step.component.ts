@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import type {
   ExerciseHistory,
@@ -6,17 +5,36 @@ import type {
   WorkoutExercise,
   WorkoutSession,
 } from '@strive/api-interfaces';
-import { TuiCell, TuiTitle } from '@taiga-ui/core';
-import { TuiAccordion } from '@taiga-ui/kit';
+import { TuiButton, TuiTitle } from '@taiga-ui/core';
 import { TuiCardLarge } from '@taiga-ui/layout';
-import { formatPlan } from '../../workouts/format-plan';
-import { findResult, getActiveSetNumber, getSetDefaults, toFormValues } from '..';
+import {
+  canAddSet,
+  countExerciseSets,
+  findResult,
+  getHistoryGroups,
+  getRingMax,
+  getSetDefaults,
+  getTodayGroup,
+  toFormValues,
+  type EditorSet,
+  type SavedSetEvent,
+} from '..';
+import { ExerciseHistoryComponent } from '../exercise-history';
 import type { FillRequest } from '../session-form.types';
-import { SetRowComponent } from '../set-row';
+import type { ActiveEditorSet } from '../session-view.types';
+import { SetEditorComponent } from '../set-editor';
+import { SetRingsComponent } from '../set-rings';
 
 @Component({
   selector: 'app-exercise-step',
-  imports: [DatePipe, TuiTitle, TuiCell, TuiCardLarge, TuiAccordion, SetRowComponent],
+  imports: [
+    TuiButton,
+    TuiCardLarge,
+    TuiTitle,
+    ExerciseHistoryComponent,
+    SetEditorComponent,
+    SetRingsComponent,
+  ],
   templateUrl: './exercise-step.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
@@ -25,38 +43,56 @@ export class ExerciseStepComponent {
   readonly session = input.required<WorkoutSession>();
   readonly item = input.required<WorkoutExercise>();
   readonly history = input<ExerciseHistory>();
+  readonly historyLoaded = input(false);
+  readonly editorSet = input.required<EditorSet>();
   readonly disabled = input(false);
   readonly pendingChange = output<boolean>();
+  readonly saved = output<SavedSetEvent>();
+  readonly selectSet = output<number>();
+  readonly addSet = output<void>();
 
-  protected readonly formatPlan = formatPlan;
-
-  protected readonly activeSetNumber = computed(() =>
-    getActiveSetNumber({ exercise: this.item(), results: this.session().results }),
-  );
-
-  protected readonly rows = computed(() => {
-    const item = this.item();
-    const session = this.session();
-    const active = this.activeSetNumber();
-
-    return Array.from({ length: item.sets }, (_, index) => index + 1).map((setNumber) => ({
-      setNumber,
-      open: setNumber === active,
-      result: findResult(session, item.exercise.id, setNumber),
-      defaults: getSetDefaults({
-        exercise: item,
-        setNumber,
-        results: session.results,
-        history: this.history(),
-      }),
-    }));
-  });
   protected readonly fillRequest = signal<FillRequest | null>(null);
 
-  protected applyHistory(set: SetResult): void {
-    const setNumber = this.activeSetNumber();
-    if (this.disabled() || setNumber === null) return;
+  private readonly resultsParams = computed(() => ({
+    exercise: this.item(),
+    results: this.session().results,
+  }));
 
-    this.fillRequest.set({ setNumber, values: toFormValues(set) });
+  protected readonly savedCount = computed(() => countExerciseSets(this.resultsParams()));
+  protected readonly ringMax = computed(() => getRingMax(this.resultsParams()));
+  protected readonly canAdd = computed(() => canAddSet(this.resultsParams()));
+  protected readonly today = computed(() => getTodayGroup(this.resultsParams()));
+  protected readonly groups = computed(() => getHistoryGroups(this.history()));
+  protected readonly formSet = computed<ActiveEditorSet | null>(() => {
+    const set = this.editorSet();
+
+    return set.mode === 'none' ? null : set;
+  });
+  protected readonly defaults = computed(() => {
+    const set = this.formSet();
+
+    return set
+      ? getSetDefaults({
+          exercise: this.item(),
+          setNumber: set.setNumber,
+          results: this.session().results,
+          history: this.history(),
+        })
+      : null;
+  });
+  protected readonly savedResult = computed(() => {
+    const set = this.formSet();
+
+    return set ? findResult(this.session(), this.item().exercise.id, set.setNumber) : undefined;
+  });
+
+  protected applyHistory(set: SetResult): void {
+    const editor = this.formSet();
+    if (this.disabled() || editor === null) return;
+
+    this.fillRequest.set({
+      setNumber: editor.setNumber,
+      values: { ...toFormValues(set), note: '' },
+    });
   }
 }

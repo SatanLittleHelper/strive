@@ -11,6 +11,7 @@ import type {
   SwipeStepParams,
   ValidSetFormValues,
 } from '../session-form.types';
+import { getSavedSetNumbers, isExerciseDone } from '../session-progress.helpers';
 
 export function toSaveSetRequest({
   weight,
@@ -64,7 +65,7 @@ export function getSetDefaults({
 
   return {
     weight: previous?.weight ?? exercise.weight ?? historical?.weight ?? null,
-    reps: previous?.reps ?? exercise.repsMin,
+    reps: previous?.reps ?? exercise.reps,
     rpe: previous?.rpe ?? DEFAULT_RPE,
     note: '',
   };
@@ -73,19 +74,14 @@ export function getSetDefaults({
 export function getFirstUnfinishedExerciseIndex(session: WorkoutSession): number {
   const { exercises } = session.workout;
   const index = exercises.findIndex(
-    (item) =>
-      session.results.filter((result) => result.exerciseId === item.exercise.id).length < item.sets,
+    (exercise) => !isExerciseDone({ exercise, results: session.results }),
   );
 
   return index === -1 ? Math.max(exercises.length - 1, 0) : index;
 }
 
 export function getActiveSetNumber({ exercise, results }: ActiveSetParams): number | null {
-  const saved = new Set(
-    results
-      .filter((result) => result.exerciseId === exercise.exercise.id)
-      .map((result) => result.setNumber),
-  );
+  const saved = getSavedSetNumbers({ exercise, results });
 
   return (
     Array.from({ length: exercise.sets }, (_, index) => index + 1).find(

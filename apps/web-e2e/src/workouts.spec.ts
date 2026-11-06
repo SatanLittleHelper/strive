@@ -18,16 +18,14 @@ const DETAILS = {
       exercise: { id: 1, name: 'Приседания со штангой' },
       position: 1,
       sets: 3,
-      repsMin: 6,
-      repsMax: 8,
+      reps: 8,
       weight: null,
     },
     {
       exercise: { id: 2, name: 'Жим лёжа' },
       position: 2,
       sets: 2,
-      repsMin: 5,
-      repsMax: 5,
+      reps: 5,
       weight: null,
     },
   ],
@@ -82,7 +80,7 @@ test.describe('каталог с мокнутым API', () => {
     await expect(page.getByRole('heading', { name: 'Тренировка A' })).toBeVisible();
     const exercises = page.getByRole('listitem');
     await expect(exercises.nth(0)).toContainText('Приседания со штангой');
-    await expect(exercises.nth(0)).toContainText('3 × 6–8');
+    await expect(exercises.nth(0)).toContainText('3 × 8');
     await expect(exercises.nth(1)).toContainText('2 × 5');
   });
 
