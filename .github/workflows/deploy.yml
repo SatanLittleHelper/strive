@@ -90,11 +90,12 @@ jobs:
     needs: [prepare, build]
     if: ${{ !cancelled() && needs.prepare.result == 'success' && (needs.build.result == 'success' || needs.build.result == 'skipped') }}
     runs-on: ubuntu-latest
+    environment: theslh.ru
     env:
       TAG: ${{ needs.prepare.outputs.tag }}
       VPS_HOST: ${{ secrets.VPS_HOST }}
       VPS_USER: ${{ secrets.VPS_USER }}
-      DEPLOY_DOMAIN: ${{ vars.DEPLOY_DOMAIN }}
+      DEPLOY_DOMAIN: ${{ secrets.DEPLOY_DOMAIN }}
     steps:
       - uses: actions/checkout@v4
         with:
