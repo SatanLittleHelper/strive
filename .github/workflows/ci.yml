@@ -30,7 +30,12 @@ jobs:
       - run: npm run build
 
   e2e:
+    # e2e уже прошли в PR, при мердже в main их не повторяем
+    if: github.event_name != 'push'
     runs-on: ubuntu-latest
+    # Версия образа должна совпадать с @playwright/test в package-lock.json (проверяется ниже)
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
     services:
       postgres:
         image: postgres:17-alpine
@@ -46,7 +51,7 @@ jobs:
           --health-timeout 5s
           --health-retries 10
     env:
-      DATABASE_URL: postgresql://strive:strive@127.0.0.1:5432/strive
+      DATABASE_URL: postgresql://strive:strive@postgres:5432/strive
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -54,17 +59,14 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci --prefer-offline --no-audit --no-fund
-      - id: playwright
-        run: echo "version=$(npx playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
-      - id: playwright-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-chromium-${{ runner.os }}-${{ steps.playwright.outputs.version }}
-      - if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium
-      - if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium
+      - name: Проверить, что образ соответствует версии Playwright
+        run: |
+          installed="$(npx playwright --version | awk '{print $2}')"
+          image="${PLAYWRIGHT_IMAGE_TAG#v}"
+          image="${image%-*}"
+          test "$installed" = "$image" || { echo "Playwright $installed != образ $image"; exit 1; }
+        env:
+          PLAYWRIGHT_IMAGE_TAG: v1.64.1-noble
       - run: npm run db:migrate
       - run: npm run e2e
       - uses: actions/upload-artifact@v4
