@@ -1,0 +1,105 @@
+name: strive
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: '3'
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: strive
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?задайте POSTGRES_PASSWORD в .env}
+      POSTGRES_DB: strive
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U strive -d strive']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    mem_limit: 384m
+    cpus: 0.5
+    networks: [app]
+    logging: *default-logging
+  migrate:
+    image: ghcr.io/satanlittlehelper/strive-migrate:${IMAGE_TAG:?задайте IMAGE_TAG в .env}
+    environment:
+      DATABASE_URL: postgresql://strive:${POSTGRES_PASSWORD}@postgres:5432/strive
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: 'no'
+    mem_limit: 256m
+    cpus: 0.5
+    networks: [app]
+    logging: *default-logging
+  api:
+    image: ghcr.io/satanlittlehelper/strive-api:${IMAGE_TAG:?задайте IMAGE_TAG в .env}
+    restart: unless-stopped
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_PRETTY: 'false'
+      DATABASE_URL: postgresql://strive:${POSTGRES_PASSWORD}@postgres:5432/strive
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    mem_limit: 256m
+    cpus: 0.5
+    networks: [app]
+    logging: *default-logging
+  web:
+    image: ghcr.io/satanlittlehelper/strive-web:${IMAGE_TAG:?задайте IMAGE_TAG в .env}
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://127.0.0.1/healthz']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    mem_limit: 64m
+    cpus: 0.25
+    networks: [app]
+    logging: *default-logging
+  cloudflared:
+    image: cloudflare/cloudflared:${CLOUDFLARED_TAG:-latest}
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?задайте TUNNEL_TOKEN в .env}
+    depends_on:
+      web:
+        condition: service_healthy
+    mem_limit: 128m
+    cpus: 0.25
+    networks: [app]
+    logging: *default-logging
+
+networks:
+  app:
+    ipam:
+      config:
+        - subnet: ${APP_SUBNET:?задайте APP_SUBNET в .env (подсеть вне диапазонов VPN)}
+
+volumes:
+  postgres-data:
