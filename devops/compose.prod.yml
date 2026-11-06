@@ -69,6 +69,8 @@ services:
   web:
     image: ghcr.io/satanlittlehelper/strive-web:${IMAGE_TAG:?задайте IMAGE_TAG в .env}
     restart: unless-stopped
+    ports:
+      - '127.0.0.1:${WEB_PORT:-8080}:80'
     depends_on:
       api:
         condition: service_healthy
@@ -78,19 +80,6 @@ services:
       timeout: 5s
       retries: 3
     mem_limit: 64m
-    cpus: 0.25
-    networks: [app]
-    logging: *default-logging
-  cloudflared:
-    image: cloudflare/cloudflared:${CLOUDFLARED_TAG:-latest}
-    restart: unless-stopped
-    command: tunnel --no-autoupdate run
-    environment:
-      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?задайте TUNNEL_TOKEN в .env}
-    depends_on:
-      web:
-        condition: service_healthy
-    mem_limit: 128m
     cpus: 0.25
     networks: [app]
     logging: *default-logging
