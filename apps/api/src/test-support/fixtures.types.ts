@@ -29,8 +29,7 @@ export interface WorkoutExerciseFixture {
   exerciseId: string;
   position?: number;
   targetSets?: number;
-  targetRepsMin?: number;
-  targetRepsMax?: number;
+  targetReps?: number;
   targetWeight?: number | null;
 }
 

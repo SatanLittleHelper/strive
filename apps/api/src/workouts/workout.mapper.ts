@@ -19,8 +19,7 @@ export function toWorkout(row: WorkoutRow): Workout {
       exercise: { id: Number(item.exercise.id), name: item.exercise.name },
       position: item.position,
       sets: item.target_sets,
-      repsMin: item.target_reps_min,
-      repsMax: item.target_reps_max,
+      reps: item.target_reps,
       weight: item.target_weight === null ? null : Number(item.target_weight),
     })),
   };

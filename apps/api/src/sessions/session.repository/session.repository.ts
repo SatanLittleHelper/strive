@@ -5,10 +5,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import type {
-  SaveSetResultRequest,
-  SessionHistoryResponse,
-  WorkoutSession,
+import {
+  SET_RESULT_LIMITS,
+  type SaveSetResultRequest,
+  type SessionHistoryResponse,
+  type WorkoutSession,
 } from '@strive/api-interfaces';
 import { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/index.js';
@@ -112,8 +113,9 @@ export class SessionRepository {
     const exercise = session.workout.exercises.find(
       (item) => item.exercise.id === params.exerciseId,
     );
-    if (!exercise || params.setNumber > exercise.sets) {
-      throw new BadRequestException('Подход не входит в план тренировки');
+    if (!exercise) throw new BadRequestException('Упражнение не входит в план тренировки');
+    if (params.setNumber > SET_RESULT_LIMITS.setNumberMax) {
+      throw new BadRequestException('Номер подхода выше допустимого');
     }
 
     await this.prisma.$transaction(async (transaction) => {

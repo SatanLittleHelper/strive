@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { formatPlan } from './format-plan';
 
-describe('formatPlan', () => {
-  it('показывает диапазон повторов', () => {
-    expect(formatPlan({ sets: 3, repsMin: 6, repsMax: 8 })).toBe('3 × 6–8');
-  });
+const EIGHT_REPS_PLAN = { sets: 3, reps: 8 };
+const TEN_REPS_PLAN = { sets: 4, reps: 10 };
 
-  it('не показывает диапазон, если границы совпадают', () => {
-    expect(formatPlan({ sets: 2, repsMin: 5, repsMax: 5 })).toBe('2 × 5');
+describe('formatPlan', () => {
+  it('показывает подходы и цель повторов без диапазона', () => {
+    expect(formatPlan(EIGHT_REPS_PLAN)).toBe('3 × 8');
+    expect(formatPlan(TEN_REPS_PLAN)).toBe('4 × 10');
   });
 });

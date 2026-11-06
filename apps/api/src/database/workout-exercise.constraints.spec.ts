@@ -8,8 +8,7 @@ import {
 
 const UNIQUE_VIOLATION = '23505';
 const CHECK_VIOLATION = '23514';
-const REPS_MIN = 10;
-const REPS_MAX_BELOW_MIN = 8;
+const ZERO_REPS = 0;
 const NEGATIVE_WEIGHT = -1;
 const ZERO_WEIGHT = 0;
 
@@ -29,16 +28,11 @@ describe('Ограничения таблицы workout_exercise', () => {
     await expect(insertWorkoutExercise({ client: getClient(), ...parents })).resolves.toBeDefined();
   });
 
-  it('не допускает максимум повторов меньше минимума', async () => {
+  it('не допускает нулевую цель повторов', async () => {
     const parents = await createParents();
 
     await expect(
-      insertWorkoutExercise({
-        client: getClient(),
-        ...parents,
-        targetRepsMin: REPS_MIN,
-        targetRepsMax: REPS_MAX_BELOW_MIN,
-      }),
+      insertWorkoutExercise({ client: getClient(), ...parents, targetReps: ZERO_REPS }),
     ).rejects.toMatchObject({ code: CHECK_VIOLATION });
   });
 

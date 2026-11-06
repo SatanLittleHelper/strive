@@ -1,50 +1,55 @@
-<section
-	tuiCardLarge
-	appearance="neutral"
-	class="grid gap-3"
-	[attr.aria-label]="item().exercise.name"
->
-	<h2 tuiTitle>
-		{{ item().exercise.name }}<span tuiSubtitle>{{ formatPlan(item()) }}</span>
-	</h2>
-	@for (row of rows(); track row.setNumber) {
-		<app-set-row
-			[sessionId]="session().id"
-			[exerciseId]="item().exercise.id"
-			[setNumber]="row.setNumber"
-			[defaults]="row.defaults"
-			[fillRequest]="fillRequest()"
-			[result]="row.result"
-			[open]="row.open"
-			[disabled]="disabled()"
-			(pendingChange)="pendingChange.emit($event)"
-		/>
+<section class="grid gap-4" [attr.aria-label]="item().exercise.name">
+	<div appearance="neutral" aria-label="План и ввод подхода" role="group" tuiCardLarge="compact">
+		<div class="grid gap-4">
+			<app-set-rings
+				[editorSet]="editorSet()"
+				[plannedSets]="item().sets"
+				[reps]="item().reps"
+				[ringMax]="ringMax()"
+				[savedCount]="savedCount()"
+				[weight]="item().weight"
+			/>
+			@if (formSet(); as set) {
+				@if (defaults(); as values) {
+					<app-set-editor
+						[defaults]="values"
+						[disabled]="disabled()"
+						[editorSet]="set"
+						[exerciseId]="item().exercise.id"
+						[fillRequest]="fillRequest()"
+						[result]="savedResult()"
+						[results]="session().results"
+						[sessionId]="session().id"
+						(pendingChange)="pendingChange.emit($event)"
+						(saved)="saved.emit($event)"
+					/>
+				}
+			}
+		</div>
+	</div>
+	@if (formSet() === null) {
+		<section appearance="neutral" aria-label="Упражнение выполнено" class="grid gap-3" tuiCardLarge>
+			<h3 tuiTitle>Упражнение выполнено</h3>
+			@if (canAdd()) {
+				<button
+					appearance="secondary"
+					tuiButton
+					type="button"
+					[disabled]="disabled()"
+					(click)="addSet.emit()"
+				>
+					Ещё подход
+				</button>
+			}
+		</section>
 	}
-	@if (history(); as past) {
-		@if (past.entries.length > 0) {
-			<tui-accordion>
-				<button tuiAccordion type="button">Прошлые тренировки</button>
-				<tui-expand>
-					<div class="grid gap-3">
-						@for (entry of past.entries; track entry.sessionId) {
-							<p tuiTitle>{{ entry.finishedAt | date: 'dd.MM.yyyy' }}</p>
-							@for (set of entry.sets; track set.setNumber) {
-								<button
-									tuiCell
-									type="button"
-									[disabled]="disabled() || activeSetNumber() === null"
-									(click)="applyHistory(set)"
-								>
-									<span tuiTitle>
-										{{ set.weight }} кг × {{ set.reps }}
-										<span tuiSubtitle>Подход {{ set.setNumber }} · RPE {{ set.rpe ?? '—' }}</span>
-									</span>
-								</button>
-							}
-						}
-					</div>
-				</tui-expand>
-			</tui-accordion>
-		}
-	}
+	<app-exercise-history
+		[disabled]="disabled()"
+		[fillDisabled]="formSet() === null"
+		[groups]="groups()"
+		[loaded]="historyLoaded()"
+		[today]="today()"
+		(editSet)="selectSet.emit($event)"
+		(fillSet)="applyHistory($event)"
+	/>
 </section>

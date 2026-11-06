@@ -18,8 +18,8 @@ const LEGS_WORKOUT = { name: 'Ноги', description: 'Приседания и �
 const REST_WORKOUT = { name: 'Отдых', description: null };
 const SQUAT = 'Приседания';
 const DEADLIFT = 'Тяга';
-const SQUAT_PLAN = { targetSets: 3, targetRepsMin: 6, targetRepsMax: 8 };
-const DEADLIFT_PLAN = { targetSets: 2, targetRepsMin: 5, targetRepsMax: 5 };
+const SQUAT_PLAN = { targetSets: 3, targetReps: 8 };
+const DEADLIFT_PLAN = { targetSets: 2, targetReps: 5 };
 
 describe('WorkoutRepository', () => {
   const getClient = useDatabaseClient();
@@ -95,16 +95,14 @@ describe('WorkoutRepository', () => {
           exercise: { id: Number(squatId), name: SQUAT },
           position: FIRST_POSITION,
           sets: SQUAT_PLAN.targetSets,
-          repsMin: SQUAT_PLAN.targetRepsMin,
-          repsMax: SQUAT_PLAN.targetRepsMax,
+          reps: SQUAT_PLAN.targetReps,
           weight: null,
         },
         {
           exercise: { id: Number(deadliftId), name: DEADLIFT },
           position: SECOND_POSITION,
           sets: DEADLIFT_PLAN.targetSets,
-          repsMin: DEADLIFT_PLAN.targetRepsMin,
-          repsMax: DEADLIFT_PLAN.targetRepsMax,
+          reps: DEADLIFT_PLAN.targetReps,
           weight: null,
         },
       ],

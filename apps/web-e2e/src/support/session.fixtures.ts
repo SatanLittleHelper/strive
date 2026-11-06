@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 import type {
   SessionHistoryResponse,
   SetResult,
@@ -10,11 +10,10 @@ export const ok = (data: unknown) => ({ success: true, message: null, data, deta
 export const errorBody = { success: false, message: 'Ошибка', data: null, details: null };
 
 const SESSION_ID = 1;
-const STARTED_AT = '2026-11-02T12:00:00.000Z';
+export const STARTED_AT = '2026-11-02T12:00:00.000Z';
 const DEFAULT_EXERCISE_COUNT = 3;
 const SETS_PER_EXERCISE = 3;
-const REPS_MIN = 6;
-const REPS_MAX = 8;
+const REPS = 6;
 export const PLAN_WEIGHT = 60;
 
 const EXERCISE_NAMES = ['Приседания со штангой', 'Жим лёжа', 'Тяга штанги в наклоне'];
@@ -22,6 +21,7 @@ const EXERCISE_NAMES = ['Приседания со штангой', 'Жим лё
 export interface SessionOptions {
   exerciseCount?: number;
   weight?: number | null;
+  reps?: number;
   results?: SetResult[];
 }
 
@@ -45,14 +45,14 @@ export function savedSet(overrides: Partial<SetResult> = {}): SetResult {
 export function makeSession({
   exerciseCount = DEFAULT_EXERCISE_COUNT,
   weight = PLAN_WEIGHT,
+  reps = REPS,
   results = [],
 }: SessionOptions = {}): WorkoutSession {
   const exercises: WorkoutExercise[] = Array.from({ length: exerciseCount }, (_, index) => ({
     exercise: { id: exerciseId(index), name: EXERCISE_NAMES[index] ?? `Упражнение ${index + 1}` },
     position: index + 1,
     sets: SETS_PER_EXERCISE,
-    repsMin: REPS_MIN,
-    repsMax: REPS_MAX,
+    reps,
     weight,
   }));
 
@@ -86,19 +86,55 @@ export async function mockHistory(
   );
 }
 
+export function setsOf({
+  index,
+  setNumbers,
+  overrides = {},
+}: {
+  index: number;
+  setNumbers: number[];
+  overrides?: Partial<SetResult>;
+}): SetResult[] {
+  return setNumbers.map((setNumber) =>
+    savedSet({ exerciseId: exerciseId(index), setNumber, ...overrides }),
+  );
+}
+
+export function historyOf(
+  index: number,
+  entries: Array<{ sessionId: number; finishedAt: string; sets: SetResult[] }>,
+): SessionHistoryResponse {
+  return { exercises: [{ exerciseId: exerciseId(index), entries }] };
+}
+
+export async function selectRpe(form: Locator, value: string) {
+  await form
+    .getByRole('radiogroup', { name: 'RPE от 1 до 5' })
+    .locator('label', { hasText: value })
+    .click();
+}
+
+export async function openNote(form: Locator) {
+  const toggle = form.getByRole('button', { name: '+ Заметка' });
+  if (await toggle.isVisible()) await toggle.click();
+}
+
 export async function fillSetForm(
   page: Page,
   values: { weight?: string; reps?: string; rpe?: string; note?: string },
   setNumber = 1,
 ) {
-  const form = page.getByRole('form', { name: `Подход ${setNumber}` });
+  const form = page
+    .getByRole('group', { name: 'План и ввод подхода' })
+    .getByRole('form', { name: `Подход ${setNumber}` });
   await expect(form).toBeVisible();
   if (values.weight !== undefined)
-    await form.getByLabel('Вес, кг', { exact: true }).fill(values.weight);
+    await form.getByLabel('Рабочий вес, кг', { exact: true }).fill(values.weight);
   if (values.reps !== undefined)
     await form.getByLabel('Повторы', { exact: true }).fill(values.reps);
-  if (values.rpe !== undefined)
-    await form.getByLabel('RPE (1–5, необязательно)', { exact: true }).fill(values.rpe);
-  if (values.note !== undefined)
+  if (values.rpe !== undefined) await selectRpe(form, values.rpe);
+  if (values.note !== undefined) {
+    await openNote(form);
     await form.getByLabel('Заметка', { exact: true }).fill(values.note);
+  }
 }
