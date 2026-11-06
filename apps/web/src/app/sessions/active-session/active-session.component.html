@@ -21,60 +21,100 @@
 		}
 		@case ('ready') {
 			@if (session(); as current) {
-				<header tuiHeader>
-					<h1 tuiTitle="l">{{ current.workout.name }}<span tuiSubtitle>Выполнение тренировки</span></h1>
+				<header class="flex items-center justify-between gap-2">
+					<div class="flex min-w-0 items-center gap-1">
+						<button
+							appearance="flat"
+							aria-label="К тренировкам"
+							iconStart="@tui.arrow-left"
+							routerLink="/workouts"
+							size="l"
+							tuiIconButton
+							type="button"
+						></button>
+						<h1 class="truncate" tuiTitle="s">{{ current.workout.name }}</h1>
+					</div>
+					<button
+						appearance="flat"
+						size="s"
+						tuiButton
+						type="button"
+						[disabled]="busy()"
+						(click)="requestFinish()"
+					>
+						Завершить
+					</button>
 				</header>
-				<p tuiTitle aria-live="polite">Выполнено {{ completed() }}/{{ total() }}</p>
-				<progress
-					tuiProgressBar
-					size="s"
-					aria-label="Выполнено упражнений"
-					[segments]="exercises().length"
-					[value]="completedExercises()"
-					[max]="exercises().length"
-				></progress>
-				<p tuiTitle>Упражнение {{ currentIndex() + 1 }} из {{ exercises().length }}</p>
 				@if (currentExercise(); as item) {
+					<div class="grid gap-2">
+						<div class="flex items-baseline justify-between gap-3">
+							<h2 tuiTitle="l">{{ item.exercise.name }}</h2>
+							<span class="shrink-0 whitespace-nowrap" tuiTitle
+								>{{ currentIndex() + 1 }} из {{ exercises().length }}</span
+							>
+						</div>
+						<progress
+							tuiProgressBar
+							size="s"
+							aria-label="Выполнено упражнений"
+							[segments]="exercises().length"
+							[value]="completedExercises()"
+							[max]="exercises().length"
+						></progress>
+					</div>
 					<div (tuiSwipe)="onSwipe($event)">
-						<!-- Однокомпонентный @for пересоздаёт шаг при смене упражнения: сбрасывается запрос подстановки и состояние истории -->
+						<!-- Однокомпонентный @for пересоздаёт шаг при смене упражнения: сбрасывается запрос подстановки -->
 						@for (step of [item]; track step.exercise.id) {
 							<app-exercise-step
-								[session]="current"
-								[item]="step"
-								[history]="histories().get(step.exercise.id)"
 								[disabled]="busy()"
+								[editorSet]="editorSet()"
+								[history]="histories().get(step.exercise.id)"
+								[historyLoaded]="historyLoaded()"
+								[item]="step"
+								[session]="current"
+								(addSet)="adding.set(true)"
 								(pendingChange)="pendingChange($event)"
+								(saved)="onSaved($event)"
+								(selectSet)="selectedSet.set($event)"
 							/>
 						}
 					</div>
 				}
-				<div class="grid grid-cols-2 gap-2">
-					<button
-						tuiButton
-						type="button"
-						appearance="secondary"
-						[disabled]="currentIndex() === 0 || busy()"
-						(click)="go('right')"
-					>
-						Назад
-					</button>
-					<button
-						tuiButton
-						type="button"
-						appearance="secondary"
-						[disabled]="currentIndex() >= exercises().length - 1 || busy()"
-						(click)="go('left')"
-					>
-						Далее
-					</button>
-				</div>
 				@if (error()) {
 					<div tuiNotification appearance="negative" role="alert">{{ error() }}</div>
 				}
-				<div class="sticky bottom-[calc(var(--spacing-nav)+0.75rem)] grid gap-2 md:static">
-					<button tuiButton type="button" size="l" [disabled]="busy()" (click)="requestFinish()">
-						{{ finishing() ? 'Завершение…' : 'Завершить' }}
-					</button>
+				<div class="sticky bottom-[calc(var(--spacing-nav)+0.75rem)] grid gap-2 bg-bg py-2 md:static">
+					@if (primaryAction() === 'save') {
+						<button size="l" tuiButton type="submit" [attr.form]="formId" [disabled]="busy()">
+							{{ primaryLabel() }}
+						</button>
+					} @else {
+						<button size="l" tuiButton type="button" [disabled]="busy()" (click)="runPrimary()">
+							{{ primaryLabel() }}
+						</button>
+					}
+					<div class="grid grid-cols-2 gap-2">
+						<button
+							appearance="secondary"
+							size="m"
+							tuiButton
+							type="button"
+							[disabled]="currentIndex() === 0 || busy()"
+							(click)="go('right')"
+						>
+							Назад
+						</button>
+						<button
+							appearance="secondary"
+							size="m"
+							tuiButton
+							type="button"
+							[disabled]="isLastExercise() || busy()"
+							(click)="go('left')"
+						>
+							Далее
+						</button>
+					</div>
 				</div>
 			}
 		}

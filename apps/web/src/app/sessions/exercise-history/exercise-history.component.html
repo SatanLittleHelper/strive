@@ -1,0 +1,67 @@
+<section aria-label="История упражнения" class="grid gap-3">
+	<h2 tuiTitle>История</h2>
+	@if (today(); as sets) {
+		<div appearance="neutral" aria-label="Сегодня" class="grid" role="group" tuiCardLarge>
+			<h3 tuiTitle>Сегодня</h3>
+			@for (set of sets; track set.setNumber) {
+				<button tuiCell type="button" [disabled]="disabled()" (click)="editSet.emit(set.setNumber)">
+					<span class="min-w-0" tuiTitle>
+						{{ set.weight }} кг × {{ set.reps }} повт.
+						<span tuiSubtitle>Подход {{ set.setNumber }}</span>
+					</span>
+					<span tuiTitle>
+						<span class="flex shrink-0 items-center gap-1 whitespace-nowrap">
+							<progress
+								tuiProgressBar
+								size="xs"
+								class="w-8 shrink-0"
+								[max]="rpeMax"
+								[value]="set.rpe ?? 0"
+							></progress>
+							RPE {{ set.rpe ?? '—' }}
+						</span>
+					</span>
+				</button>
+			}
+		</div>
+	}
+	@for (group of groups(); track group.sessionId) {
+		<div
+			appearance="neutral"
+			class="grid"
+			role="group"
+			tuiCardLarge
+			[attr.aria-label]="group.finishedAt | date: dateFormat"
+		>
+			<p tuiTitle>{{ group.finishedAt | date: dateFormat }}</p>
+			@for (set of group.sets; track set.setNumber) {
+				<button
+					tuiCell
+					type="button"
+					[disabled]="disabled() || fillDisabled()"
+					(click)="fillSet.emit(set)"
+				>
+					<span class="min-w-0" tuiTitle>
+						{{ set.weight }} кг × {{ set.reps }} повт.
+						<span tuiSubtitle>Подход {{ set.setNumber }}</span>
+					</span>
+					<span tuiTitle>
+						<span class="flex shrink-0 items-center gap-1 whitespace-nowrap">
+							<progress
+								tuiProgressBar
+								size="xs"
+								class="w-8 shrink-0"
+								[max]="rpeMax"
+								[value]="set.rpe ?? 0"
+							></progress>
+							RPE {{ set.rpe ?? '—' }}
+						</span>
+					</span>
+				</button>
+			}
+		</div>
+	}
+	@if (loaded() && groups().length === 0) {
+		<p tuiNotification>Это упражнение ещё не выполнялось</p>
+	}
+</section>

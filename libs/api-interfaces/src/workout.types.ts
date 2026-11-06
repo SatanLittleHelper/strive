@@ -7,8 +7,7 @@ export interface WorkoutExercise {
   exercise: Exercise;
   position: number;
   sets: number;
-  repsMin: number;
-  repsMax: number;
+  reps: number;
   weight: number | null;
 }
 
