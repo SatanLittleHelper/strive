@@ -21,8 +21,8 @@
     "db:generate": "prisma generate --config apps/api/prisma.config.ts",
     "db:migrate": "prisma migrate deploy --config apps/api/prisma.config.ts",
     "db:migrate:dev": "prisma migrate dev --config apps/api/prisma.config.ts",
-    "format": "prettier --write apps libs nx.json package.json tsconfig*.json eslint.config.mjs README.md .github/workflows/ci.yml",
-    "format:check": "prettier --check apps libs nx.json package.json tsconfig*.json eslint.config.mjs README.md .github/workflows/ci.yml",
+    "format": "prettier --write apps libs nx.json package.json tsconfig*.json eslint.config.mjs README.md .github/workflows/ci.yml .github/workflows/deploy.yml devops/compose.prod.yml",
+    "format:check": "prettier --check apps libs nx.json package.json tsconfig*.json eslint.config.mjs README.md .github/workflows/ci.yml .github/workflows/deploy.yml devops/compose.prod.yml",
     "prepare": "husky"
   },
   "dependencies": {
