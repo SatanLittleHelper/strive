@@ -5,7 +5,7 @@ export const WORKOUT_SUMMARY_INCLUDE = {
 } satisfies Prisma.workoutInclude;
 
 export const WORKOUT_INCLUDE = {
-  workout_exercises: { orderBy: { position: 'asc' }, include: { exercise: true } },
+  workout_exercises: { orderBy: { id: 'asc' }, include: { exercise: true } },
 } satisfies Prisma.workoutInclude;
 
 export const MIN_WORKOUT_ID = 1;

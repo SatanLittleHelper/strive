@@ -102,18 +102,21 @@ export class SessionRepository {
     return rows.map((row) => toSession(row));
   }
 
-  async saveSetResult(
-    deviceId: string,
-    params: SaveSetParams,
-    data: SaveSetResultRequest,
-  ): Promise<WorkoutSession> {
+  async saveSetResult({
+    deviceId,
+    params,
+    payload,
+  }: {
+    deviceId: string;
+    params: SaveSetParams;
+    payload: SaveSetResultRequest;
+  }): Promise<WorkoutSession> {
     const session = await this.getOwned(deviceId, params.sessionId);
     if (session.finishedAt !== null) throw new ConflictException('Тренировка уже завершена');
 
-    const exercise = session.workout.exercises.find(
-      (item) => item.exercise.id === params.exerciseId,
-    );
-    if (!exercise) throw new BadRequestException('Упражнение не входит в план тренировки');
+    const row = session.workout.exercises.find((item) => item.id === params.workoutExerciseId);
+
+    if (!row) throw new BadRequestException('Упражнение не входит в план тренировки');
     if (params.setNumber > SET_RESULT_LIMITS.setNumberMax) {
       throw new BadRequestException('Номер подхода выше допустимого');
     }
@@ -127,19 +130,19 @@ export class SessionRepository {
       if (active.count === 0) throw new ConflictException('Тренировка уже завершена');
 
       const key = {
-        session_id: BigInt(params.sessionId),
-        exercise_id: BigInt(params.exerciseId),
+        session_id: params.sessionId,
+        workout_exercise_id: params.workoutExerciseId,
         set_number: params.setNumber,
       };
       const result = {
-        weight: data.weight,
-        reps: data.reps,
-        rpe: data.rpe ?? null,
-        note: data.note ?? null,
+        weight: payload.weight,
+        reps: payload.reps,
+        rpe: payload.rpe ?? null,
+        note: payload.note ?? null,
       };
 
       await transaction.set_result.upsert({
-        where: { session_id_exercise_id_set_number: key },
+        where: { session_id_workout_exercise_id_set_number: key },
         create: { ...key, ...result },
         update: result,
       });
@@ -164,22 +167,23 @@ export class SessionRepository {
 
   async getHistory(deviceId: string, sessionId: number): Promise<SessionHistoryResponse> {
     const session = await this.getOwned(deviceId, sessionId);
-    const exerciseIds = session.workout.exercises.map((item) => item.exercise.id);
-    const exerciseKeys = exerciseIds.map((id) => BigInt(id));
+    const exerciseIds = [...new Set(session.workout.exercises.map((item) => item.exercise.id))];
+    const ofPlanExercises = { workout_exercise: { exercise_id: { in: exerciseIds } } };
 
     const rows = await this.prisma.workout_session.findMany({
       where: {
         device_id: deviceId,
         finished_at: { not: null },
-        id: { not: BigInt(sessionId) },
-        set_results: { some: { exercise_id: { in: exerciseKeys } } },
+        id: { not: sessionId },
+        set_results: { some: ofPlanExercises },
       },
       orderBy: { finished_at: 'desc' },
       take: HISTORY_SESSIONS_LIMIT,
       include: {
         set_results: {
-          where: { exercise_id: { in: exerciseKeys } },
-          orderBy: [{ exercise_id: 'asc' }, { set_number: 'asc' }],
+          where: ofPlanExercises,
+          include: { workout_exercise: { select: { exercise_id: true } } },
+          orderBy: [{ workout_exercise_id: 'asc' }, { set_number: 'asc' }],
         },
       },
     });
@@ -189,7 +193,9 @@ export class SessionRepository {
         exerciseId,
         entries: rows
           .flatMap((row) => {
-            const sets = row.set_results.filter((set) => Number(set.exercise_id) === exerciseId);
+            const sets = row.set_results.filter(
+              (set) => Number(set.workout_exercise.exercise_id) === exerciseId,
+            );
             if (sets.length === 0 || row.finished_at === null) return [];
 
             return [

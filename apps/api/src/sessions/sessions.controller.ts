@@ -77,7 +77,7 @@ export class SessionsController {
     return this.sessions.getHistory(deviceId, params.id);
   }
 
-  @Put(':id/sets/:exerciseId/:setNumber')
+  @Put(':id/sets/:workoutExerciseId/:setNumber')
   saveSet(
     @DeviceId() deviceId: string,
     @Param(new ValidationPipe({ ...VALIDATION_PIPE_OPTIONS, expectedType: SetResultParamsDto }))
@@ -85,11 +85,15 @@ export class SessionsController {
     @Body(new ValidationPipe({ ...VALIDATION_PIPE_OPTIONS, expectedType: SaveSetResultDto }))
     body: SaveSetResultDto,
   ): Promise<WorkoutSession> {
-    return this.sessions.saveSetResult(
+    return this.sessions.saveSetResult({
       deviceId,
-      { sessionId: params.id, exerciseId: params.exerciseId, setNumber: params.setNumber },
-      body,
-    );
+      params: {
+        sessionId: params.id,
+        workoutExerciseId: params.workoutExerciseId,
+        setNumber: params.setNumber,
+      },
+      payload: body,
+    });
   }
 
   @Post(':id/finish')

@@ -12,7 +12,7 @@ const SET_URL_PATTERN = '**/api/sessions/1/sets/*/*';
 const SET_URL_REGEX = /\/sets\/(\d+)\/(\d+)$/;
 
 export interface SavedRequest {
-  exerciseId: number;
+  workoutExerciseId: number;
   setNumber: number;
   body: SaveSetResultRequest;
 }
@@ -44,9 +44,12 @@ function createGate(held: boolean): { wait: () => Promise<void>; release: () => 
   return { wait: () => promise, release: () => state.release() };
 }
 
-function withSavedSet(session: WorkoutSession, { exerciseId, setNumber, body }: SavedRequest) {
+function withSavedSet(
+  session: WorkoutSession,
+  { workoutExerciseId, setNumber, body }: SavedRequest,
+) {
   const saved: SetResult = {
-    exerciseId,
+    workoutExerciseId,
     setNumber,
     weight: body.weight,
     reps: body.reps,
@@ -55,10 +58,11 @@ function withSavedSet(session: WorkoutSession, { exerciseId, setNumber, body }: 
     completedAt: STARTED_AT,
   };
   const others = session.results.filter(
-    (result) => !(result.exerciseId === exerciseId && result.setNumber === setNumber),
+    (result) => !(result.workoutExerciseId === workoutExerciseId && result.setNumber === setNumber),
   );
   const results = [...others, saved].sort(
-    (first, second) => first.exerciseId - second.exerciseId || first.setNumber - second.setNumber,
+    (first, second) =>
+      first.workoutExerciseId - second.workoutExerciseId || first.setNumber - second.setNumber,
   );
 
   return { ...session, results };
@@ -99,7 +103,7 @@ export async function startSessionServer(
     if (!match) return route.abort();
 
     const request: SavedRequest = {
-      exerciseId: Number(match[1]),
+      workoutExerciseId: Number(match[1]),
       setNumber: Number(match[2]),
       body: route.request().postDataJSON() as SaveSetResultRequest,
     };

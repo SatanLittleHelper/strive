@@ -20,9 +20,9 @@ const pastSet = ({
   weight: number;
   reps: number;
   rpe: number;
-}) => savedSet({ exerciseId: 1, setNumber, weight, reps, rpe });
+}) => savedSet({ workoutExerciseId: 1, setNumber, weight, reps, rpe });
 
-const TWO_ENTRIES = historyOf(0, [
+const TWO_ENTRIES = historyOf(1, [
   {
     sessionId: 11,
     finishedAt: FIRST_DATE,
@@ -69,7 +69,7 @@ test.describe('история упражнения и правка подход�
   }) => {
     const server = await startSessionServer(page, {
       session: makeSession({ results: setsOf({ index: 0, setNumbers: [1, 2] }) }),
-      history: historyOf(0, [
+      history: historyOf(1, [
         {
           sessionId: 11,
           finishedAt: FIRST_DATE,
@@ -123,7 +123,7 @@ test.describe('история упражнения и правка подход�
   test('поздно пришедшая история не затирает введённый вес', async ({ page }) => {
     const server = await startSessionServer(page, {
       session: makeSession({ weight: null }),
-      history: historyOf(0, [
+      history: historyOf(1, [
         {
           sessionId: 11,
           finishedAt: FIRST_DATE,

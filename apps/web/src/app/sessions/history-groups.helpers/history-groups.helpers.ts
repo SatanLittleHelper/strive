@@ -4,7 +4,7 @@ import type { ExerciseResultsParams } from '../session-view.types';
 
 export function getTodayGroup({ exercise, results }: ExerciseResultsParams): SetResult[] | null {
   const sets = results
-    .filter((result) => result.exerciseId === exercise.exercise.id)
+    .filter((result) => result.workoutExerciseId === exercise.id)
     .sort((first, second) => first.setNumber - second.setNumber);
 
   return sets.length > 0 ? sets : null;

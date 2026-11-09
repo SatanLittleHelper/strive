@@ -3,13 +3,11 @@ import { randomUUID } from 'node:crypto';
 import pg from 'pg';
 
 const SETS_IN_GROUP = 2;
-const SETS_SINGLE = 1;
 const REPS = 8;
-const GROUP = 1;
 
 export interface SupersetWorkout {
   workoutName: string;
-  exerciseNames: [string, string, string];
+  exerciseNames: { block: string; lateral: string; french: string };
   cleanup: () => Promise<void>;
 }
 
@@ -21,31 +19,37 @@ export async function createSupersetWorkout(): Promise<SupersetWorkout> {
     try {
       const suffix = randomUUID();
       const workoutName = `Суперсет E2E ${suffix}`;
-      const exerciseNames: SupersetWorkout['exerciseNames'] = [
-        `A1 ${suffix}`,
-        `A2 ${suffix}`,
-        `B ${suffix}`,
-      ];
+      const exerciseNames = {
+        block: `Блок ${suffix}`,
+        lateral: `Махи ${suffix}`,
+        french: `Французский ${suffix}`,
+      };
       const workout = await client.query<{ id: string }>(
         'INSERT INTO workout (name) VALUES ($1) RETURNING id',
         [workoutName],
       );
       const workoutId = workout.rows[0]?.id;
-      const plan = [
-        { name: exerciseNames[0], sets: SETS_IN_GROUP, group: GROUP },
-        { name: exerciseNames[1], sets: SETS_IN_GROUP, group: GROUP },
-        { name: exerciseNames[2], sets: SETS_SINGLE, group: null },
-      ];
-      for (const [index, item] of plan.entries()) {
+      const exerciseIds: Record<string, string> = {};
+      for (const [key, name] of Object.entries(exerciseNames)) {
         const exercise = await client.query<{ id: string }>(
           'INSERT INTO exercise (name) VALUES ($1) RETURNING id',
-          [item.name],
+          [name],
         );
+        const id = exercise.rows[0]?.id;
+        if (!id) throw new Error('Упражнение не создано');
+        exerciseIds[key] = id;
+      }
+      const plan = [
+        { key: 'block', occurrence: 1, group: 1 },
+        { key: 'lateral', occurrence: 1, group: 1 },
+        { key: 'lateral', occurrence: 2, group: 2 },
+        { key: 'french', occurrence: 1, group: 2 },
+      ];
+      for (const item of plan) {
         await client.query(
-          `INSERT INTO workout_exercise
-             (workout_id, exercise_id, position, target_sets, target_reps, superset_group)
+          `INSERT INTO workout_exercise (workout_id, exercise_id, occurrence, target_sets, target_reps, superset_group)
            VALUES ($1, $2, $3, $4, $5, $6)`,
-          [workoutId, exercise.rows[0]?.id, index + 1, item.sets, REPS, item.group],
+          [workoutId, exerciseIds[item.key], item.occurrence, SETS_IN_GROUP, REPS, item.group],
         );
       }
       await client.query('COMMIT');
@@ -65,7 +69,9 @@ export async function createSupersetWorkout(): Promise<SupersetWorkout> {
     cleanup: async () => {
       await client.query('DELETE FROM workout_session WHERE workout_id = $1', [workoutId]);
       await client.query('DELETE FROM workout WHERE id = $1', [workoutId]);
-      await client.query('DELETE FROM exercise WHERE name = ANY($1)', [exerciseNames]);
+      await client.query('DELETE FROM exercise WHERE name = ANY($1)', [
+        Object.values(exerciseNames),
+      ]);
       await client.end();
     },
   };

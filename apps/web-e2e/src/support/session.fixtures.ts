@@ -20,6 +20,7 @@ const EXERCISE_NAMES = ['Приседания со штангой', 'Жим лё
 
 export interface SessionOptions {
   exerciseCount?: number;
+  exerciseIds?: number[];
   sets?: number;
   supersetGroups?: Array<number | null>;
   weight?: number | null;
@@ -33,7 +34,7 @@ export function exerciseId(index: number): number {
 
 export function savedSet(overrides: Partial<SetResult> = {}): SetResult {
   return {
-    exerciseId: 1,
+    workoutExerciseId: 1,
     setNumber: 1,
     weight: 62.5,
     reps: 7,
@@ -46,15 +47,24 @@ export function savedSet(overrides: Partial<SetResult> = {}): SetResult {
 
 export function makeSession({
   exerciseCount = DEFAULT_EXERCISE_COUNT,
+  exerciseIds = [],
   weight = PLAN_WEIGHT,
   reps = REPS,
   results = [],
   sets = SETS_PER_EXERCISE,
   supersetGroups = [],
 }: SessionOptions = {}): WorkoutSession {
-  const exercises: WorkoutExercise[] = Array.from({ length: exerciseCount }, (_, index) => ({
-    exercise: { id: exerciseId(index), name: EXERCISE_NAMES[index] ?? `Упражнение ${index + 1}` },
-    position: index + 1,
+  const ids = Array.from(
+    { length: exerciseCount },
+    (_, index) => exerciseIds[index] ?? exerciseId(index),
+  );
+  const exercises: WorkoutExercise[] = ids.map((currentExerciseId, index) => ({
+    id: rowId(index),
+    exercise: {
+      id: currentExerciseId,
+      name: EXERCISE_NAMES[currentExerciseId - 1] ?? `Упражнение ${currentExerciseId}`,
+    },
+    occurrence: ids.slice(0, index + 1).filter((id) => id === currentExerciseId).length,
     sets,
     supersetGroup: supersetGroups[index] ?? null,
     reps,
@@ -72,7 +82,7 @@ export function makeSession({
 
 export function fullExercise(index: number): SetResult[] {
   return Array.from({ length: SETS_PER_EXERCISE }, (_, setIndex) =>
-    savedSet({ exerciseId: exerciseId(index), setNumber: setIndex + 1 }),
+    savedSet({ workoutExerciseId: rowId(index), setNumber: setIndex + 1 }),
   );
 }
 
@@ -101,15 +111,15 @@ export function setsOf({
   overrides?: Partial<SetResult>;
 }): SetResult[] {
   return setNumbers.map((setNumber) =>
-    savedSet({ exerciseId: exerciseId(index), setNumber, ...overrides }),
+    savedSet({ workoutExerciseId: rowId(index), setNumber, ...overrides }),
   );
 }
 
 export function historyOf(
-  index: number,
+  exerciseId: number,
   entries: Array<{ sessionId: number; finishedAt: string; sets: SetResult[] }>,
 ): SessionHistoryResponse {
-  return { exercises: [{ exerciseId: exerciseId(index), entries }] };
+  return { exercises: [{ exerciseId, entries }] };
 }
 
 export async function selectRpe(form: Locator, value: string) {
@@ -142,4 +152,8 @@ export async function fillSetForm(
     await openNote(form);
     await form.getByLabel('Заметка', { exact: true }).fill(values.note);
   }
+}
+
+export function rowId(index: number): number {
+  return index + 1;
 }

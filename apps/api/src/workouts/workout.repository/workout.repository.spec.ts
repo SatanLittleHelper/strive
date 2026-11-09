@@ -13,8 +13,6 @@ import { WorkoutRepository } from './workout.repository.js';
 
 const SUPERSET_GROUP = 1;
 const UNKNOWN_WORKOUT_ID = 999;
-const FIRST_POSITION = 1;
-const SECOND_POSITION = 2;
 const LEGS_WORKOUT = { name: 'Ноги', description: 'Приседания и тяга' };
 const REST_WORKOUT = { name: 'Отдых', description: null };
 const SQUAT = 'Приседания';
@@ -48,27 +46,26 @@ describe('WorkoutRepository', () => {
     workoutId: string;
     squatId: string;
     deadliftId: string;
+    squatRowId: string;
+    deadliftRowId: string;
   }> {
     const workoutId = await insertWorkout(getClient(), LEGS_WORKOUT);
     const squatId = await insertExercise(getClient(), SQUAT);
     const deadliftId = await insertExercise(getClient(), DEADLIFT);
-    // вставка в обратном порядке позиций: порядок обязан задавать запрос, а не вставка
-    await insertWorkoutExercise({
-      client: getClient(),
-      workoutId,
-      exerciseId: deadliftId,
-      position: SECOND_POSITION,
-      ...DEADLIFT_PLAN,
-    });
-    await insertWorkoutExercise({
+    const squatRowId = await insertWorkoutExercise({
       client: getClient(),
       workoutId,
       exerciseId: squatId,
-      position: FIRST_POSITION,
       ...SQUAT_PLAN,
     });
+    const deadliftRowId = await insertWorkoutExercise({
+      client: getClient(),
+      workoutId,
+      exerciseId: deadliftId,
+      ...DEADLIFT_PLAN,
+    });
 
-    return { workoutId, squatId, deadliftId };
+    return { workoutId, squatId, deadliftId, squatRowId, deadliftRowId };
   }
 
   it('возвращает пустой список, если тренировок нет', async () => {
@@ -85,8 +82,8 @@ describe('WorkoutRepository', () => {
     ]);
   });
 
-  it('возвращает тренировку с упражнениями по порядку позиций', async () => {
-    const { workoutId, squatId, deadliftId } = await insertLegsWorkout();
+  it('возвращает тренировку с упражнениями по порядку строк плана', async () => {
+    const { workoutId, squatId, deadliftId, squatRowId, deadliftRowId } = await insertLegsWorkout();
 
     await expect(createRepository().getById(Number(workoutId))).resolves.toEqual({
       id: Number(workoutId),
@@ -94,7 +91,8 @@ describe('WorkoutRepository', () => {
       exercises: [
         {
           exercise: { id: Number(squatId), name: SQUAT },
-          position: FIRST_POSITION,
+          id: Number(squatRowId),
+          occurrence: 1,
           sets: SQUAT_PLAN.targetSets,
           reps: SQUAT_PLAN.targetReps,
           weight: null,
@@ -102,7 +100,8 @@ describe('WorkoutRepository', () => {
         },
         {
           exercise: { id: Number(deadliftId), name: DEADLIFT },
-          position: SECOND_POSITION,
+          id: Number(deadliftRowId),
+          occurrence: 1,
           sets: DEADLIFT_PLAN.targetSets,
           reps: DEADLIFT_PLAN.targetReps,
           weight: null,
@@ -126,7 +125,6 @@ describe('WorkoutRepository', () => {
         client: getClient(),
         workoutId,
         exerciseId,
-        position: index + 1,
         supersetGroup: index < groupedIds.length ? SUPERSET_GROUP : null,
       });
     }
@@ -137,6 +135,43 @@ describe('WorkoutRepository', () => {
       SUPERSET_GROUP,
       SUPERSET_GROUP,
       null,
+    ]);
+  });
+  it('[I3] отдаёт оба вхождения с id строк плана и группами', async () => {
+    const LATERAL_NAME = 'Махи';
+    const PRESS_NAME = 'Жим';
+    const workoutId = await insertWorkout(getClient(), LEGS_WORKOUT);
+    const lateralId = await insertExercise(getClient(), LATERAL_NAME);
+    const pressId = await insertExercise(getClient(), PRESS_NAME);
+    const firstRow = await insertWorkoutExercise({
+      client: getClient(),
+      workoutId,
+      exerciseId: lateralId,
+      occurrence: 1,
+      supersetGroup: 1,
+    });
+    const secondRow = await insertWorkoutExercise({
+      client: getClient(),
+      workoutId,
+      exerciseId: lateralId,
+      occurrence: 2,
+      supersetGroup: 2,
+    });
+    await insertWorkoutExercise({ client: getClient(), workoutId, exerciseId: pressId });
+
+    const workout = await createRepository().getById(Number(workoutId));
+
+    expect(
+      workout.exercises.map((item) => [
+        item.id,
+        item.exercise.id,
+        item.occurrence,
+        item.supersetGroup,
+      ]),
+    ).toEqual([
+      [Number(firstRow), Number(lateralId), 1, 1],
+      [Number(secondRow), Number(lateralId), 2, 2],
+      [expect.any(Number), Number(pressId), 1, null],
     ]);
   });
 });

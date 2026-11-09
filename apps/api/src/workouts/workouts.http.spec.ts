@@ -88,7 +88,7 @@ describe('HTTP каталога тренировок', () => {
           exercises: [
             {
               exercise: { name: EXERCISE_NAME },
-              position: 1,
+              occurrence: 1,
               sets: PLAN.targetSets,
               reps: PLAN.targetReps,
             },
@@ -141,13 +141,12 @@ describe('HTTP каталога тренировок', () => {
   });
   async function insertSupersetWorkout(): Promise<string> {
     const workoutId = await insertWorkout(getClient(), SUPERSET_WORKOUT);
-    for (const [index, group] of [SUPERSET_GROUP, SUPERSET_GROUP, null].entries()) {
+    for (const group of [SUPERSET_GROUP, SUPERSET_GROUP, null]) {
       const exerciseId = await insertExercise(getClient());
       await insertWorkoutExercise({
         client: getClient(),
         workoutId,
         exerciseId,
-        position: index + 1,
         supersetGroup: group,
         ...PLAN,
       });
@@ -184,5 +183,25 @@ describe('HTTP каталога тренировок', () => {
         ],
       },
     });
+  });
+  it('[E1] отдаёт id каждой строки плана при повторе упражнения', async () => {
+    const workoutId = await insertWorkout(getClient(), WORKOUT);
+    const exerciseId = await insertExercise(getClient(), 'Махи');
+    for (const occurrence of [1, 2]) {
+      await insertWorkoutExercise({
+        client: getClient(),
+        workoutId,
+        exerciseId,
+        occurrence,
+        ...PLAN,
+      });
+    }
+
+    const response = await get(`/api/workouts/${workoutId}`);
+
+    const exercises = (response.body as ApiResponse<Workout>).data?.exercises ?? [];
+    expect(exercises).toHaveLength(2);
+    expect(new Set(exercises.map((item) => item.exercise.id)).size).toBe(1);
+    expect(new Set(exercises.map((item) => item.id)).size).toBe(2);
   });
 });

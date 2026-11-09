@@ -1,7 +1,8 @@
--- Seed: план упражнений (позиция, подходы, повторы, целевой вес в кг; NULL — без веса)
+-- Seed: план упражнений (порядок, подходы, повторы, целевой вес в кг; NULL — без веса)
 INSERT INTO "workout_exercise"
-  ("workout_id", "exercise_id", "position", "target_sets", "target_reps", "target_weight")
-SELECT w."id", e."id", v."position", v."target_sets", v."target_reps", v."target_weight"
+  ("workout_id", "exercise_id", "occurrence", "target_sets", "target_reps", "target_weight")
+SELECT w."id", e."id",
+  ROW_NUMBER() OVER (PARTITION BY w."id", e."id" ORDER BY v."ordinal"), v."target_sets", v."target_reps", v."target_weight"
 FROM (VALUES
   ('Ноги', 'Разгибание ног сидя', 1, 3, 15, 58),
   ('Ноги', 'Ягодичный мост в тренажере', 2, 3, 15, 60),
@@ -24,7 +25,8 @@ FROM (VALUES
   ('Грудь', 'Жим гантелей на наклонной (30°) скамье вверх', 2, 3, 15, 12),
   ('Грудь', 'Разгибание рук в блоке с веревками', 3, 3, 15, 27),
   ('Грудь', 'Махи гантелями в стороны стоя', 4, 3, 15, 12),
-  ('Грудь', 'Французский жим с гантелями лежа', 5, 4, 15, 4),
+  ('Грудь', 'Махи гантелями в стороны стоя', 5, 3, 15, 12),
+  ('Грудь', 'Французский жим с гантелями лежа', 6, 4, 15, 4),
 
   ('Ноги 2', 'Разгибание ног сидя', 1, 3, 15, 58),
   ('Ноги 2', 'Гиперэкстензия на ягодицы', 2, 3, 15, 10),
@@ -47,7 +49,9 @@ FROM (VALUES
   ('Грудь 2', 'Жим в рычажном тренажере', 2, 3, 15, NULL),
   ('Грудь 2', 'Разгибание рук в блоке с веревками', 3, 3, 15, 27),
   ('Грудь 2', 'Махи гантелями в стороны стоя', 4, 3, 15, 12),
-  ('Грудь 2', 'Разгибание в трицепс-машине', 5, 3, 15, 27)
-) AS v("workout_name", "exercise_name", "position", "target_sets", "target_reps", "target_weight")
+  ('Грудь 2', 'Махи гантелями в стороны стоя', 5, 3, 15, 12),
+  ('Грудь 2', 'Разгибание в трицепс-машине', 6, 3, 15, 27)
+) AS v("workout_name", "exercise_name", "ordinal", "target_sets", "target_reps", "target_weight")
 JOIN "workout" w ON w."name" = v."workout_name"
-JOIN "exercise" e ON e."name" = v."exercise_name";
+JOIN "exercise" e ON e."name" = v."exercise_name"
+ORDER BY w."id", v."ordinal";

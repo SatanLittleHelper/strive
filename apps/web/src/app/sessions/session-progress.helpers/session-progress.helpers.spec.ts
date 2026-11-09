@@ -24,8 +24,8 @@ describe('Прогресс упражнения и тренировки', () => 
 
   it('считает сохранённые подходы только текущего упражнения', () => {
     const results = [
-      ...setsOf({ exerciseId: FIRST_ID, setNumbers: [1, 2] }),
-      ...setsOf({ exerciseId: SECOND_ID, setNumbers: [1] }),
+      ...setsOf({ workoutExerciseId: FIRST_ID, setNumbers: [1, 2] }),
+      ...setsOf({ workoutExerciseId: SECOND_ID, setNumbers: [1] }),
     ];
 
     expect(countExerciseSets({ exercise: first, results })).toBe(2);
@@ -33,30 +33,30 @@ describe('Прогресс упражнения и тренировки', () => 
   });
 
   it('шкала кольца — большее из плана и сохранённых подходов', () => {
-    const twoSaved = setsOf({ exerciseId: FIRST_ID, setNumbers: [1, 2] });
-    const fourSaved = setsOf({ exerciseId: FIRST_ID, setNumbers: range(FOURTH_SET) });
+    const twoSaved = setsOf({ workoutExerciseId: FIRST_ID, setNumbers: [1, 2] });
+    const fourSaved = setsOf({ workoutExerciseId: FIRST_ID, setNumbers: range(FOURTH_SET) });
 
     expect(getRingMax({ exercise: first, results: twoSaved })).toBe(PLANNED_SETS);
     expect(getRingMax({ exercise: first, results: fourSaved })).toBe(FOURTH_SET);
   });
 
   it('упражнение выполнено, когда сохранены все плановые подходы и есть дополнительные', () => {
-    const results = setsOf({ exerciseId: FIRST_ID, setNumbers: range(FOURTH_SET) });
+    const results = setsOf({ workoutExerciseId: FIRST_ID, setNumbers: range(FOURTH_SET) });
 
     expect(isExerciseDone({ exercise: first, results })).toBe(true);
   });
 
   it('упражнение не выполнено, пока не хватает планового подхода', () => {
-    const results = setsOf({ exerciseId: FIRST_ID, setNumbers: [1, 2] });
+    const results = setsOf({ workoutExerciseId: FIRST_ID, setNumbers: [1, 2] });
 
     expect(isExerciseDone({ exercise: first, results })).toBe(false);
   });
 
   it('тренировка не выполнена, пока в одном упражнении не хватает подхода, даже при дополнительных в другом', () => {
     const results = [
-      ...setsOf({ exerciseId: FIRST_ID, setNumbers: range(FOURTH_SET) }),
-      ...setsOf({ exerciseId: SECOND_ID, setNumbers: range(PLANNED_SETS) }),
-      ...setsOf({ exerciseId: THIRD_ID, setNumbers: [1, 2] }),
+      ...setsOf({ workoutExerciseId: FIRST_ID, setNumbers: range(FOURTH_SET) }),
+      ...setsOf({ workoutExerciseId: SECOND_ID, setNumbers: range(PLANNED_SETS) }),
+      ...setsOf({ workoutExerciseId: THIRD_ID, setNumbers: [1, 2] }),
     ];
 
     expect(isSessionDone(sessionOf({ exercises: [first, second, third], results }))).toBe(false);
@@ -64,7 +64,7 @@ describe('Прогресс упражнения и тренировки', () => 
 
   it('тренировка выполнена, когда выполнены все упражнения плана', () => {
     const results = [FIRST_ID, SECOND_ID, THIRD_ID].flatMap((exerciseId) =>
-      setsOf({ exerciseId, setNumbers: range(PLANNED_SETS) }),
+      setsOf({ workoutExerciseId: exerciseId, setNumbers: range(PLANNED_SETS) }),
     );
 
     expect(isSessionDone(sessionOf({ exercises: [first, second, third], results }))).toBe(true);
@@ -72,8 +72,8 @@ describe('Прогресс упражнения и тренировки', () => 
 
   it('добавление подхода недоступно на пределе', () => {
     const limit = SET_RESULT_LIMITS.setNumberMax;
-    const atLimit = setsOf({ exerciseId: FIRST_ID, setNumbers: range(limit) });
-    const belowLimit = setsOf({ exerciseId: FIRST_ID, setNumbers: range(limit - 1) });
+    const atLimit = setsOf({ workoutExerciseId: FIRST_ID, setNumbers: range(limit) });
+    const belowLimit = setsOf({ workoutExerciseId: FIRST_ID, setNumbers: range(limit - 1) });
 
     expect(canAddSet({ exercise: first, results: atLimit })).toBe(false);
     expect(canAddSet({ exercise: first, results: belowLimit })).toBe(true);
@@ -94,7 +94,7 @@ describe('Автопереход после сохранения подхода'
   }): boolean {
     return shouldAdvanceAfterSave({
       exercise,
-      resultsBefore: setsOf({ exerciseId: FIRST_ID, setNumbers: saved }),
+      resultsBefore: setsOf({ workoutExerciseId: FIRST_ID, setNumbers: saved }),
       savedSetNumber,
       isLastExercise,
     });
@@ -135,7 +135,9 @@ describe('Следующий шаг после сохранения подход
   const NEXT = planExercise({ id: 9 });
 
   function sets(entries: Array<[exercise: number, setNumbers: number[]]>) {
-    return entries.flatMap(([exerciseId, setNumbers]) => setsOf({ exerciseId, setNumbers }));
+    return entries.flatMap(([exerciseId, setNumbers]) =>
+      setsOf({ workoutExerciseId: exerciseId, setNumbers }),
+    );
   }
 
   it('[U1] после подхода A1 №1 переход к A2', () => {
@@ -266,5 +268,41 @@ describe('Следующий шаг после сохранения подход
     });
 
     expect(target).toBeNull();
+  });
+});
+
+describe('Повтор упражнения: прогресс по строке плана', () => {
+  const SHARED_EXERCISE_ID = 50;
+  const FIRST_ROW_ID = 1;
+  const SECOND_ROW_ID = 2;
+  const first = planExercise({ id: FIRST_ROW_ID, exerciseId: SHARED_EXERCISE_ID });
+  const second = planExercise({ id: SECOND_ROW_ID, exerciseId: SHARED_EXERCISE_ID });
+
+  it('[U2] подходы одного вхождения не засчитываются другому', () => {
+    const results = setsOf({ workoutExerciseId: FIRST_ROW_ID, setNumbers: [1, 2, 3] });
+
+    expect(countExerciseSets({ exercise: first, results })).toBe(3);
+    expect(isExerciseDone({ exercise: first, results })).toBe(true);
+    expect(countExerciseSets({ exercise: second, results })).toBe(0);
+    expect(isExerciseDone({ exercise: second, results })).toBe(false);
+  });
+
+  it('[U4] автопереход в суперсете с повтором идёт по строкам', () => {
+    const block = planExercise({ id: 1, exerciseId: 11, sets: 2, supersetGroup: 1 });
+    const lateralFirst = planExercise({ id: 2, exerciseId: 50, sets: 2, supersetGroup: 1 });
+    const lateralSecond = planExercise({ id: 3, exerciseId: 50, sets: 2, supersetGroup: 2 });
+    const french = planExercise({ id: 4, exerciseId: 12, sets: 2, supersetGroup: 2 });
+
+    const target = getAdvanceTarget({
+      exercises: [block, lateralFirst, lateralSecond, french],
+      resultsBefore: [
+        ...setsOf({ workoutExerciseId: 1, setNumbers: [1, 2] }),
+        ...setsOf({ workoutExerciseId: 2, setNumbers: [1] }),
+      ],
+      currentIndex: 1,
+      savedSetNumber: 2,
+    });
+
+    expect(target).toBe(2);
   });
 });

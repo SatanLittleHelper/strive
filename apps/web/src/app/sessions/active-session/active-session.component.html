@@ -67,7 +67,7 @@
 					</div>
 					<div (tuiSwipe)="onSwipe($event)">
 						<!-- Однокомпонентный @for пересоздаёт шаг при смене упражнения: сбрасывается запрос подстановки -->
-						@for (step of [item]; track step.exercise.id) {
+						@for (step of [item]; track step.id) {
 							<app-exercise-step
 								[disabled]="busy()"
 								[editorSet]="editorSet()"

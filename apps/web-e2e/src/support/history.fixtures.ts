@@ -42,19 +42,23 @@ export function makeSummary(overrides: Partial<SessionSummary> = {}): SessionSum
     totalVolume: SUMMARY_VOLUME,
     exercises: [
       {
+        workoutExerciseId: BENCH_EXERCISE_ID,
         exerciseId: BENCH_EXERCISE_ID,
         name: 'Жим лёжа',
         supersetGroup: null,
         sets: [
-          historySet({ exerciseId: BENCH_EXERCISE_ID, setNumber: 1, weight: 60, reps: 8 }),
-          historySet({ exerciseId: BENCH_EXERCISE_ID, setNumber: 2, weight: 60, reps: 6 }),
+          historySet({ workoutExerciseId: BENCH_EXERCISE_ID, setNumber: 1, weight: 60, reps: 8 }),
+          historySet({ workoutExerciseId: BENCH_EXERCISE_ID, setNumber: 2, weight: 60, reps: 6 }),
         ],
       },
       {
+        workoutExerciseId: SQUAT_EXERCISE_ID,
         exerciseId: SQUAT_EXERCISE_ID,
         name: 'Приседания со штангой',
         supersetGroup: null,
-        sets: [historySet({ exerciseId: SQUAT_EXERCISE_ID, setNumber: 1, weight: 100, reps: 5 })],
+        sets: [
+          historySet({ workoutExerciseId: SQUAT_EXERCISE_ID, setNumber: 1, weight: 100, reps: 5 }),
+        ],
       },
     ],
     ...overrides,

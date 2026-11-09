@@ -16,8 +16,9 @@ export function toWorkout(row: WorkoutRow): Workout {
     name: row.name,
     description: row.description,
     exercises: row.workout_exercises.map((item) => ({
+      id: Number(item.id),
       exercise: { id: Number(item.exercise.id), name: item.exercise.name },
-      position: item.position,
+      occurrence: item.occurrence,
       sets: item.target_sets,
       reps: item.target_reps,
       weight: item.target_weight === null ? null : Number(item.target_weight),

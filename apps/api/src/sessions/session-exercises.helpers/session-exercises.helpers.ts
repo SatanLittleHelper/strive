@@ -1,14 +1,22 @@
 import type { SessionExerciseResults } from '@strive/api-interfaces';
 import type { FinishedSessionExercises, FinishedWorkoutSession } from '../session.types.js';
 
-// results уже отсортированы по exercise_id и set_number (SESSION_INCLUDE), поэтому фильтр сохраняет порядок подходов
+// results отсортированы по workout_exercise_id и set_number; фильтр сохраняет порядок подходов.
 function groupExercises(session: FinishedWorkoutSession): SessionExerciseResults[] {
-  return session.workout.exercises.flatMap(({ exercise, supersetGroup }) => {
-    const sets = session.results.filter((set) => set.exerciseId === exercise.id);
+  return session.workout.exercises.flatMap((item) => {
+    const sets = session.results.filter((set) => set.workoutExerciseId === item.id);
 
     if (sets.length === 0) return [];
 
-    return [{ exerciseId: exercise.id, name: exercise.name, supersetGroup, sets }];
+    return [
+      {
+        workoutExerciseId: item.id,
+        exerciseId: item.exercise.id,
+        name: item.exercise.name,
+        supersetGroup: item.supersetGroup,
+        sets,
+      },
+    ];
   });
 }
 

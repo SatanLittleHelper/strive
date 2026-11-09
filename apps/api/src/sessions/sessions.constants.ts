@@ -2,7 +2,7 @@ import type { Prisma } from '../generated/prisma/client.js';
 import { WORKOUT_INCLUDE } from '../workouts/index.js';
 
 export const SESSION_INCLUDE = {
-  set_results: { orderBy: [{ exercise_id: 'asc' }, { set_number: 'asc' }] },
+  set_results: { orderBy: [{ workout_exercise_id: 'asc' }, { set_number: 'asc' }] },
   workout: { include: WORKOUT_INCLUDE },
 } satisfies Prisma.workout_sessionInclude;
 

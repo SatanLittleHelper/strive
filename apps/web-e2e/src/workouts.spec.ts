@@ -16,7 +16,8 @@ const DETAILS = {
   exercises: [
     {
       exercise: { id: 1, name: 'Приседания со штангой' },
-      position: 1,
+      id: 1,
+      occurrence: 1,
       sets: 3,
       reps: 8,
       weight: null,
@@ -24,7 +25,8 @@ const DETAILS = {
     },
     {
       exercise: { id: 2, name: 'Жим лёжа' },
-      position: 2,
+      id: 2,
+      occurrence: 1,
       sets: 2,
       reps: 5,
       weight: null,

@@ -9,7 +9,7 @@ export class SetResultParamsDto extends SessionIdDto implements SetResultParamsR
   @IsInt()
   @Min(MIN_SESSION_ID)
   @Max(Number.MAX_SAFE_INTEGER)
-  exerciseId!: number;
+  workoutExerciseId!: number;
 
   @Type(() => Number)
   @IsInt()

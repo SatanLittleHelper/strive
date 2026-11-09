@@ -13,7 +13,7 @@ import type {
 export function getSavedSetNumbers({ exercise, results }: ExerciseResultsParams): Set<number> {
   return new Set(
     results
-      .filter((result) => result.exerciseId === exercise.exercise.id)
+      .filter((result) => result.workoutExerciseId === exercise.id)
       .map((result) => result.setNumber),
   );
 }

@@ -8,6 +8,8 @@ import { createSupersetWorkout, type SupersetWorkout } from './support/superset.
 const DEVICE_STORAGE_KEY = 'strive.device-id';
 const WEIGHT = '40';
 const REPS = '8';
+const SETS_PER_ROW = 2;
+const GROUP_LENGTH = 2;
 
 test.describe('суперсет на реальном API', () => {
   test.use({ viewport: MOBILE_VIEWPORT });
@@ -26,31 +28,34 @@ test.describe('суперсет на реальном API', () => {
     await state.workout?.cleanup();
   });
 
-  async function saveSet(page: Page, setNumber: number): Promise<void> {
+  async function saveSet(page: Page, setNumber = 1): Promise<void> {
     await fillSetForm(page, { weight: WEIGHT, reps: REPS }, setNumber);
     await saveButton(page).click();
   }
 
-  test('[E9] тренировка с суперсетом завершается, подходы видны в истории', async ({ page }) => {
+  test('[E13] тренировка с повтором упражнения проходит на реальном API', async ({ page }) => {
     const workout = state.workout;
     if (!workout) throw new Error('Тренировка не создана');
-    const [a1, a2, b] = workout.exerciseNames;
+    const { block, lateral, french } = workout.exerciseNames;
     await page.goto('/workouts');
     await page.getByRole('link', { name: new RegExp(workout.workoutName) }).click();
     await page.getByRole('button', { name: 'Начать', exact: true }).click();
     await expect(page).toHaveURL(/\/workouts\/session$/);
 
-    // A1 №1, A2 №1, A1 №2, A2 №2, затем B №1
-    await expect(exerciseHeading(page, a1)).toBeVisible();
-    await saveSet(page, 1);
-    await expect(exerciseHeading(page, a2)).toBeVisible();
-    await saveSet(page, 1);
-    await expect(exerciseHeading(page, a1)).toBeVisible();
-    await saveSet(page, 2);
-    await expect(exerciseHeading(page, a2)).toBeVisible();
-    await saveSet(page, 2);
-    await expect(exerciseHeading(page, b)).toBeVisible();
-    await saveSet(page, 1);
+    // порядок экрана: Блок №1, Махи(2) №1, Блок №2, Махи(2) №2, Махи(3) №1, Французский №1, Махи(3) №2, Французский №2
+    for (const [index, name] of [
+      block,
+      lateral,
+      block,
+      lateral,
+      lateral,
+      french,
+      lateral,
+      french,
+    ].entries()) {
+      await expect(exerciseHeading(page, name)).toBeVisible();
+      await saveSet(page, Math.floor((index % (GROUP_LENGTH * SETS_PER_ROW)) / GROUP_LENGTH) + 1);
+    }
     await page.getByRole('button', { name: 'Завершить', exact: true }).first().click();
     await expect(page).toHaveURL(/\/history$/);
     await page
@@ -58,14 +63,20 @@ test.describe('суперсет на реальном API', () => {
       .getByRole('link', { name: new RegExp(workout.workoutName) })
       .click();
 
-    for (const [name, count] of [
-      [a1, 2],
-      [a2, 2],
-      [b, 1],
-    ] as const) {
-      await expect(
-        page.locator('section[tuiCardLarge]', { hasText: name }).getByRole('listitem'),
-      ).toHaveCount(count);
+    await expect(page.getByRole('heading', { level: 2 })).toHaveText([
+      block,
+      lateral,
+      lateral,
+      french,
+    ]);
+    const cards = page.getByRole('main').locator('section[tuiCardLarge]');
+    const expectedNames = [block, lateral, lateral, french];
+    await expect(cards).toHaveCount(expectedNames.length);
+    for (const index of expectedNames.keys()) {
+      await expect(cards.nth(index).getByRole('listitem')).toHaveCount(SETS_PER_ROW);
     }
+    await expect(page.getByRole('main').getByRole('listitem')).toHaveCount(
+      expectedNames.length * SETS_PER_ROW,
+    );
   });
 });

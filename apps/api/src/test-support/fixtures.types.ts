@@ -15,7 +15,7 @@ export interface FinishSessionFixture {
 export interface SetResultFixture {
   client: pg.Client;
   sessionId: string;
-  exerciseId?: string;
+  workoutExerciseId?: string;
   setNumber?: number;
   weight?: number;
   reps?: number;
@@ -27,7 +27,7 @@ export interface WorkoutExerciseFixture {
   client: pg.Client;
   workoutId: string;
   exerciseId: string;
-  position?: number;
+  occurrence?: number;
   targetSets?: number;
   targetReps?: number;
   targetWeight?: number | null;

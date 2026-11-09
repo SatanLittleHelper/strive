@@ -10,32 +10,39 @@ export function range(count: number): number[] {
 
 export function planExercise({
   id,
+  exerciseId = id,
+  occurrence = 1,
+  weight = null,
   sets = PLAN_SETS,
   supersetGroup = null,
 }: {
   id: number;
+  exerciseId?: number;
+  occurrence?: number;
+  weight?: number | null;
   sets?: number;
   supersetGroup?: number | null;
 }): WorkoutExercise {
   return {
-    exercise: { id, name: `Упражнение ${id}` },
-    position: id,
+    id,
+    exercise: { id: exerciseId, name: `Упражнение ${exerciseId}` },
+    occurrence,
     sets,
     reps: PLAN_REPS,
-    weight: null,
+    weight,
     supersetGroup,
   };
 }
 
 export function setsOf({
-  exerciseId,
+  workoutExerciseId,
   setNumbers,
 }: {
-  exerciseId: number;
+  workoutExerciseId: number;
   setNumbers: number[];
 }): SetResult[] {
   return setNumbers.map((setNumber) => ({
-    exerciseId,
+    workoutExerciseId,
     setNumber,
     weight: 60,
     reps: PLAN_REPS,

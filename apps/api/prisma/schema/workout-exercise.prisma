@@ -1,14 +1,16 @@
 model workout_exercise {
+  id             BigInt       @id @default(autoincrement())
   workout_id     BigInt
   exercise_id    BigInt
-  position       Int
+  occurrence     Int          @default(1)
   target_sets    Int
   target_reps    Int
-  target_weight  Decimal? @db.Decimal(6, 2)
+  target_weight  Decimal?     @db.Decimal(6, 2)
   superset_group Int?
-  workout        workout  @relation(fields: [workout_id], references: [id], onDelete: Cascade)
-  exercise       exercise @relation(fields: [exercise_id], references: [id], onDelete: Restrict)
+  workout        workout      @relation(fields: [workout_id], references: [id], onDelete: Cascade)
+  exercise       exercise     @relation(fields: [exercise_id], references: [id], onDelete: Restrict)
+  set_results    set_result[]
 
-  @@id([workout_id, exercise_id])
-  @@unique([workout_id, position])
+  @@unique([workout_id, exercise_id, occurrence])
+  @@index([exercise_id])
 }

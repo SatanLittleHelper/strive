@@ -26,9 +26,9 @@ const FIRST_SESSION = makeFinishedSession({
   id: SUMMARY_ID,
   name: 'Тренировка A',
   results: [
-    historySet({ exerciseId: FIRST_EXERCISE_ID, setNumber: 1 }),
-    historySet({ exerciseId: FIRST_EXERCISE_ID, setNumber: 2 }),
-    historySet({ exerciseId: SECOND_EXERCISE_ID, setNumber: 1 }),
+    historySet({ workoutExerciseId: FIRST_EXERCISE_ID, setNumber: 1 }),
+    historySet({ workoutExerciseId: FIRST_EXERCISE_ID, setNumber: 2 }),
+    historySet({ workoutExerciseId: SECOND_EXERCISE_ID, setNumber: 1 }),
   ],
 });
 const SECOND_SESSION = makeFinishedSession({ id: OTHER_SESSION_ID, name: 'Тренировка B' });
@@ -120,12 +120,18 @@ test.describe('детали истории с мокнутым API', () => {
     const summary = makeSummary({
       exercises: [
         {
+          workoutExerciseId: BENCH_EXERCISE_ID,
           exerciseId: BENCH_EXERCISE_ID,
           name: 'Жим лёжа',
           supersetGroup: null,
           sets: [
-            historySet({ exerciseId: BENCH_EXERCISE_ID, setNumber: 1, rpe: RPE, note: NOTE }),
-            historySet({ exerciseId: BENCH_EXERCISE_ID, setNumber: 2 }),
+            historySet({
+              workoutExerciseId: BENCH_EXERCISE_ID,
+              setNumber: 1,
+              rpe: RPE,
+              note: NOTE,
+            }),
+            historySet({ workoutExerciseId: BENCH_EXERCISE_ID, setNumber: 2 }),
           ],
         },
       ],

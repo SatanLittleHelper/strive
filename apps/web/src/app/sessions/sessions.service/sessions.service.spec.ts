@@ -30,7 +30,7 @@ const HISTORY: SessionHistoryResponse = {
           finishedAt: '2026-10-29T12:00:00.000Z',
           sets: [
             {
-              exerciseId: EXERCISE_ID,
+              workoutExerciseId: EXERCISE_ID,
               setNumber: SET_NUMBER,
               weight: 55,
               reps: 8,
@@ -102,7 +102,14 @@ describe('Сервис сессий', () => {
 
   it('сохраняет подход через PUT с полным телом и обновляет активную сессию', async () => {
     const sessions = await service();
-    sessions.saveSet(SESSION_ID, EXERCISE_ID, SET_NUMBER, RESULT).subscribe();
+    sessions
+      .saveSet({
+        sessionId: SESSION_ID,
+        workoutExerciseId: EXERCISE_ID,
+        setNumber: SET_NUMBER,
+        payload: RESULT,
+      })
+      .subscribe();
     const request = TestBed.inject(HttpTestingController).expectOne(
       `/api/sessions/${SESSION_ID}/sets/${EXERCISE_ID}/${SET_NUMBER}`,
     );
@@ -130,7 +137,12 @@ describe('Сервис сессий', () => {
     sessions.active.set({ session: SESSION });
     const statuses: number[] = [];
     sessions
-      .saveSet(SESSION_ID, EXERCISE_ID, SET_NUMBER, RESULT)
+      .saveSet({
+        sessionId: SESSION_ID,
+        workoutExerciseId: EXERCISE_ID,
+        setNumber: SET_NUMBER,
+        payload: RESULT,
+      })
       .subscribe({ error: (error) => statuses.push(error.status) });
     const conflict = 409;
     TestBed.inject(HttpTestingController)

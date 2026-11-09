@@ -31,7 +31,7 @@
 					</span>
 					<span appearance="neutral" tuiBadge>{{ formatVolume(details.totalVolume) }}</span>
 				</div>
-				@for (exercise of details.exercises; track exercise.exerciseId) {
+				@for (exercise of details.exercises; track exercise.workoutExerciseId) {
 					<section appearance="neutral" tuiCardLarge>
 						<div class="flex items-center justify-between gap-2">
 							<h2 tuiTitle>{{ exercise.name }}</h2>

@@ -8,6 +8,9 @@ import {
 
 const UNIQUE_VIOLATION = '23505';
 const CHECK_VIOLATION = '23514';
+const FIRST_OCCURRENCE = 1;
+const SECOND_OCCURRENCE = 2;
+const NO_OCCURRENCE = 0;
 const ZERO_REPS = 0;
 const NEGATIVE_WEIGHT = -1;
 const ZERO_WEIGHT = 0;
@@ -44,21 +47,41 @@ describe('Ограничения таблицы workout_exercise', () => {
     ).rejects.toMatchObject({ code: CHECK_VIOLATION });
   });
 
-  it('не допускает две записи с одной позицией в тренировке', async () => {
+  it('[I1] допускает два вхождения одного упражнения в тренировке', async () => {
     const parents = await createParents();
-    const secondExerciseId = await insertExercise(getClient());
-    await insertWorkoutExercise({ client: getClient(), ...parents });
 
-    await expect(
-      insertWorkoutExercise({
-        client: getClient(),
-        workoutId: parents.workoutId,
-        exerciseId: secondExerciseId,
-      }),
-    ).rejects.toMatchObject({ code: UNIQUE_VIOLATION });
+    const firstId = await insertWorkoutExercise({
+      client: getClient(),
+      ...parents,
+      occurrence: FIRST_OCCURRENCE,
+    });
+    const secondId = await insertWorkoutExercise({
+      client: getClient(),
+      ...parents,
+      occurrence: SECOND_OCCURRENCE,
+    });
+
+    expect(firstId).not.toBe(secondId);
   });
 
-  it('допускает одну позицию в разных тренировках', async () => {
+  it('[I2] не допускает две строки с одним упражнением и одной копией в тренировке', async () => {
+    const parents = await createParents();
+    await insertWorkoutExercise({ client: getClient(), ...parents });
+
+    await expect(insertWorkoutExercise({ client: getClient(), ...parents })).rejects.toMatchObject({
+      code: UNIQUE_VIOLATION,
+    });
+  });
+
+  it('[I12] не допускает номер копии меньше единицы', async () => {
+    const parents = await createParents();
+
+    await expect(
+      insertWorkoutExercise({ client: getClient(), ...parents, occurrence: NO_OCCURRENCE }),
+    ).rejects.toMatchObject({ code: CHECK_VIOLATION });
+  });
+
+  it('допускает одну копию упражнения в разных тренировках', async () => {
     const parents = await createParents();
     const otherWorkoutId = await insertWorkout(getClient());
     await insertWorkoutExercise({ client: getClient(), ...parents });
