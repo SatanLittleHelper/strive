@@ -46,7 +46,7 @@ npm run db:migrate
 
 Новая миграция: `npm run db:migrate:dev -- --name <имя>`. Prisma-клиент генерируется командой `npm run db:generate` (Nx запускает её сам перед сборкой, запуском и тестами API). Общая библиотека `libs/api-interfaces` пересобирается командой `npx nx run api-interfaces:build`.
 
-`npm run db:migrate` применяет все миграции из `apps/api/prisma/migrations`, включая seed: миграция `seed_catalog` заводит упражнения и тренировки «Тренировка A/B/C», а `seed_target_weights` задаёт стартовые целевые веса. Отдельной команды seed нет — каталог меняется только новой миграцией. Повторный `npm run db:migrate` безопасен: уже применённые миграции пропускаются.
+`npm run db:migrate` применяет все миграции из `apps/api/prisma/migrations`, включая seed: миграции `seed_catalog` и `seed_target_weights` заводили прежний каталог, а четыре миграции `clear_workout_sessions`, `replace_workouts`, `replace_exercises` и `seed_workout_exercises` заменили его шестью базовыми тренировками «Ноги», «Спина», «Грудь», «Ноги 2», «Спина 2», «Грудь 2» с целевыми весами. Отдельной команды seed нет — каталог меняется только новой миграцией. Повторный `npm run db:migrate` безопасен: уже применённые миграции пропускаются.
 
 Первый запуск с нуля:
 

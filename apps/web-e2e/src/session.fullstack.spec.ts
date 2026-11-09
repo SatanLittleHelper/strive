@@ -1,13 +1,13 @@
 import { randomUUID } from 'node:crypto';
 import { expect, test, type Page } from '@playwright/test';
 import { DEVICE_ID_HEADER } from '@strive/api-interfaces';
-import { API_URL, MOBILE_VIEWPORT } from './e2e.constants';
+import { API_URL, LEGS_WORKOUT_LINK, MOBILE_VIEWPORT } from './e2e.constants';
 import { fillSetForm } from './support/session.fixtures';
 import { saveButton, todayGroup, weightField, repsField } from './support/session.page';
 
 const DEVICE_STORAGE_KEY = 'strive.device-id';
-const SEED_WEIGHT = '60';
-const SEED_REPS = '8';
+const SEED_WEIGHT = '58';
+const SEED_REPS = '15';
 const DEFAULT_RPE = '3';
 const UPDATED_WEIGHT = '65';
 const EXTRA_RPE = '4';
@@ -42,9 +42,9 @@ test.describe('выполнение тренировки на реальном A
     });
   });
 
-  async function startWorkoutA(page: Page): Promise<void> {
+  async function startLegsWorkout(page: Page): Promise<void> {
     await page.goto('/workouts');
-    await page.getByRole('link', { name: /Тренировка A/ }).click();
+    await page.getByRole('link', { name: LEGS_WORKOUT_LINK }).click();
     await page.getByRole('button', { name: 'Начать', exact: true }).click();
     await expect(page).toHaveURL(/\/workouts\/session$/);
   }
@@ -58,13 +58,15 @@ test.describe('выполнение тренировки на реальном A
           page.getByRole('img', { name: `Выполнено ${setNumber} из ${PLANNED_SETS} подходов` }),
         ).toBeVisible();
       } else {
-        await expect(page.getByRole('heading', { name: 'Жим лёжа', level: 2 })).toBeVisible();
+        await expect(
+          page.getByRole('heading', { name: 'Ягодичный мост в тренажере', level: 2 }),
+        ).toBeVisible();
       }
     }
   }
 
-  test('первый подход «Тренировки A» предзаполнен целью из seed', async ({ page }) => {
-    await startWorkoutA(page);
+  test('первый подход «Ноги» предзаполнен целью из seed', async ({ page }) => {
+    await startLegsWorkout(page);
 
     await expect(weightField(page)).toHaveValue(SEED_WEIGHT);
     await expect(repsField(page)).toHaveValue(SEED_REPS);
@@ -76,7 +78,7 @@ test.describe('выполнение тренировки на реальном A
   });
 
   test('сохранённые подходы переживают перезагрузку', async ({ page }) => {
-    await startWorkoutA(page);
+    await startLegsWorkout(page);
     await savePlannedSets(page, 2);
 
     await page.reload();
@@ -88,7 +90,7 @@ test.describe('выполнение тренировки на реальном A
   });
 
   test('правка через «Сегодня» меняет подход без дубликата', async ({ page }) => {
-    await startWorkoutA(page);
+    await startLegsWorkout(page);
     await savePlannedSets(page, 2);
     await page.reload();
     await todayGroup(page).getByRole('button').first().click();
@@ -103,7 +105,7 @@ test.describe('выполнение тренировки на реальном A
   });
 
   async function finishWithExtraSet(page: Page): Promise<void> {
-    await startWorkoutA(page);
+    await startLegsWorkout(page);
     await savePlannedSets(page, PLANNED_SETS);
     // после последнего планового подхода экран перешёл к следующему упражнению
     await page.getByRole('button', { name: 'Назад', exact: true }).click();
@@ -116,10 +118,7 @@ test.describe('выполнение тренировки на реальном A
     await page.getByRole('button', { name: 'Завершить', exact: true }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Завершить', exact: true }).click();
     await expect(page).toHaveURL(/\/history$/);
-    await page
-      .getByRole('main')
-      .getByRole('link', { name: /Тренировка A/ })
-      .click();
+    await page.getByRole('main').getByRole('link', { name: LEGS_WORKOUT_LINK }).click();
   }
 
   test('дополнительный подход виден в деталях завершённой тренировки', async ({ page }) => {

@@ -7,10 +7,10 @@ import {
   type WorkoutSession,
   type WorkoutSummary,
 } from '@strive/api-interfaces';
-import { API_URL, MOBILE_VIEWPORT } from './e2e.constants';
+import { API_URL, LEGS_WORKOUT_LINK, MOBILE_VIEWPORT } from './e2e.constants';
 
 const DEVICE_STORAGE_KEY = 'strive.device-id';
-const WORKOUT_NAME = 'Тренировка A';
+const WORKOUT_NAME = 'Ноги';
 const SETS = [
   { weight: 60, reps: 8 },
   { weight: 60, reps: 6 },
@@ -70,7 +70,7 @@ test.describe('история на реальном API и засеянной Б
 
     await page.goto('/history');
     const main = page.getByRole('main');
-    const row = main.getByRole('link', { name: new RegExp(WORKOUT_NAME) });
+    const row = main.getByRole('link', { name: LEGS_WORKOUT_LINK });
     await expect(row).toContainText(EXPECTED_SUMMARY);
     await row.click();
 
