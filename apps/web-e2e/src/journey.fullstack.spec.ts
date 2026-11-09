@@ -1,10 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { expect, test } from '@playwright/test';
-import { MOBILE_VIEWPORT } from './e2e.constants';
+import { LEGS_WORKOUT_LINK, MOBILE_VIEWPORT } from './e2e.constants';
 import { fillSetForm } from './support/session.fixtures';
 
 const DEVICE_STORAGE_KEY = 'strive.device-id';
-const WORKOUT_NAME = /Тренировка A/;
 const FIRST_SET = { weight: '60', reps: '8' };
 const SECOND_SET = { weight: '60', reps: '6' };
 const EXPECTED_SUMMARY = '1 упражнение · 2 подхода';
@@ -22,7 +21,7 @@ test.describe('сквозной сценарий на реальном API', () 
 
   test('[P2-E1] подходы, записанные в тренировке, видны в истории', async ({ page }) => {
     await page.goto('/workouts');
-    const workoutLink = page.getByRole('link', { name: WORKOUT_NAME });
+    const workoutLink = page.getByRole('link', { name: LEGS_WORKOUT_LINK });
     await expect(workoutLink).toBeVisible();
     await workoutLink.click();
     await page.getByRole('button', { name: 'Начать', exact: true }).click();
@@ -40,7 +39,7 @@ test.describe('сквозной сценарий на реальном API', () 
     await expect(page).toHaveURL(/\/history$/);
 
     const main = page.getByRole('main');
-    const row = main.getByRole('link', { name: WORKOUT_NAME });
+    const row = main.getByRole('link', { name: LEGS_WORKOUT_LINK });
     await test.step('список', async () => {
       await expect(row).toContainText(EXPECTED_SUMMARY);
     });
