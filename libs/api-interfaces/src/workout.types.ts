@@ -9,6 +9,7 @@ export interface WorkoutExercise {
   sets: number;
   reps: number;
   weight: number | null;
+  supersetGroup: number | null;
 }
 
 export interface WorkoutSummary {

@@ -5,6 +5,7 @@ import {
   canAddSet,
   countExerciseSets,
   getRingMax,
+  getAdvanceTarget,
   isExerciseDone,
   isSessionDone,
   shouldAdvanceAfterSave,
@@ -121,5 +122,149 @@ describe('Автопереход после сохранения подхода'
 
   it('переходит, когда последний недостающий плановый подход сохраняется не по порядку', () => {
     expect(advance({ saved: [1, 3], savedSetNumber: 2 })).toBe(true);
+  });
+});
+
+describe('Следующий шаг после сохранения подхода: getAdvanceTarget', () => {
+  const GROUP = 1;
+  const SECOND_GROUP = 2;
+  const TWO_SETS = 2;
+  const A1 = planExercise({ id: 1, supersetGroup: GROUP });
+  const A2 = planExercise({ id: 2, supersetGroup: GROUP });
+  const A3 = planExercise({ id: 3, supersetGroup: GROUP });
+  const NEXT = planExercise({ id: 9 });
+
+  function sets(entries: Array<[exercise: number, setNumbers: number[]]>) {
+    return entries.flatMap(([exerciseId, setNumbers]) => setsOf({ exerciseId, setNumbers }));
+  }
+
+  it('[U1] после подхода A1 №1 переход к A2', () => {
+    const target = getAdvanceTarget({
+      exercises: [A1, A2],
+      resultsBefore: [],
+      currentIndex: 0,
+      savedSetNumber: 1,
+    });
+
+    expect(target).toBe(1);
+  });
+
+  it('[U2] после последнего упражнения группы возврат к первому', () => {
+    const target = getAdvanceTarget({
+      exercises: [A1, A2],
+      resultsBefore: sets([
+        [1, [1, 2]],
+        [2, [1]],
+      ]),
+      currentIndex: 1,
+      savedSetNumber: 2,
+    });
+
+    expect(target).toBe(0);
+  });
+
+  it('[U3] одиночное упражнение ведёт себя как раньше', () => {
+    const single = planExercise({ id: 5 });
+    const exercises = [single, NEXT];
+    const params = { exercises, currentIndex: 0 };
+
+    expect(
+      getAdvanceTarget({ ...params, resultsBefore: sets([[5, [1]]]), savedSetNumber: 2 }),
+    ).toBeNull();
+    expect(
+      getAdvanceTarget({ ...params, resultsBefore: sets([[5, [1, 2]]]), savedSetNumber: 3 }),
+    ).toBe(1);
+  });
+
+  it('[U4] при неравном числе подходов закрытое упражнение не предлагается', () => {
+    const shortA2 = planExercise({ id: 2, sets: TWO_SETS, supersetGroup: GROUP });
+    const target = getAdvanceTarget({
+      exercises: [A1, shortA2],
+      resultsBefore: sets([
+        [1, [1, 2]],
+        [2, [1]],
+      ]),
+      currentIndex: 1,
+      savedSetNumber: 2,
+    });
+
+    expect(target).toBe(0);
+  });
+
+  it('[U5] группа из трёх упражнений замыкает цикл', () => {
+    const [b1, b2, b3] = [A1, A2, A3].map((item) => ({ ...item, sets: TWO_SETS }));
+    const target = getAdvanceTarget({
+      exercises: [b1, b2, b3],
+      resultsBefore: sets([
+        [1, [1]],
+        [2, [1]],
+      ]),
+      currentIndex: 2,
+      savedSetNumber: 1,
+    });
+
+    expect(target).toBe(0);
+  });
+
+  it('[U10] группа из трёх закрывается после последнего подхода и ведёт к следующему упражнению', () => {
+    const [b1, b2, b3] = [A1, A2, A3].map((item) => ({ ...item, sets: TWO_SETS }));
+    const target = getAdvanceTarget({
+      exercises: [b1, b2, b3, NEXT],
+      resultsBefore: sets([
+        [1, [1, 2]],
+        [2, [1, 2]],
+        [3, [1]],
+      ]),
+      currentIndex: 2,
+      savedSetNumber: 2,
+    });
+
+    expect(target).toBe(3);
+  });
+
+  it('[U6] соседние группы не смешиваются', () => {
+    const [a1, a2] = [A1, A2].map((item) => ({ ...item, sets: TWO_SETS }));
+    const b1 = planExercise({ id: 3, sets: TWO_SETS, supersetGroup: SECOND_GROUP });
+    const b2 = planExercise({ id: 4, sets: TWO_SETS, supersetGroup: SECOND_GROUP });
+    const target = getAdvanceTarget({
+      exercises: [a1, a2, b1, b2],
+      resultsBefore: sets([
+        [1, [1, 2]],
+        [2, [1]],
+      ]),
+      currentIndex: 1,
+      savedSetNumber: 2,
+    });
+
+    expect(target).toBe(2);
+  });
+
+  it('[U7] переход дальше только когда закрыта вся группа', () => {
+    const target = getAdvanceTarget({
+      exercises: [A1, A2, NEXT],
+      resultsBefore: sets([
+        [1, [1, 2, 3]],
+        [2, [1, 2]],
+      ]),
+      currentIndex: 1,
+      savedSetNumber: 3,
+    });
+
+    expect(target).toBe(2);
+  });
+
+  it('[U8] группа в конце тренировки не переключает дальше', () => {
+    const [a1, a2] = [A1, A2].map((item) => ({ ...item, sets: TWO_SETS }));
+    const target = getAdvanceTarget({
+      exercises: [a1, a2],
+      resultsBefore: sets([
+        [1, [1, 2]],
+        [2, [1]],
+      ]),
+      currentIndex: 1,
+      savedSetNumber: 2,
+    });
+
+    expect(target).toBeNull();
   });
 });

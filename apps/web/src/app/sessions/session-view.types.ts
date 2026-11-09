@@ -12,6 +12,13 @@ export interface AdvanceParams {
   isLastExercise: boolean;
 }
 
+export interface AdvanceTargetParams {
+  exercises: WorkoutExercise[];
+  resultsBefore: SetResult[];
+  currentIndex: number;
+  savedSetNumber: number;
+}
+
 export interface ActiveEditorSet {
   mode: 'plan' | 'edit' | 'extra';
   setNumber: number;

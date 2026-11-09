@@ -21,6 +21,7 @@ export interface WorkoutSession {
 export interface SessionExerciseResults {
   exerciseId: number;
   name: string;
+  supersetGroup: number | null;
   sets: SetResult[];
 }
 

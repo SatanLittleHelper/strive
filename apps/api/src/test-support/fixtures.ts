@@ -59,12 +59,13 @@ export function insertWorkoutExercise({
   targetSets = DEFAULT_TARGET_SETS,
   targetReps = DEFAULT_TARGET_REPS,
   targetWeight = null,
+  supersetGroup = null,
 }: WorkoutExerciseFixture): Promise<pg.QueryResult> {
   return client.query(
     `INSERT INTO workout_exercise
-       (workout_id, exercise_id, position, target_sets, target_reps, target_weight)
-     VALUES ($1, $2, $3, $4, $5, $6)`,
-    [workoutId, exerciseId, position, targetSets, targetReps, targetWeight],
+       (workout_id, exercise_id, position, target_sets, target_reps, target_weight, superset_group)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    [workoutId, exerciseId, position, targetSets, targetReps, targetWeight, supersetGroup],
   );
 }
 

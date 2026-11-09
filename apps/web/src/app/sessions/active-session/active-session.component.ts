@@ -12,7 +12,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { TuiSwipe, type TuiSwipeEvent } from '@taiga-ui/cdk';
 import { TuiButton, TuiDialogService, TuiLink, TuiNotification, TuiTitle } from '@taiga-ui/core';
-import { TUI_CONFIRM, TuiProgress, TuiSkeleton } from '@taiga-ui/kit';
+import { TUI_CONFIRM, TuiBadge, TuiProgress, TuiSkeleton } from '@taiga-ui/kit';
 import { TuiCardLarge, TuiHeader } from '@taiga-ui/layout';
 import { finalize } from 'rxjs';
 import { getResourceViewState } from '../../api/resource-view-state';
@@ -27,7 +27,8 @@ import {
   isSessionDone,
   NO_EDITOR_SET,
   SessionsService,
-  shouldAdvanceAfterSave,
+  getAdvanceTarget,
+  getSupersetLabel,
   type EditorSet,
   type SavedSetEvent,
 } from '..';
@@ -39,6 +40,7 @@ import { SET_FORM_ID } from '../set-editor';
   imports: [
     RouterLink,
     TuiButton,
+    TuiBadge,
     TuiLink,
     TuiNotification,
     TuiTitle,
@@ -82,6 +84,9 @@ export class ActiveSessionComponent {
     },
   });
   protected readonly currentExercise = computed(() => this.exercises()[this.currentIndex()]);
+  protected readonly supersetLabel = computed(() =>
+    getSupersetLabel({ exercises: this.exercises(), index: this.currentIndex() }),
+  );
   protected readonly isLastExercise = computed(
     () => this.currentIndex() >= this.exercises().length - 1,
   );
@@ -161,19 +166,17 @@ export class ActiveSessionComponent {
   }
 
   protected onSaved({ setNumber, resultsBefore }: SavedSetEvent): void {
-    const exercise = this.currentExercise();
     this.selectedSet.set(null);
     this.adding.set(false);
-    if (!exercise) return;
 
-    const advance = shouldAdvanceAfterSave({
-      exercise,
+    const target = getAdvanceTarget({
+      exercises: this.exercises(),
       resultsBefore,
+      currentIndex: this.currentIndex(),
       savedSetNumber: setNumber,
-      isLastExercise: this.isLastExercise(),
     });
     // busy ещё держит сохранение (finalize идёт после next), поэтому индекс меняется напрямую
-    if (advance) this.moveBy('left');
+    if (target !== null) this.currentIndex.set(target);
   }
 
   protected go(direction: 'left' | 'right'): void {

@@ -20,6 +20,8 @@ const EXERCISE_NAMES = ['Приседания со штангой', 'Жим лё
 
 export interface SessionOptions {
   exerciseCount?: number;
+  sets?: number;
+  supersetGroups?: Array<number | null>;
   weight?: number | null;
   reps?: number;
   results?: SetResult[];
@@ -47,11 +49,14 @@ export function makeSession({
   weight = PLAN_WEIGHT,
   reps = REPS,
   results = [],
+  sets = SETS_PER_EXERCISE,
+  supersetGroups = [],
 }: SessionOptions = {}): WorkoutSession {
   const exercises: WorkoutExercise[] = Array.from({ length: exerciseCount }, (_, index) => ({
     exercise: { id: exerciseId(index), name: EXERCISE_NAMES[index] ?? `Упражнение ${index + 1}` },
     position: index + 1,
-    sets: SETS_PER_EXERCISE,
+    sets,
+    supersetGroup: supersetGroups[index] ?? null,
     reps,
     weight,
   }));

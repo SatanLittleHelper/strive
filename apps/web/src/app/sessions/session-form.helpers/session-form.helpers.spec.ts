@@ -6,6 +6,7 @@ import {
   type WorkoutSession,
 } from '@strive/api-interfaces';
 import { describe, expect, it } from 'vitest';
+import { setsOf } from '../test-support/session.fixtures';
 import {
   countCompletedSets,
   findResult,
@@ -40,6 +41,7 @@ const SESSION: WorkoutSession = {
         sets: 3,
         reps: 8,
         weight: null,
+        supersetGroup: null,
       },
     ],
   },
@@ -99,6 +101,7 @@ function planExercise(overrides: Partial<WorkoutExercise> = {}): WorkoutExercise
     sets: PLAN_SETS,
     reps: PLAN_REPS,
     weight: PLAN_WEIGHT,
+    supersetGroup: null,
     ...overrides,
   };
 }
@@ -305,5 +308,20 @@ describe('Шаг свайпа', () => {
 
   it.each(['top', 'bottom'] as const)('вертикальный жест %s не меняет упражнение', (direction) => {
     expect(getSwipeStep({ index: 1, count: COUNT, direction })).toBe(1);
+  });
+});
+
+describe('Вход в сессию с суперсетом', () => {
+  const GROUP = 1;
+  const A1 = planExercise({ supersetGroup: GROUP });
+  const A2 = planExercise({ exercise: { id: BENCH_ID, name: 'Жим' }, supersetGroup: GROUP });
+
+  it('[U9] при возврате на экран открывается первый незакрытый шаг суперсета', () => {
+    const results = [
+      ...setsOf({ exerciseId: 1, setNumbers: [1, 2] }),
+      ...setsOf({ exerciseId: 2, setNumbers: [1] }),
+    ];
+
+    expect(getFirstUnfinishedExerciseIndex(sessionOf([A1, A2], results))).toBe(1);
   });
 });

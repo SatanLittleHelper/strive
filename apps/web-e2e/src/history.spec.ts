@@ -122,6 +122,7 @@ test.describe('детали истории с мокнутым API', () => {
         {
           exerciseId: BENCH_EXERCISE_ID,
           name: 'Жим лёжа',
+          supersetGroup: null,
           sets: [
             historySet({ exerciseId: BENCH_EXERCISE_ID, setNumber: 1, rpe: RPE, note: NOTE }),
             historySet({ exerciseId: BENCH_EXERCISE_ID, setNumber: 2 }),

@@ -33,7 +33,12 @@
 				</div>
 				@for (exercise of details.exercises; track exercise.exerciseId) {
 					<section appearance="neutral" tuiCardLarge>
-						<h2 tuiTitle>{{ exercise.name }}</h2>
+						<div class="flex items-center justify-between gap-2">
+							<h2 tuiTitle>{{ exercise.name }}</h2>
+							@if (exercise.supersetGroup !== null) {
+								<span appearance="info" tuiBadge>Суперсет</span>
+							}
+						</div>
 						<ol>
 							@for (set of exercise.sets; track set.setNumber) {
 								<li tuiCell="l">
