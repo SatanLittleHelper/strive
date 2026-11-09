@@ -1,9 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
-import { API_URL, MOBILE_VIEWPORT } from './e2e.constants';
+import { API_URL, LEGS_WORKOUT_LINK, MOBILE_VIEWPORT } from './e2e.constants';
 
 const HTTP_NOT_FOUND = 404;
 const HTTP_BAD_REQUEST = 400;
-const MIN_SEEDED_WORKOUTS = 3;
+const MIN_SEEDED_WORKOUTS = 6;
 
 const SUMMARIES = [
   { id: 1, name: 'Тренировка A', description: 'Ноги и грудь', exerciseCount: 2 },
@@ -150,9 +150,9 @@ test.describe('каталог на реальном API и засеянной Б
   test('из списка можно открыть первую тренировку', async ({ page }) => {
     await page.goto('/workouts');
 
-    await page.getByRole('link', { name: /Тренировка A/ }).click();
+    await page.getByRole('link', { name: LEGS_WORKOUT_LINK }).click();
 
-    await expect(page.getByRole('heading', { name: 'Тренировка A' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Ноги', level: 1 })).toBeVisible();
     await expect(page.getByRole('listitem').first()).toContainText('×');
   });
 });
