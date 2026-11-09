@@ -14,7 +14,7 @@ import {
 import { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/index.js';
 import { toSession, toSetResult } from '../session.mapper.js';
-import { toFinishedSessionExercises } from '../session-exercises.helpers.js';
+import { toFinishedSessionExercises } from '../session-exercises.helpers/index.js';
 import { isFinishedSession } from '../session.types.js';
 import type {
   FinishedSessionExercises,

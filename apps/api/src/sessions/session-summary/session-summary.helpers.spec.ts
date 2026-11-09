@@ -39,7 +39,12 @@ function toSets(exerciseId: number, inputs: SetInput[]): SetResult[] {
 }
 
 function exercise(exerciseId: number, inputs: SetInput[]): SessionExerciseResults {
-  return { exerciseId, name: `Упражнение ${exerciseId}`, sets: toSets(exerciseId, inputs) };
+  return {
+    exerciseId,
+    name: `Упражнение ${exerciseId}`,
+    supersetGroup: null,
+    sets: toSets(exerciseId, inputs),
+  };
 }
 
 function view(exercises: SessionExerciseResults[]): FinishedSessionExercises {

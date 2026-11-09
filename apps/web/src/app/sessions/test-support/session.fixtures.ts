@@ -11,9 +11,11 @@ export function range(count: number): number[] {
 export function planExercise({
   id,
   sets = PLAN_SETS,
+  supersetGroup = null,
 }: {
   id: number;
   sets?: number;
+  supersetGroup?: number | null;
 }): WorkoutExercise {
   return {
     exercise: { id, name: `Упражнение ${id}` },
@@ -21,6 +23,7 @@ export function planExercise({
     sets,
     reps: PLAN_REPS,
     weight: null,
+    supersetGroup,
   };
 }
 

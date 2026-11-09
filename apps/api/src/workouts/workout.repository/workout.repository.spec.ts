@@ -11,6 +11,7 @@ import {
 } from '../../test-support/index.js';
 import { WorkoutRepository } from './workout.repository.js';
 
+const SUPERSET_GROUP = 1;
 const UNKNOWN_WORKOUT_ID = 999;
 const FIRST_POSITION = 1;
 const SECOND_POSITION = 2;
@@ -97,6 +98,7 @@ describe('WorkoutRepository', () => {
           sets: SQUAT_PLAN.targetSets,
           reps: SQUAT_PLAN.targetReps,
           weight: null,
+          supersetGroup: null,
         },
         {
           exercise: { id: Number(deadliftId), name: DEADLIFT },
@@ -104,6 +106,7 @@ describe('WorkoutRepository', () => {
           sets: DEADLIFT_PLAN.targetSets,
           reps: DEADLIFT_PLAN.targetReps,
           weight: null,
+          supersetGroup: null,
         },
       ],
     });
@@ -113,5 +116,27 @@ describe('WorkoutRepository', () => {
     await expect(createRepository().getById(UNKNOWN_WORKOUT_ID)).rejects.toBeInstanceOf(
       NotFoundException,
     );
+  });
+  it('[I1] возвращает группу суперсета упражнения', async () => {
+    const workoutId = await insertWorkout(getClient(), LEGS_WORKOUT);
+    const groupedIds = [await insertExercise(getClient()), await insertExercise(getClient())];
+    const singleId = await insertExercise(getClient());
+    for (const [index, exerciseId] of [...groupedIds, singleId].entries()) {
+      await insertWorkoutExercise({
+        client: getClient(),
+        workoutId,
+        exerciseId,
+        position: index + 1,
+        supersetGroup: index < groupedIds.length ? SUPERSET_GROUP : null,
+      });
+    }
+
+    const workout = await createRepository().getById(Number(workoutId));
+
+    expect(workout.exercises.map((item) => item.supersetGroup)).toEqual([
+      SUPERSET_GROUP,
+      SUPERSET_GROUP,
+      null,
+    ]);
   });
 });

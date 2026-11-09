@@ -47,6 +47,9 @@
 				</header>
 				@if (currentExercise(); as item) {
 					<div class="grid gap-2">
+						@if (supersetLabel(); as label) {
+							<span appearance="info" tuiBadge>{{ label }}</span>
+						}
 						<div class="flex items-baseline justify-between gap-3">
 							<h2 tuiTitle="l">{{ item.exercise.name }}</h2>
 							<span class="shrink-0 whitespace-nowrap" tuiTitle

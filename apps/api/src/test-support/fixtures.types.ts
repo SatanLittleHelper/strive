@@ -31,6 +31,7 @@ export interface WorkoutExerciseFixture {
   targetSets?: number;
   targetReps?: number;
   targetWeight?: number | null;
+  supersetGroup?: number | null;
 }
 
 export interface WorkoutOptions {

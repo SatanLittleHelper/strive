@@ -11,7 +11,12 @@ import type {
   SwipeStepParams,
   ValidSetFormValues,
 } from '../session-form.types';
-import { getSavedSetNumbers, isExerciseDone } from '../session-progress.helpers';
+import {
+  countExerciseSets,
+  getSavedSetNumbers,
+  getSupersetIndexes,
+  isExerciseDone,
+} from '../session-progress.helpers';
 
 export function toSaveSetRequest({
   weight,
@@ -76,8 +81,25 @@ export function getFirstUnfinishedExerciseIndex(session: WorkoutSession): number
   const index = exercises.findIndex(
     (exercise) => !isExerciseDone({ exercise, results: session.results }),
   );
+  if (index === -1) return Math.max(exercises.length - 1, 0);
 
-  return index === -1 ? Math.max(exercises.length - 1, 0) : index;
+  const unfinishedMembers = getSupersetIndexes({ exercises, index }).filter((position) => {
+    const exercise = exercises[position];
+
+    return exercise !== undefined && !isExerciseDone({ exercise, results: session.results });
+  });
+
+  // внутри суперсета следующий шаг — упражнение с наименьшим числом подходов, при равенстве первое
+  return unfinishedMembers.reduce((best, position) => {
+    const exercise = exercises[position];
+    const bestExercise = exercises[best];
+    if (!exercise || !bestExercise) return best;
+
+    return countExerciseSets({ exercise, results: session.results }) <
+      countExerciseSets({ exercise: bestExercise, results: session.results })
+      ? position
+      : best;
+  }, index);
 }
 
 export function getActiveSetNumber({ exercise, results }: ActiveSetParams): number | null {

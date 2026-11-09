@@ -20,6 +20,7 @@ const DETAILS = {
       sets: 3,
       reps: 8,
       weight: null,
+      supersetGroup: null,
     },
     {
       exercise: { id: 2, name: 'Жим лёжа' },
@@ -27,6 +28,7 @@ const DETAILS = {
       sets: 2,
       reps: 5,
       weight: null,
+      supersetGroup: null,
     },
   ],
 };

@@ -13,6 +13,8 @@ import {
 } from '../test-support/index.js';
 import { WorkoutsController } from './workouts.controller.js';
 
+const SUPERSET_GROUP = 1;
+const SUPERSET_WORKOUT = { name: 'Суперсет HTTP' };
 const UNKNOWN_WORKOUT_ID = 999;
 const INVALID_IDS = ['abc', '0', '-1', '1.5', '99999999999999999999'];
 const WORKOUT = { name: 'Тренировка HTTP', description: 'Проверка контракта' };
@@ -135,6 +137,52 @@ describe('HTTP каталога тренировок', () => {
     expect(await get(`/api/workouts/${workoutId}`)).toMatchObject({
       status: HttpStatus.OK,
       body: { data: { exercises: [{ weight: null }] } },
+    });
+  });
+  async function insertSupersetWorkout(): Promise<string> {
+    const workoutId = await insertWorkout(getClient(), SUPERSET_WORKOUT);
+    for (const [index, group] of [SUPERSET_GROUP, SUPERSET_GROUP, null].entries()) {
+      const exerciseId = await insertExercise(getClient());
+      await insertWorkoutExercise({
+        client: getClient(),
+        workoutId,
+        exerciseId,
+        position: index + 1,
+        supersetGroup: group,
+        ...PLAN,
+      });
+    }
+
+    return workoutId;
+  }
+
+  it('[E1] отдаёт группу суперсета в деталях тренировки', async () => {
+    const workoutId = await insertSupersetWorkout();
+
+    const response = await get(`/api/workouts/${workoutId}`);
+
+    expect(response.status).toBe(HttpStatus.OK);
+    const workout = (response.body as ApiResponse<Workout>).data;
+    expect(workout?.exercises.map((item) => item.supersetGroup)).toEqual([
+      SUPERSET_GROUP,
+      SUPERSET_GROUP,
+      null,
+    ]);
+  });
+
+  it('[E2] каталог с суперсетами отдаётся прежним форматом сводок', async () => {
+    const workoutId = await insertSupersetWorkout();
+    const plainId = await insertCatalogWorkout();
+
+    expect(await get('/api/workouts')).toMatchObject({
+      status: HttpStatus.OK,
+      body: {
+        success: true,
+        data: [
+          { id: Number(workoutId), exerciseCount: 3 },
+          { id: Number(plainId), exerciseCount: 1 },
+        ],
+      },
     });
   });
 });

@@ -24,6 +24,7 @@ import {
 } from '../test-support/index.js';
 import { SessionsController } from './sessions.controller.js';
 
+const SUPERSET_GROUP = 1;
 const DEVICE_ID = randomUUID();
 const OTHER_DEVICE_ID = randomUUID();
 const OK = 200;
@@ -715,5 +716,91 @@ describe('HTTP сессий тренировок', () => {
 
       expect(await request({ path: `/${sessionId}` })).toMatchObject({ status: NOT_FOUND });
     });
+  });
+  async function supersetCatalog() {
+    const workoutId = await insertWorkout(getClient());
+    const exerciseIds: number[] = [];
+    for (const [index, group] of [SUPERSET_GROUP, SUPERSET_GROUP, null].entries()) {
+      const exerciseId = await insertExercise(getClient());
+      await insertWorkoutExercise({
+        client: getClient(),
+        workoutId,
+        exerciseId,
+        position: index + 1,
+        targetSets: 2,
+        supersetGroup: group,
+      });
+      exerciseIds.push(Number(exerciseId));
+    }
+
+    return { workoutId: Number(workoutId), exerciseIds };
+  }
+
+  async function startSession(workoutId: number): Promise<number> {
+    const started = await request({ method: 'POST', body: { workoutId } });
+    const id = (started.body as ApiResponse<WorkoutSession>).data?.id;
+    if (id === undefined) throw new Error('Сессия не создана');
+
+    return id;
+  }
+
+  it('[E3] план сессии содержит группу суперсета', async () => {
+    const { workoutId } = await supersetCatalog();
+    const sessionId = await startSession(workoutId);
+
+    const response = await request({ path: `/${sessionId}` });
+
+    const session = (response.body as ApiResponse<WorkoutSession>).data;
+    expect(session?.workout.exercises.map((item) => item.supersetGroup)).toEqual([
+      SUPERSET_GROUP,
+      SUPERSET_GROUP,
+      null,
+    ]);
+  });
+
+  it('[E4] принимает чередующиеся подходы двух упражнений суперсета', async () => {
+    const { workoutId, exerciseIds } = await supersetCatalog();
+    const [first, second] = exerciseIds;
+    const sessionId = await startSession(workoutId);
+
+    const statuses = [];
+    for (const [exerciseId, setNumber] of [
+      [first, 1],
+      [second, 1],
+      [first, 2],
+    ] as const) {
+      const saved = await request({
+        method: 'PUT',
+        path: `/${sessionId}/sets/${exerciseId}/${setNumber}`,
+        body: PLANNED_SET,
+      });
+      statuses.push(saved.status);
+    }
+
+    expect(statuses).toEqual([OK, OK, OK]);
+    const response = await request({ path: `/${sessionId}` });
+    expect((response.body as ApiResponse<WorkoutSession>).data?.results).toHaveLength(3);
+  });
+
+  it('[E10] сводка сохраняет порядок плана и отдаёт группу', async () => {
+    const { workoutId, exerciseIds } = await supersetCatalog();
+    const sessionId = await startSession(workoutId);
+    for (const exerciseId of exerciseIds) {
+      await request({
+        method: 'PUT',
+        path: `/${sessionId}/sets/${exerciseId}/1`,
+        body: PLANNED_SET,
+      });
+    }
+    await request({ method: 'POST', path: `/${sessionId}/finish` });
+
+    const response = await request({ path: `/${sessionId}/summary` });
+
+    const summary = (response.body as ApiResponse<SessionSummary>).data;
+    expect(
+      summary?.exercises.map(({ exerciseId, supersetGroup }) => [exerciseId, supersetGroup]),
+    ).toEqual(
+      exerciseIds.map((exerciseId, index) => [exerciseId, index < 2 ? SUPERSET_GROUP : null]),
+    );
   });
 });
