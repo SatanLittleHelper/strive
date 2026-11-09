@@ -24,6 +24,11 @@ import {
 } from '../test-support/index.js';
 import { SessionsController } from './sessions.controller.js';
 
+const LATERAL_NAME = 'Махи';
+const FIRST_ROW_WEIGHT = 10;
+const FIRST_ROW_SECOND_SET_WEIGHT = 11;
+const SECOND_ROW_WEIGHT = 12;
+const LATERAL_REPS = 10;
 const SUPERSET_GROUP = 1;
 const DEVICE_ID = randomUUID();
 const OTHER_DEVICE_ID = randomUUID();
@@ -123,13 +128,17 @@ describe('HTTP сессий тренировок', () => {
   async function catalog() {
     const workoutId = await insertWorkout(getClient());
     const exerciseId = await insertExercise(getClient());
-    await insertWorkoutExercise({
+    const workoutExerciseId = await insertWorkoutExercise({
       client: getClient(),
       workoutId,
       exerciseId,
       targetSets: TARGET_SETS,
     });
-    return { workoutId: Number(workoutId), exerciseId: Number(exerciseId) };
+    return {
+      workoutId: Number(workoutId),
+      exerciseId: Number(exerciseId),
+      workoutExerciseId: Number(workoutExerciseId),
+    };
   }
 
   it.each([
@@ -145,7 +154,7 @@ describe('HTTP сессий тренировок', () => {
   });
 
   it('выполняет старт → active → запись и правка подхода → finish → active null', async () => {
-    const { workoutId, exerciseId } = await catalog();
+    const { workoutId, workoutExerciseId } = await catalog();
     expect(await request({ path: '/active' })).toMatchObject({
       status: OK,
       body: { data: { session: null } },
@@ -167,15 +176,19 @@ describe('HTTP сессий тренировок', () => {
       body: { data: { id: sessionId } },
     });
     expect(
-      await request({ method: 'PUT', path: `/${sessionId}/sets/${exerciseId}/1`, body: RESULT }),
+      await request({
+        method: 'PUT',
+        path: `/${sessionId}/sets/${workoutExerciseId}/1`,
+        body: RESULT,
+      }),
     ).toMatchObject({
       status: OK,
-      body: { data: { results: [{ exerciseId, setNumber: 1, ...RESULT }] } },
+      body: { data: { results: [{ workoutExerciseId, setNumber: 1, ...RESULT }] } },
     });
     expect(
       await request({
         method: 'PUT',
-        path: `/${sessionId}/sets/${exerciseId}/1`,
+        path: `/${sessionId}/sets/${workoutExerciseId}/1`,
         body: { weight: 0, reps: 1, rpe: null, note: null },
       }),
     ).toMatchObject({
@@ -194,7 +207,11 @@ describe('HTTP сессий тренировок', () => {
       status: CONFLICT,
     });
     expect(
-      await request({ method: 'PUT', path: `/${sessionId}/sets/${exerciseId}/1`, body: RESULT }),
+      await request({
+        method: 'PUT',
+        path: `/${sessionId}/sets/${workoutExerciseId}/1`,
+        body: RESULT,
+      }),
     ).toMatchObject({ status: CONFLICT });
   });
 
@@ -221,7 +238,7 @@ describe('HTTP сессий тренировок', () => {
     { note: 'x'.repeat(501) },
     { note: 1 },
   ])('отклоняет некорректный ввод %j', async (invalid) => {
-    const { workoutId, exerciseId } = await catalog();
+    const { workoutId, workoutExerciseId } = await catalog();
     const sessionId = await insertSession({
       client: getClient(),
       deviceId: DEVICE_ID,
@@ -230,14 +247,14 @@ describe('HTTP сессий тренировок', () => {
     expect(
       await request({
         method: 'PUT',
-        path: `/${sessionId}/sets/${exerciseId}/1`,
+        path: `/${sessionId}/sets/${workoutExerciseId}/1`,
         body: { ...RESULT, ...invalid },
       }),
     ).toMatchObject({ status: BAD_REQUEST });
   });
 
   it('принимает подход сверх плана', async () => {
-    const { workoutId, exerciseId } = await catalog();
+    const { workoutId, workoutExerciseId } = await catalog();
     const sessionId = await insertSession({
       client: getClient(),
       deviceId: DEVICE_ID,
@@ -247,7 +264,7 @@ describe('HTTP сессий тренировок', () => {
     expect(
       await request({
         method: 'PUT',
-        path: `/${sessionId}/sets/${exerciseId}/${EXTRA_SET_NUMBER}`,
+        path: `/${sessionId}/sets/${workoutExerciseId}/${EXTRA_SET_NUMBER}`,
         body: RESULT,
       }),
     ).toMatchObject({
@@ -257,7 +274,7 @@ describe('HTTP сессий тренировок', () => {
   });
 
   it('отвечает 400 на номер подхода выше предела', async () => {
-    const { workoutId, exerciseId } = await catalog();
+    const { workoutId, workoutExerciseId } = await catalog();
     const sessionId = await insertSession({
       client: getClient(),
       deviceId: DEVICE_ID,
@@ -267,7 +284,7 @@ describe('HTTP сессий тренировок', () => {
     expect(
       await request({
         method: 'PUT',
-        path: `/${sessionId}/sets/${exerciseId}/${OVER_LIMIT_SET_NUMBER}`,
+        path: `/${sessionId}/sets/${workoutExerciseId}/${OVER_LIMIT_SET_NUMBER}`,
         body: RESULT,
       }),
     ).toMatchObject({ status: BAD_REQUEST, body: { success: false, data: null } });
@@ -310,7 +327,7 @@ describe('HTTP сессий тренировок', () => {
   );
 
   it('отвечает 404 на чужую сессию для всех операций', async () => {
-    const { workoutId, exerciseId } = await catalog();
+    const { workoutId, workoutExerciseId } = await catalog();
     const sessionId = await insertSession({
       client: getClient(),
       deviceId: OTHER_DEVICE_ID,
@@ -319,13 +336,17 @@ describe('HTTP сессий тренировок', () => {
     for (const options of [
       { path: `/${sessionId}` },
       { method: 'POST', path: `/${sessionId}/finish` },
-      { method: 'PUT', path: `/${sessionId}/sets/${exerciseId}/1`, body: RESULT },
+      { method: 'PUT', path: `/${sessionId}/sets/${workoutExerciseId}/1`, body: RESULT },
     ]) {
       expect(await request(options)).toMatchObject({ status: NOT_FOUND });
     }
   });
-  async function sessionWithHistory(): Promise<{ currentId: string; exerciseId: number }> {
-    const { workoutId, exerciseId } = await catalog();
+  async function sessionWithHistory(): Promise<{
+    currentId: string;
+    exerciseId: number;
+    workoutExerciseId: number;
+  }> {
+    const { workoutId, exerciseId, workoutExerciseId } = await catalog();
     const pastId = await insertSession({
       client: getClient(),
       deviceId: DEVICE_ID,
@@ -334,7 +355,7 @@ describe('HTTP сессий тренировок', () => {
     await insertSetResult({
       client: getClient(),
       sessionId: pastId,
-      exerciseId: String(exerciseId),
+      workoutExerciseId: String(workoutExerciseId),
       weight: 55,
       reps: 8,
     });
@@ -345,11 +366,11 @@ describe('HTTP сессий тренировок', () => {
       workoutId: String(workoutId),
     });
 
-    return { currentId, exerciseId: Number(exerciseId) };
+    return { currentId, exerciseId, workoutExerciseId };
   }
 
   it('отдаёт историю подходов в контрактной форме', async () => {
-    const { currentId, exerciseId } = await sessionWithHistory();
+    const { currentId, exerciseId, workoutExerciseId } = await sessionWithHistory();
 
     const response = await request({ path: `/${currentId}/history` });
 
@@ -362,7 +383,9 @@ describe('HTTP сессий тренировок', () => {
             exerciseId,
             entries: [
               {
-                sets: [{ exerciseId, setNumber: 1, weight: 55, reps: 8, rpe: null, note: null }],
+                sets: [
+                  { workoutExerciseId, setNumber: 1, weight: 55, reps: 8, rpe: null, note: null },
+                ],
               },
             ],
           },
@@ -412,7 +435,7 @@ describe('HTTP сессий тренировок', () => {
     } = {}) {
       const workoutId = await insertWorkout(getClient(), { name: workoutName });
       const exerciseId = await insertExercise(getClient());
-      await insertWorkoutExercise({
+      const workoutExerciseId = await insertWorkoutExercise({
         client: getClient(),
         workoutId,
         exerciseId,
@@ -423,7 +446,7 @@ describe('HTTP сессий тренировок', () => {
         await insertSetResult({
           client: getClient(),
           sessionId,
-          exerciseId,
+          workoutExerciseId,
           setNumber: index + 1,
           ...set,
         });
@@ -481,7 +504,7 @@ describe('HTTP сессий тренировок', () => {
     });
 
     async function finishedWithExtraSet() {
-      const { workoutId, exerciseId } = await catalog();
+      const { workoutId, exerciseId, workoutExerciseId } = await catalog();
       const started = await request({ method: 'POST', body: { workoutId } });
       const sessionId = (started.body as ApiResponse<WorkoutSession>).data?.id;
       if (sessionId === undefined) throw new Error('Сессия не начата');
@@ -489,13 +512,13 @@ describe('HTTP сессий тренировок', () => {
       for (let setNumber = 1; setNumber <= TARGET_SETS; setNumber += 1) {
         await request({
           method: 'PUT',
-          path: `/${sessionId}/sets/${exerciseId}/${setNumber}`,
+          path: `/${sessionId}/sets/${workoutExerciseId}/${setNumber}`,
           body: PLANNED_SET,
         });
       }
       await request({
         method: 'PUT',
-        path: `/${sessionId}/sets/${exerciseId}/${EXTRA_SET_NUMBER}`,
+        path: `/${sessionId}/sets/${workoutExerciseId}/${EXTRA_SET_NUMBER}`,
         body: EXTRA_SET,
       });
       await request({ method: 'POST', path: `/${sessionId}/finish` });
@@ -553,16 +576,18 @@ describe('HTTP сессий тренировок', () => {
     async function finishedViaApi() {
       const workoutId = await insertWorkout(getClient(), { name: HISTORY_WORKOUT_NAME });
       const exerciseIds: string[] = [];
-      for (const [index, { name, sets }] of SUMMARY_PLAN.entries()) {
+      const rowIds: string[] = [];
+      for (const { name, sets } of SUMMARY_PLAN) {
         const exerciseId = await insertExercise(getClient(), name);
-        await insertWorkoutExercise({
+        const workoutExerciseId = await insertWorkoutExercise({
           client: getClient(),
           workoutId,
           exerciseId,
-          position: index + 1,
+
           targetSets: sets.length,
         });
         exerciseIds.push(exerciseId);
+        rowIds.push(workoutExerciseId);
       }
 
       const started = await request({ method: 'POST', body: { workoutId: Number(workoutId) } });
@@ -573,7 +598,7 @@ describe('HTTP сессий тренировок', () => {
         for (const [index, set] of sets.entries()) {
           await request({
             method: 'PUT',
-            path: `/${sessionId}/sets/${exerciseIds[planIndex]}/${index + 1}`,
+            path: `/${sessionId}/sets/${rowIds[planIndex]}/${index + 1}`,
             body: set,
           });
         }
@@ -720,20 +745,22 @@ describe('HTTP сессий тренировок', () => {
   async function supersetCatalog() {
     const workoutId = await insertWorkout(getClient());
     const exerciseIds: number[] = [];
-    for (const [index, group] of [SUPERSET_GROUP, SUPERSET_GROUP, null].entries()) {
+    const rowIds: number[] = [];
+    for (const group of [SUPERSET_GROUP, SUPERSET_GROUP, null]) {
       const exerciseId = await insertExercise(getClient());
-      await insertWorkoutExercise({
+      const workoutExerciseId = await insertWorkoutExercise({
         client: getClient(),
         workoutId,
         exerciseId,
-        position: index + 1,
+
         targetSets: 2,
         supersetGroup: group,
       });
       exerciseIds.push(Number(exerciseId));
+      rowIds.push(Number(workoutExerciseId));
     }
 
-    return { workoutId: Number(workoutId), exerciseIds };
+    return { workoutId: Number(workoutId), exerciseIds, rowIds };
   }
 
   async function startSession(workoutId: number): Promise<number> {
@@ -759,19 +786,19 @@ describe('HTTP сессий тренировок', () => {
   });
 
   it('[E4] принимает чередующиеся подходы двух упражнений суперсета', async () => {
-    const { workoutId, exerciseIds } = await supersetCatalog();
-    const [first, second] = exerciseIds;
+    const { workoutId, rowIds } = await supersetCatalog();
+    const [first, second] = rowIds;
     const sessionId = await startSession(workoutId);
 
     const statuses = [];
-    for (const [exerciseId, setNumber] of [
+    for (const [workoutExerciseId, setNumber] of [
       [first, 1],
       [second, 1],
       [first, 2],
     ] as const) {
       const saved = await request({
         method: 'PUT',
-        path: `/${sessionId}/sets/${exerciseId}/${setNumber}`,
+        path: `/${sessionId}/sets/${workoutExerciseId}/${setNumber}`,
         body: PLANNED_SET,
       });
       statuses.push(saved.status);
@@ -783,12 +810,12 @@ describe('HTTP сессий тренировок', () => {
   });
 
   it('[E10] сводка сохраняет порядок плана и отдаёт группу', async () => {
-    const { workoutId, exerciseIds } = await supersetCatalog();
+    const { workoutId, exerciseIds, rowIds } = await supersetCatalog();
     const sessionId = await startSession(workoutId);
-    for (const exerciseId of exerciseIds) {
+    for (const workoutExerciseId of rowIds) {
       await request({
         method: 'PUT',
-        path: `/${sessionId}/sets/${exerciseId}/1`,
+        path: `/${sessionId}/sets/${workoutExerciseId}/1`,
         body: PLANNED_SET,
       });
     }
@@ -802,5 +829,172 @@ describe('HTTP сессий тренировок', () => {
     ).toEqual(
       exerciseIds.map((exerciseId, index) => [exerciseId, index < 2 ? SUPERSET_GROUP : null]),
     );
+  });
+
+  async function lateralWorkout() {
+    const workoutId = await insertWorkout(getClient());
+    const exerciseId = await insertExercise(getClient(), LATERAL_NAME);
+    const rows: number[] = [];
+    for (const occurrence of [1, 2]) {
+      const id = await insertWorkoutExercise({
+        client: getClient(),
+        workoutId,
+        exerciseId,
+        occurrence,
+        targetSets: 2,
+      });
+      rows.push(Number(id));
+    }
+
+    return { workoutId: Number(workoutId), exerciseId: Number(exerciseId), rows };
+  }
+
+  function putSet({
+    sessionId,
+    row,
+    setNumber,
+    weight,
+  }: {
+    sessionId: number;
+    row: number;
+    setNumber: number;
+    weight: number;
+  }) {
+    return request({
+      method: 'PUT',
+      path: `/${sessionId}/sets/${row}/${setNumber}`,
+      body: { weight, reps: LATERAL_REPS },
+    });
+  }
+
+  it('[E2] подходы двух вхождений одного упражнения не смешиваются', async () => {
+    const { workoutId, rows } = await lateralWorkout();
+    const [first, second] = rows as [number, number];
+    const sessionId = await startSession(workoutId);
+
+    const statuses = [
+      (await putSet({ sessionId, row: second, setNumber: 1, weight: SECOND_ROW_WEIGHT })).status,
+      (await putSet({ sessionId, row: first, setNumber: 2, weight: FIRST_ROW_SECOND_SET_WEIGHT }))
+        .status,
+      (await putSet({ sessionId, row: first, setNumber: 1, weight: FIRST_ROW_WEIGHT })).status,
+    ];
+
+    expect(statuses).toEqual([OK, OK, OK]);
+    const results = ((await request({ path: `/${sessionId}` })).body as ApiResponse<WorkoutSession>)
+      .data?.results;
+    expect(results?.map((set) => [set.workoutExerciseId, set.setNumber, set.weight])).toEqual([
+      [first, 1, FIRST_ROW_WEIGHT],
+      [first, 2, FIRST_ROW_SECOND_SET_WEIGHT],
+      [second, 1, SECOND_ROW_WEIGHT],
+    ]);
+  });
+
+  it('[E3] строка плана чужой тренировки отклоняется', async () => {
+    const { workoutId, exerciseId } = await lateralWorkout();
+    const otherWorkoutId = await insertWorkout(getClient());
+    const otherRowId = await insertWorkoutExercise({
+      client: getClient(),
+      workoutId: otherWorkoutId,
+      exerciseId: String(exerciseId),
+    });
+    const sessionId = await startSession(workoutId);
+
+    const response = await putSet({
+      sessionId,
+      row: Number(otherRowId),
+      setNumber: 1,
+      weight: FIRST_ROW_WEIGHT,
+    });
+
+    expect(response).toMatchObject({
+      status: BAD_REQUEST,
+      body: { message: 'Упражнение не входит в план тренировки' },
+    });
+  });
+
+  it('[E4] несуществующая строка плана отклоняется', async () => {
+    const { workoutId } = await lateralWorkout();
+    const sessionId = await startSession(workoutId);
+
+    const response = await putSet({
+      sessionId,
+      row: UNKNOWN_ID,
+      setNumber: 1,
+      weight: FIRST_ROW_WEIGHT,
+    });
+
+    expect(response).toMatchObject({
+      status: BAD_REQUEST,
+      body: { message: 'Упражнение не входит в план тренировки' },
+    });
+  });
+
+  it.each(['abc', '0'])(
+    '[E5] некорректный идентификатор строки плана «%s» отклоняется',
+    async (row) => {
+      const { workoutId } = await lateralWorkout();
+      const sessionId = await startSession(workoutId);
+
+      const response = await request({
+        method: 'PUT',
+        path: `/${sessionId}/sets/${row}/1`,
+        body: { weight: FIRST_ROW_WEIGHT, reps: LATERAL_REPS },
+      });
+
+      expect(response.status).toBe(BAD_REQUEST);
+    },
+  );
+
+  async function finishedLateralSession() {
+    const { workoutId, rows } = await lateralWorkout();
+    const [first, second] = rows as [number, number];
+    const sessionId = await startSession(workoutId);
+    await putSet({ sessionId, row: first, setNumber: 1, weight: FIRST_ROW_WEIGHT });
+    await putSet({ sessionId, row: second, setNumber: 1, weight: SECOND_ROW_WEIGHT });
+    await request({ method: 'POST', path: `/${sessionId}/finish` });
+
+    return { sessionId, workoutId, rows: [first, second] };
+  }
+
+  it('[E6] сводка отдаёт две карточки одного упражнения', async () => {
+    const { sessionId, rows } = await finishedLateralSession();
+
+    const summary = (
+      (await request({ path: `/${sessionId}/summary` })).body as ApiResponse<SessionSummary>
+    ).data;
+
+    expect(summary?.exercises.map((item) => item.workoutExerciseId)).toEqual(rows);
+  });
+
+  it('[E7] счётчик упражнений сводки считается по вхождениям', async () => {
+    const { sessionId } = await finishedLateralSession();
+
+    const summary = (
+      (await request({ path: `/${sessionId}/summary` })).body as ApiResponse<SessionSummary>
+    ).data;
+
+    expect(summary?.exerciseCount).toBe(2);
+  });
+
+  it('[E14] тоннаж сводки суммирует подходы обоих вхождений', async () => {
+    const { sessionId } = await finishedLateralSession();
+
+    const summary = (
+      (await request({ path: `/${sessionId}/summary` })).body as ApiResponse<SessionSummary>
+    ).data;
+
+    expect(summary?.totalVolume).toBe((FIRST_ROW_WEIGHT + SECOND_ROW_WEIGHT) * LATERAL_REPS);
+  });
+
+  it('[E8] история не дублирует упражнение, повторенное в плане', async () => {
+    const { workoutId, rows } = await finishedLateralSession();
+    const currentId = await startSession(workoutId);
+
+    const history = (
+      (await request({ path: `/${currentId}/history` })).body as ApiResponse<SessionHistoryResponse>
+    ).data;
+
+    expect(history?.exercises).toHaveLength(1);
+    expect(rows).toHaveLength(2);
   });
 });

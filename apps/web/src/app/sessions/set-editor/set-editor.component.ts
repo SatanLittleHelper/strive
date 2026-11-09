@@ -52,7 +52,7 @@ import { SET_ERRORS_PROVIDER, SET_FORM_ID } from './set-editor.constants';
 })
 export class SetEditorComponent {
   readonly sessionId = input.required<number>();
-  readonly exerciseId = input.required<number>();
+  readonly workoutExerciseId = input.required<number>();
   readonly editorSet = input.required<ActiveEditorSet>();
   readonly defaults = input.required<SetFormValues>();
   readonly results = input.required<SetResult[]>();
@@ -151,12 +151,12 @@ export class SetEditorComponent {
     this.pendingChange.emit(true);
 
     this.sessions
-      .saveSet(
-        this.sessionId(),
-        this.exerciseId(),
+      .saveSet({
+        sessionId: this.sessionId(),
+        workoutExerciseId: this.workoutExerciseId(),
         setNumber,
-        toSaveSetRequest({ weight, reps, rpe, note }),
-      )
+        payload: toSaveSetRequest({ weight, reps, rpe, note }),
+      })
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => {

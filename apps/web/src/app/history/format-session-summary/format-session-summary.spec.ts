@@ -16,9 +16,9 @@ const AFTER_20_SECONDS = '2026-10-01T10:00:20.000Z';
 const THOUSANDS_VOLUME = 7450;
 const FRACTIONAL_VOLUME = 1234.5;
 
-function setOf(exerciseId: number, setNumber: number): SetResult {
+function setOf(workoutExerciseId: number, setNumber: number): SetResult {
   return {
-    exerciseId,
+    workoutExerciseId,
     setNumber,
     weight: 60,
     reps: 8,
@@ -78,5 +78,21 @@ describe('formatVolume', () => {
 
   it('[H2-U13] показывает дробный тоннаж с запятой', () => {
     expect(formatVolume(FRACTIONAL_VOLUME)).toBe('1 234,5 кг');
+  });
+  it('[U7] число упражнений считается по вхождениям', () => {
+    const LATERAL_FIRST_ROW = 1;
+    const LATERAL_SECOND_ROW = 2;
+    const PRESS_ROW = 3;
+    const results = [
+      setOf(LATERAL_FIRST_ROW, 1),
+      setOf(LATERAL_FIRST_ROW, 2),
+      setOf(LATERAL_SECOND_ROW, 1),
+      setOf(LATERAL_SECOND_ROW, 2),
+      setOf(PRESS_ROW, 1),
+      setOf(PRESS_ROW, 2),
+      setOf(PRESS_ROW, 3),
+    ];
+
+    expect(formatSessionSummary(results)).toBe('3 упражнения · 7 подходов');
   });
 });

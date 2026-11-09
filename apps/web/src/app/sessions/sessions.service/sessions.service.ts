@@ -39,14 +39,22 @@ export class SessionsService {
       .pipe(tap((session) => this.active.set({ session })));
   }
 
-  saveSet(
-    sessionId: number,
-    exerciseId: number,
-    setNumber: number,
-    body: SaveSetResultRequest,
-  ): Observable<WorkoutSession> {
+  saveSet({
+    sessionId,
+    workoutExerciseId,
+    setNumber,
+    payload,
+  }: {
+    sessionId: number;
+    workoutExerciseId: number;
+    setNumber: number;
+    payload: SaveSetResultRequest;
+  }): Observable<WorkoutSession> {
     return this.http
-      .put<WorkoutSession>(`${SESSIONS_URL}/${sessionId}/sets/${exerciseId}/${setNumber}`, body)
+      .put<WorkoutSession>(
+        `${SESSIONS_URL}/${sessionId}/sets/${workoutExerciseId}/${setNumber}`,
+        payload,
+      )
       .pipe(tap((session) => this.active.set({ session })));
   }
 

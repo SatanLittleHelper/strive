@@ -4,8 +4,9 @@ export interface Exercise {
 }
 
 export interface WorkoutExercise {
+  id: number;
   exercise: Exercise;
-  position: number;
+  occurrence: number;
   sets: number;
   reps: number;
   weight: number | null;

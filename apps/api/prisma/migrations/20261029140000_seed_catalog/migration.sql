@@ -19,8 +19,8 @@ ON CONFLICT ("name") DO NOTHING;
 
 -- Seed: план упражнений тренировок
 INSERT INTO "workout_exercise"
-  ("workout_id", "exercise_id", "position", "target_sets", "target_reps")
-SELECT w."id", e."id", v."position", v."target_sets", v."target_reps"
+  ("workout_id", "exercise_id", "target_sets", "target_reps")
+SELECT w."id", e."id", v."target_sets", v."target_reps"
 FROM (VALUES
   ('Тренировка A', 'Приседания со штангой', 1, 3, 8),
   ('Тренировка A', 'Жим лёжа', 2, 3, 8),
@@ -31,7 +31,8 @@ FROM (VALUES
   ('Тренировка C', 'Румынская тяга', 1, 3, 10),
   ('Тренировка C', 'Жим лёжа', 2, 3, 10),
   ('Тренировка C', 'Сгибания рук со штангой', 3, 3, 12)
-) AS v("workout_name", "exercise_name", "position", "target_sets", "target_reps")
+) AS v("workout_name", "exercise_name", "ordinal", "target_sets", "target_reps")
 JOIN "workout" w ON w."name" = v."workout_name"
 JOIN "exercise" e ON e."name" = v."exercise_name"
+ORDER BY w."id", v."ordinal"
 ON CONFLICT DO NOTHING;

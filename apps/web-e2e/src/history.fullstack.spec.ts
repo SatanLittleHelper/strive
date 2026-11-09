@@ -37,15 +37,15 @@ async function finishWorkout(request: APIRequestContext, deviceId: string): Prom
   const workout = await unwrap<Workout>(
     await request.get(`${API_URL}/api/workouts/${summary.id}`, { headers }),
   );
-  const exercise = workout.exercises[0]?.exercise;
-  if (!exercise) throw new Error('В тренировке нет упражнений');
+  const workoutExercise = workout.exercises[0];
+  if (!workoutExercise) throw new Error('В тренировке нет упражнений');
 
   const session = await unwrap<WorkoutSession>(
     await request.post(`${API_URL}/api/sessions`, { headers, data: { workoutId: workout.id } }),
   );
   for (const [index, set] of SETS.entries()) {
     const saved = await request.put(
-      `${API_URL}/api/sessions/${session.id}/sets/${exercise.id}/${index + 1}`,
+      `${API_URL}/api/sessions/${session.id}/sets/${workoutExercise.id}/${index + 1}`,
       { headers, data: set },
     );
     expect(saved.ok()).toBeTruthy();

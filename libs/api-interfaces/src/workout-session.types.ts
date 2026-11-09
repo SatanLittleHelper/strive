@@ -1,7 +1,7 @@
 import type { Workout } from './workout.types.js';
 
 export interface SetResult {
-  exerciseId: number;
+  workoutExerciseId: number;
   setNumber: number;
   weight: number;
   reps: number;
@@ -19,6 +19,7 @@ export interface WorkoutSession {
 }
 
 export interface SessionExerciseResults {
+  workoutExerciseId: number;
   exerciseId: number;
   name: string;
   supersetGroup: number | null;
@@ -54,7 +55,7 @@ export interface SessionIdRequest {
 }
 
 export interface SetResultParamsRequest extends SessionIdRequest {
-  exerciseId: number;
+  workoutExerciseId: number;
   setNumber: number;
 }
 

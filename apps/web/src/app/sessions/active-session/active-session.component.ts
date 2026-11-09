@@ -106,11 +106,11 @@ export class ActiveSessionComponent {
 
   // выбор подхода для правки и запрос добавления живут, пока открыто текущее упражнение
   protected readonly selectedSet = linkedSignal<number | null, number | null>({
-    source: () => this.currentExercise()?.exercise.id ?? null,
+    source: () => this.currentExercise()?.id ?? null,
     computation: () => null,
   });
   protected readonly adding = linkedSignal<number | null, boolean>({
-    source: () => this.currentExercise()?.exercise.id ?? null,
+    source: () => this.currentExercise()?.id ?? null,
     computation: () => false,
   });
   protected readonly editorSet = computed<EditorSet>(() => {

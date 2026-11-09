@@ -83,7 +83,13 @@ export class ExerciseStepComponent {
   protected readonly savedResult = computed(() => {
     const set = this.formSet();
 
-    return set ? findResult(this.session(), this.item().exercise.id, set.setNumber) : undefined;
+    return set
+      ? findResult({
+          session: this.session(),
+          workoutExerciseId: this.item().id,
+          setNumber: set.setNumber,
+        })
+      : undefined;
   });
 
   protected applyHistory(set: SetResult): void {

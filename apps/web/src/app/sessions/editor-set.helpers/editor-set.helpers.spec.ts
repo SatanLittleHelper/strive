@@ -18,7 +18,7 @@ function editorFor({
 }) {
   return getEditorSet({
     exercise,
-    results: setsOf({ exerciseId: EXERCISE_ID, setNumbers: saved }),
+    results: setsOf({ workoutExerciseId: EXERCISE_ID, setNumbers: saved }),
     selected,
     adding,
   });

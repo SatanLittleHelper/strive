@@ -20,7 +20,7 @@ import {
 const EXERCISE_ID = 1;
 const SET_NUMBER = 1;
 const RESULT = {
-  exerciseId: EXERCISE_ID,
+  workoutExerciseId: EXERCISE_ID,
   setNumber: SET_NUMBER,
   weight: 60.25,
   reps: 8,
@@ -37,7 +37,8 @@ const SESSION: WorkoutSession = {
     exercises: [
       {
         exercise: { id: EXERCISE_ID, name: 'Жим' },
-        position: 1,
+        id: EXERCISE_ID,
+        occurrence: 1,
         sets: 3,
         reps: 8,
         weight: null,
@@ -73,9 +74,15 @@ describe('Результаты тренировки', () => {
   });
 
   it('находит результат по упражнению и номеру подхода', () => {
-    expect(findResult(SESSION, EXERCISE_ID, SET_NUMBER)).toEqual(RESULT);
-    expect(findResult(SESSION, EXERCISE_ID, SET_NUMBER + 1)).toBeUndefined();
-    expect(findResult(SESSION, EXERCISE_ID + 1, SET_NUMBER)).toBeUndefined();
+    expect(
+      findResult({ session: SESSION, workoutExerciseId: EXERCISE_ID, setNumber: SET_NUMBER }),
+    ).toEqual(RESULT);
+    expect(
+      findResult({ session: SESSION, workoutExerciseId: EXERCISE_ID, setNumber: SET_NUMBER + 1 }),
+    ).toBeUndefined();
+    expect(
+      findResult({ session: SESSION, workoutExerciseId: EXERCISE_ID + 1, setNumber: SET_NUMBER }),
+    ).toBeUndefined();
   });
 });
 
@@ -97,7 +104,8 @@ const COMPLETED_AT = '2026-11-01T10:00:00.000Z';
 function planExercise(overrides: Partial<WorkoutExercise> = {}): WorkoutExercise {
   return {
     exercise: { id: SQUAT_ID, name: 'Приседания' },
-    position: 1,
+    id: SQUAT_ID,
+    occurrence: 1,
     sets: PLAN_SETS,
     reps: PLAN_REPS,
     weight: PLAN_WEIGHT,
@@ -108,7 +116,7 @@ function planExercise(overrides: Partial<WorkoutExercise> = {}): WorkoutExercise
 
 function savedSet(overrides: Partial<SetResult> = {}): SetResult {
   return {
-    exerciseId: SQUAT_ID,
+    workoutExerciseId: SQUAT_ID,
     setNumber: 1,
     weight: SESSION_RESULT_WEIGHT,
     reps: SESSION_RESULT_REPS,
@@ -249,7 +257,7 @@ describe('Значения подхода по умолчанию', () => {
     const values = getSetDefaults({
       exercise: planExercise(),
       setNumber: 1,
-      results: [savedSet({ exerciseId: BENCH_ID, weight: OTHER_EXERCISE_WEIGHT, reps: 3 })],
+      results: [savedSet({ workoutExerciseId: BENCH_ID, weight: OTHER_EXERCISE_WEIGHT, reps: 3 })],
     });
 
     expect(values).toMatchObject({ weight: PLAN_WEIGHT, reps: PLAN_REPS });
@@ -258,12 +266,16 @@ describe('Значения подхода по умолчанию', () => {
 
 describe('Стартовое упражнение и активный подход', () => {
   const squat = planExercise();
-  const bench = planExercise({ exercise: { id: BENCH_ID, name: 'Жим' }, position: 2 });
-  const row = planExercise({ exercise: { id: 3, name: 'Тяга' }, position: THIRD_SET });
+  const bench = planExercise({
+    exercise: { id: BENCH_ID, name: 'Жим' },
+    id: BENCH_ID,
+    occurrence: 1,
+  });
+  const row = planExercise({ exercise: { id: 3, name: 'Тяга' }, id: 3, occurrence: 1 });
 
   function fullResults(exercise: WorkoutExercise): SetResult[] {
     return Array.from({ length: exercise.sets }, (_, index) =>
-      savedSet({ exerciseId: exercise.exercise.id, setNumber: index + 1 }),
+      savedSet({ workoutExerciseId: exercise.id, setNumber: index + 1 }),
     );
   }
 
@@ -314,14 +326,61 @@ describe('Шаг свайпа', () => {
 describe('Вход в сессию с суперсетом', () => {
   const GROUP = 1;
   const A1 = planExercise({ supersetGroup: GROUP });
-  const A2 = planExercise({ exercise: { id: BENCH_ID, name: 'Жим' }, supersetGroup: GROUP });
+  const A2 = planExercise({
+    id: BENCH_ID,
+    exercise: { id: BENCH_ID, name: 'Жим' },
+    supersetGroup: GROUP,
+  });
 
   it('[U9] при возврате на экран открывается первый незакрытый шаг суперсета', () => {
     const results = [
-      ...setsOf({ exerciseId: 1, setNumbers: [1, 2] }),
-      ...setsOf({ exerciseId: 2, setNumbers: [1] }),
+      ...setsOf({ workoutExerciseId: 1, setNumbers: [1, 2] }),
+      ...setsOf({ workoutExerciseId: 2, setNumbers: [1] }),
     ];
 
     expect(getFirstUnfinishedExerciseIndex(sessionOf([A1, A2], results))).toBe(1);
+  });
+});
+
+describe('Повтор упражнения: значения и вход в сессию', () => {
+  const SHARED_EXERCISE = { id: SQUAT_ID, name: 'Приседания' };
+  const FIRST_ROW_ID = 1;
+  const SECOND_ROW_ID = 2;
+  const FIRST_ROW_WEIGHT = 12;
+  const SECOND_ROW_PLAN_WEIGHT = 10;
+
+  it('[U3] предзаполнение подхода берёт данные своей строки', () => {
+    const second = planExercise({
+      id: SECOND_ROW_ID,
+      exercise: SHARED_EXERCISE,
+      occurrence: 2,
+      weight: SECOND_ROW_PLAN_WEIGHT,
+    });
+    const results = [
+      savedSet({ workoutExerciseId: FIRST_ROW_ID, setNumber: 1, weight: FIRST_ROW_WEIGHT }),
+    ];
+
+    const values = getSetDefaults({ exercise: second, setNumber: 2, results, history: undefined });
+
+    expect(values.weight).toBe(SECOND_ROW_PLAN_WEIGHT);
+    const first = planExercise({ id: FIRST_ROW_ID, exercise: SHARED_EXERCISE });
+    expect(getSetDefaults({ exercise: first, setNumber: 2, results }).weight).toBe(
+      FIRST_ROW_WEIGHT,
+    );
+  });
+
+  it('[U5] вход в сессию открывает нужное вхождение', () => {
+    const first = planExercise({ id: FIRST_ROW_ID, exercise: SHARED_EXERCISE, occurrence: 1 });
+    const second = planExercise({ id: SECOND_ROW_ID, exercise: SHARED_EXERCISE, occurrence: 2 });
+    const results = [1, 2, 3].map((setNumber) =>
+      savedSet({ workoutExerciseId: FIRST_ROW_ID, setNumber }),
+    );
+    const session = {
+      ...SESSION,
+      workout: { ...SESSION.workout, exercises: [first, second] },
+      results,
+    };
+
+    expect(getFirstUnfinishedExerciseIndex(session)).toBe(1);
   });
 });

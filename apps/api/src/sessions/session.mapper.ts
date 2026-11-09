@@ -4,7 +4,7 @@ import type { SessionRow, SetResultRow } from './session.types.js';
 
 export function toSetResult(result: SetResultRow): SetResult {
   return {
-    exerciseId: Number(result.exercise_id),
+    workoutExerciseId: Number(result.workout_exercise_id),
     setNumber: result.set_number,
     weight: Number(result.weight),
     reps: result.reps,

@@ -6,7 +6,7 @@ export type SessionRow = Prisma.workout_sessionGetPayload<{ include: typeof SESS
 
 export interface SaveSetParams {
   sessionId: number;
-  exerciseId: number;
+  workoutExerciseId: number;
   setNumber: number;
 }
 

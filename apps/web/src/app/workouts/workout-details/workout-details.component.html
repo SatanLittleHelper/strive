@@ -28,7 +28,7 @@
 					</h1>
 				</header>
 				<ol appearance="neutral" tuiCardLarge>
-					@for (item of details.exercises; track item.position) {
+					@for (item of details.exercises; track item.id) {
 						<li tuiCell="l">
 							<span tuiTitle>{{ item.exercise.name }}</span>
 							<strong>{{ formatPlan(item) }}</strong>

@@ -11,7 +11,7 @@ import type {
 const DEFAULT_SET_NUMBER = 1;
 const DEFAULT_WEIGHT = 60;
 const DEFAULT_REPS = 8;
-const DEFAULT_POSITION = 1;
+const DEFAULT_OCCURRENCE = 1;
 const DEFAULT_TARGET_SETS = 3;
 const DEFAULT_TARGET_REPS = 8;
 
@@ -51,22 +51,46 @@ export function insertWorkout(
   });
 }
 
+// Порядок упражнений в тренировке — порядок вызовов (id строки), номер копии по умолчанию 1
 export function insertWorkoutExercise({
   client,
   workoutId,
   exerciseId,
-  position = DEFAULT_POSITION,
+  occurrence = DEFAULT_OCCURRENCE,
   targetSets = DEFAULT_TARGET_SETS,
   targetReps = DEFAULT_TARGET_REPS,
   targetWeight = null,
   supersetGroup = null,
-}: WorkoutExerciseFixture): Promise<pg.QueryResult> {
-  return client.query(
-    `INSERT INTO workout_exercise
-       (workout_id, exercise_id, position, target_sets, target_reps, target_weight, superset_group)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-    [workoutId, exerciseId, position, targetSets, targetReps, targetWeight, supersetGroup],
+}: WorkoutExerciseFixture): Promise<string> {
+  return insertReturningId({
+    client,
+    sql: `INSERT INTO workout_exercise
+            (workout_id, exercise_id, occurrence, target_sets, target_reps, target_weight, superset_group)
+          VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+    values: [
+      workoutId,
+      exerciseId,
+      occurrence,
+      targetSets,
+      targetReps,
+      targetWeight,
+      supersetGroup,
+    ],
+  });
+}
+
+async function insertPlanRowForSession(client: pg.Client, sessionId: string): Promise<string> {
+  const session = await client.query<{ workout_id: string }>(
+    'SELECT workout_id FROM workout_session WHERE id = $1',
+    [sessionId],
   );
+  const exerciseId = await insertExercise(client);
+
+  return insertWorkoutExercise({
+    client,
+    workoutId: String(session.rows[0]?.workout_id),
+    exerciseId,
+  });
 }
 
 export async function insertSession({
@@ -97,18 +121,18 @@ export async function finishSession({
 export async function insertSetResult({
   client,
   sessionId,
-  exerciseId,
+  workoutExerciseId,
   setNumber = DEFAULT_SET_NUMBER,
   weight = DEFAULT_WEIGHT,
   reps = DEFAULT_REPS,
   rpe = null,
   note = null,
 }: SetResultFixture): Promise<pg.QueryResult> {
-  const resultExerciseId = exerciseId ?? (await insertExercise(client));
+  const rowId = workoutExerciseId ?? (await insertPlanRowForSession(client, sessionId));
 
   return client.query(
-    `INSERT INTO set_result (session_id, exercise_id, set_number, weight, reps, rpe, note)
+    `INSERT INTO set_result (session_id, workout_exercise_id, set_number, weight, reps, rpe, note)
      VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-    [sessionId, resultExerciseId, setNumber, weight, reps, rpe, note],
+    [sessionId, rowId, setNumber, weight, reps, rpe, note],
   );
 }

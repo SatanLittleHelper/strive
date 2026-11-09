@@ -1,6 +1,6 @@
 model set_result {
   session_id   BigInt
-  exercise_id  BigInt
+  workout_exercise_id  BigInt
   set_number   Int
   weight       Decimal         @db.Decimal(6, 2)
   reps         Int
@@ -9,7 +9,8 @@ model set_result {
   completed_at DateTime        @default(now()) @db.Timestamptz(6)
   updated_at   DateTime        @default(now()) @updatedAt @db.Timestamptz(6)
   session      workout_session @relation(fields: [session_id], references: [id], onDelete: Cascade)
-  exercise     exercise        @relation(fields: [exercise_id], references: [id], onDelete: Restrict)
+  workout_exercise workout_exercise @relation(fields: [workout_exercise_id], references: [id], onDelete: Restrict)
 
-  @@id([session_id, exercise_id, set_number])
+  @@id([session_id, workout_exercise_id, set_number])
+  @@index([workout_exercise_id])
 }

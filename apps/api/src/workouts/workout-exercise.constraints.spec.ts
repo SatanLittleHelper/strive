@@ -37,14 +37,13 @@ describe('Ограничение superset_group', () => {
     const otherExerciseId = await insertExercise(client);
 
     await expect(
-      insertWorkoutExercise({ client, workoutId, exerciseId, position: 1, supersetGroup: null }),
+      insertWorkoutExercise({ client, workoutId, exerciseId, supersetGroup: null }),
     ).resolves.toBeDefined();
     await expect(
       insertWorkoutExercise({
         client,
         workoutId,
         exerciseId: otherExerciseId,
-        position: 2,
         supersetGroup: VALID_GROUP,
       }),
     ).resolves.toBeDefined();

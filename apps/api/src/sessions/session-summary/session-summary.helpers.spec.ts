@@ -26,9 +26,9 @@ interface SetInput {
   reps: number;
 }
 
-function toSets(exerciseId: number, inputs: SetInput[]): SetResult[] {
+function toSets(workoutExerciseId: number, inputs: SetInput[]): SetResult[] {
   return inputs.map(({ weight, reps }, index) => ({
-    exerciseId,
+    workoutExerciseId,
     setNumber: index + 1,
     weight,
     reps,
@@ -40,6 +40,7 @@ function toSets(exerciseId: number, inputs: SetInput[]): SetResult[] {
 
 function exercise(exerciseId: number, inputs: SetInput[]): SessionExerciseResults {
   return {
+    workoutExerciseId: exerciseId,
     exerciseId,
     name: `Упражнение ${exerciseId}`,
     supersetGroup: null,

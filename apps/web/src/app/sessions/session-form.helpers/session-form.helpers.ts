@@ -31,13 +31,17 @@ export function countCompletedSets(session: WorkoutSession): number {
   return session.results.length;
 }
 
-export function findResult(
-  session: WorkoutSession,
-  exerciseId: number,
-  setNumber: number,
-): SetResult | undefined {
+export function findResult({
+  session,
+  workoutExerciseId,
+  setNumber,
+}: {
+  session: WorkoutSession;
+  workoutExerciseId: number;
+  setNumber: number;
+}): SetResult | undefined {
   return session.results.find(
-    (result) => result.exerciseId === exerciseId && result.setNumber === setNumber,
+    (result) => result.workoutExerciseId === workoutExerciseId && result.setNumber === setNumber,
   );
 }
 
@@ -61,7 +65,7 @@ export function getSetDefaults({
   history,
 }: SetDefaultsParams): SetFormValues {
   const previous = results
-    .filter((result) => result.exerciseId === exercise.exercise.id && result.setNumber < setNumber)
+    .filter((result) => result.workoutExerciseId === exercise.id && result.setNumber < setNumber)
     .reduce<SetResult | undefined>(
       (latest, result) => (latest && latest.setNumber > result.setNumber ? latest : result),
       undefined,

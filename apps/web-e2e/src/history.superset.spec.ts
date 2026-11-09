@@ -17,10 +17,11 @@ function exerciseOf({
   group: number | null;
 }) {
   return {
+    workoutExerciseId: exerciseId,
     exerciseId,
     name,
     supersetGroup: group,
-    sets: [historySet({ exerciseId, setNumber: 1 })],
+    sets: [historySet({ workoutExerciseId: exerciseId, setNumber: 1 })],
   };
 }
 

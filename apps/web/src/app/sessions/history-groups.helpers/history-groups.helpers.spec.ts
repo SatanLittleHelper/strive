@@ -20,15 +20,15 @@ function entryOf({
   return {
     sessionId,
     finishedAt: new Date(BASE_DAY_MS - daysAgo * DAY_MS).toISOString(),
-    sets: setsOf({ exerciseId: FIRST_ID, setNumbers: [sessionId] }),
+    sets: setsOf({ workoutExerciseId: FIRST_ID, setNumbers: [sessionId] }),
   };
 }
 
 describe('Группы истории упражнения', () => {
   it('группа «Сегодня» — подходы текущей сессии только этого упражнения по возрастанию номера', () => {
     const results = [
-      ...setsOf({ exerciseId: FIRST_ID, setNumbers: [3, 1] }),
-      ...setsOf({ exerciseId: SECOND_ID, setNumbers: [1] }),
+      ...setsOf({ workoutExerciseId: FIRST_ID, setNumbers: [3, 1] }),
+      ...setsOf({ workoutExerciseId: SECOND_ID, setNumbers: [1] }),
     ];
 
     const group = getTodayGroup({ exercise: planExercise({ id: FIRST_ID }), results });
@@ -37,7 +37,7 @@ describe('Группы истории упражнения', () => {
   });
 
   it('без сохранённых подходов группы «Сегодня» нет', () => {
-    const results = setsOf({ exerciseId: SECOND_ID, setNumbers: [1] });
+    const results = setsOf({ workoutExerciseId: SECOND_ID, setNumbers: [1] });
 
     expect(getTodayGroup({ exercise: planExercise({ id: FIRST_ID }), results })).toBeNull();
   });
@@ -67,5 +67,19 @@ describe('Группы истории упражнения', () => {
 
     expect(groups).toHaveLength(HISTORY_GROUPS_LIMIT);
     expect(groups.map((group) => group.sessionId)).toEqual(range(HISTORY_GROUPS_LIMIT));
+  });
+  it('[U6] подходы «Сегодня» относятся к своей строке плана', () => {
+    const SHARED_EXERCISE_ID = 50;
+    const FIRST_ROW_ID = 1;
+    const SECOND_ROW_ID = 2;
+    const second = planExercise({ id: SECOND_ROW_ID, exerciseId: SHARED_EXERCISE_ID });
+    const results = [
+      ...setsOf({ workoutExerciseId: FIRST_ROW_ID, setNumbers: [1, 2, 3] }),
+      ...setsOf({ workoutExerciseId: SECOND_ROW_ID, setNumbers: [1] }),
+    ];
+
+    const group = getTodayGroup({ exercise: second, results });
+
+    expect(group?.map((set) => set.setNumber)).toEqual([1]);
   });
 });

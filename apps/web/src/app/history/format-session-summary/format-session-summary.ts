@@ -20,7 +20,7 @@ export function formatSetCount(count: number): string {
 }
 
 export function formatSessionSummary(results: SetResult[]): string {
-  const exerciseCount = new Set(results.map((set) => set.exerciseId)).size;
+  const exerciseCount = new Set(results.map((set) => set.workoutExerciseId)).size;
 
   return [formatExerciseCount(exerciseCount), formatSetCount(results.length)].join(
     SUMMARY_SEPARATOR,

@@ -17,7 +17,7 @@ const LAST_PLANNED_WEIGHT = 60;
 const LAST_PLANNED_REPS = 8;
 const EXTRA_SET_NUMBER = 4;
 const LAST_PLANNED = savedSet({
-  exerciseId: 1,
+  workoutExerciseId: 1,
   setNumber: 3,
   weight: LAST_PLANNED_WEIGHT,
   reps: LAST_PLANNED_REPS,
