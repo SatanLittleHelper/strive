@@ -58,7 +58,9 @@ test.describe('выполнение тренировки на реальном A
           page.getByRole('img', { name: `Выполнено ${setNumber} из ${PLANNED_SETS} подходов` }),
         ).toBeVisible();
       } else {
-        await expect(page.getByRole('heading', { name: 'Ягодичный мост в тренажере', level: 2 })).toBeVisible();
+        await expect(
+          page.getByRole('heading', { name: 'Ягодичный мост в тренажере', level: 2 }),
+        ).toBeVisible();
       }
     }
   }
@@ -116,10 +118,7 @@ test.describe('выполнение тренировки на реальном A
     await page.getByRole('button', { name: 'Завершить', exact: true }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Завершить', exact: true }).click();
     await expect(page).toHaveURL(/\/history$/);
-    await page
-      .getByRole('main')
-      .getByRole('link', { name: LEGS_WORKOUT_LINK })
-      .click();
+    await page.getByRole('main').getByRole('link', { name: LEGS_WORKOUT_LINK }).click();
   }
 
   test('дополнительный подход виден в деталях завершённой тренировки', async ({ page }) => {
