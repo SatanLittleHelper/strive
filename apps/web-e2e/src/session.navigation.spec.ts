@@ -197,9 +197,7 @@ test.describe('маршрут экрана тренировки', () => {
     await expect(page.getByRole('heading', { name: 'Тренировка A', level: 1 })).toBeVisible();
   });
 
-  test('при ошибке active главная скрывает баннер и сохраняет единственный status', async ({
-    page,
-  }) => {
+  test('при ошибке active главная скрывает баннер и не показывает status', async ({ page }) => {
     await page.unroute('**/api/sessions/active');
     await page.route('**/api/sessions/active', (route) =>
       route.fulfill({ status: HTTP_ERROR, json: error }),
@@ -207,7 +205,7 @@ test.describe('маршрут экрана тренировки', () => {
     await page.goto('/');
 
     await expect(page.getByRole('heading', { name: 'Strive' })).toBeVisible();
-    await expect(page.getByRole('status')).toHaveCount(1);
+    await expect(page.getByRole('status')).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Продолжить', exact: true })).toHaveCount(0);
   });
 });

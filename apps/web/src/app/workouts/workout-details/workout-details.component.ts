@@ -19,6 +19,7 @@ import { SESSION_CONFLICT_STATUS, SessionsService } from '../../sessions';
 import { EmptyStateComponent } from '../../shared/empty-state';
 import { ErrorStateComponent } from '../../shared/error-state';
 import { formatPlan } from '../format-plan';
+import { groupSupersets } from '../superset-groups';
 import { MISSING_WORKOUT_STATUSES, SKELETON_ROWS } from '../workouts.constants';
 import { WorkoutsService } from '../workouts.service';
 
@@ -54,6 +55,7 @@ export class WorkoutDetailsComponent {
   protected readonly workout = inject(WorkoutsService).getDetails(this.id);
   protected readonly skeletonRows = SKELETON_ROWS;
   protected readonly formatPlan = formatPlan;
+  protected readonly rows = computed(() => groupSupersets(this.workout.value()?.exercises ?? []));
 
   // у одной тренировки «пусто» невозможно: без значения страница либо грузится, либо в ошибке
   protected readonly state = computed(() =>

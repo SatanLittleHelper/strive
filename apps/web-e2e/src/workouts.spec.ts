@@ -44,6 +44,18 @@ async function mockWorkouts(page: Page, data: unknown): Promise<void> {
 test.describe('каталог с мокнутым API', () => {
   test.use({ viewport: MOBILE_VIEWPORT });
 
+  test('страница тренировки визуально объединяет упражнения суперсета', async ({ page }) => {
+    const exercises = DETAILS.exercises.map((item) => ({ ...item, supersetGroup: 1 }));
+    await page.route('**/api/workouts/1', (route) =>
+      route.fulfill({ json: ok({ ...DETAILS, exercises }) }),
+    );
+    await page.goto('/workouts/1');
+
+    const group = page.getByRole('list', { name: 'Суперсет' });
+    await expect(group).toContainText('Приседания со штангой');
+    await expect(group).toContainText('Жим лёжа');
+  });
+
   test('список показывает карточки тренировок', async ({ page }) => {
     await mockWorkouts(page, SUMMARIES);
     await page.goto('/workouts');

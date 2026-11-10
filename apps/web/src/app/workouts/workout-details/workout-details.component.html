@@ -27,12 +27,32 @@
 						}
 					</h1>
 				</header>
-				<ol appearance="neutral" tuiCardLarge>
-					@for (item of details.exercises; track item.id) {
-						<li tuiCell="l">
-							<span tuiTitle>{{ item.exercise.name }}</span>
-							<strong>{{ formatPlan(item) }}</strong>
-						</li>
+				<ol
+					appearance="neutral"
+					class="grid gap-0! [&_[tuiCell]]:m-0! [&_[tuiCell]]:box-border! [&_[tuiCell]]:min-h-14! [&_[tuiCell]]:w-full! [&_[tuiCell]]:px-3!"
+					tuiCardLarge
+				>
+					@for (row of rows(); track row.items[0].id) {
+						@if (row.superset) {
+							<li
+								class="my-3 rounded-xl bg-(--tui-background-neutral-1) shadow-[inset_4px_0_0_var(--tui-background-accent-1)]"
+								data-superset
+							>
+								<ul aria-label="Суперсет" class="grid">
+									@for (item of row.items; track item.id) {
+										<li tuiCell="l">
+											<span tuiTitle>{{ item.exercise.name }}</span>
+											<strong>{{ formatPlan(item) }}</strong>
+										</li>
+									}
+								</ul>
+							</li>
+						} @else {
+							<li tuiCell="l">
+								<span tuiTitle>{{ row.items[0].exercise.name }}</span>
+								<strong>{{ formatPlan(row.items[0]) }}</strong>
+							</li>
+						}
 					}
 				</ol>
 				<div class="sticky bottom-[calc(var(--spacing-nav)+0.75rem)] grid gap-2 md:static">

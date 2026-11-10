@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { HealthService } from '../health/health.service';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ContinueBannerComponent } from '../sessions/continue-banner';
 
 @Component({
@@ -9,6 +8,4 @@ import { ContinueBannerComponent } from '../sessions/continue-banner';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
 })
-export class HomeComponent {
-  protected readonly health = inject(HealthService);
-}
+export class HomeComponent {}

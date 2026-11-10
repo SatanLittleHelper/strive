@@ -143,18 +143,3 @@ export function getAdvanceTarget({
 
   return afterGroup < exercises.length ? afterGroup : null;
 }
-
-export function getSupersetLabel({
-  exercises,
-  index,
-}: {
-  exercises: WorkoutExercise[];
-  index: number;
-}): string | null {
-  const members = getSupersetIndexes({ exercises, index });
-  if (members.length === 0) return null;
-
-  const names = members.map((position) => exercises[position]?.exercise.name ?? '');
-
-  return `Суперсет ${names.join(' + ')}`;
-}

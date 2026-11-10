@@ -18,7 +18,6 @@ export {
   getLastSetNumber,
   getAdvanceTarget,
   getSupersetIndexes,
-  getSupersetLabel,
   getRingMax,
   getSavedSetNumbers,
   isExerciseDone,
@@ -34,6 +33,6 @@ export type {
 
 export { getEditorSet } from './editor-set.helpers';
 export { getPrimaryAction } from './primary-action.helpers';
-export { NO_EDITOR_SET, RPE_VALUES } from './sessions.constants';
+export { FIRST_NAVIGATION_ID, NO_EDITOR_SET, RPE_VALUES } from './sessions.constants';
 
 export { getHistoryGroups, getTodayGroup } from './history-groups.helpers';

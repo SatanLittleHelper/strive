@@ -13,6 +13,30 @@ const SAVE_ERROR = 'Не удалось сохранить подход. Поп�
 test.describe('ввод подхода', () => {
   test.use({ viewport: MOBILE_VIEWPORT });
 
+  test('ошибка пустого веса не меняет высоту полей', async ({ page }) => {
+    await startSessionServer(page);
+    await page.goto('/workouts/session');
+    const heightBefore = [
+      await weightField(page).boundingBox(),
+      await repsField(page).boundingBox(),
+    ];
+
+    await weightField(page).fill('');
+    await saveButton(page).click();
+    await expect(setForm(page).locator('tui-error').first()).toBeVisible();
+
+    expect(
+      await weightField(page)
+        .boundingBox()
+        .then((box) => box?.height),
+    ).toBe(heightBefore[0]?.height);
+    expect(
+      await repsField(page)
+        .boundingBox()
+        .then((box) => box?.height),
+    ).toBe(heightBefore[1]?.height);
+  });
+
   test('поля предзаполнены целью упражнения', async ({ page }) => {
     await startSessionServer(page, { session: makeSession({ weight: 62.5, reps: 10 }) });
     await page.goto('/workouts/session');
