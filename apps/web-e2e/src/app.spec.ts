@@ -1,16 +1,11 @@
 import { expect, test } from '@playwright/test';
 import { API_URL } from './e2e.constants';
 
-test('показывает стартовую страницу и состояние API', async ({ page }) => {
+test('показывает стартовую страницу с подсказкой', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Strive', exact: true })).toBeVisible();
-  await expect(page.getByRole('status')).toHaveText('API работает');
-});
-
-test('показывает ошибку подключения к API', async ({ page }) => {
-  await page.route('**/api/health', (route) => route.abort());
-  await page.goto('/');
-  await expect(page.getByRole('status')).toHaveText('API недоступен');
+  await expect(page.getByText('Выберите план и начинайте')).toBeVisible();
+  await expect(page.getByText(/API/)).toHaveCount(0);
 });
 
 test('API возвращает состояние и обрабатывает неизвестный маршрут', async ({ request }) => {

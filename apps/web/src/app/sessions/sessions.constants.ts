@@ -11,6 +11,8 @@ export const WEIGHT_DECIMAL_PLACES = 2;
 export const HISTORY_GROUPS_LIMIT = 10;
 export const HISTORY_DATE_FORMAT = 'dd.MM.yyyy';
 
+export const FIRST_NAVIGATION_ID = 1;
+
 export const NO_EDITOR_SET: EditorSet = { mode: 'none', setNumber: null };
 
 export const RPE_VALUES: readonly number[] = Array.from(

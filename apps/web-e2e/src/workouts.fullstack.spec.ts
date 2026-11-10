@@ -11,7 +11,8 @@ test.describe('каталог на реальном API', () => {
     await page.goto('/workouts');
     await page.getByRole('link', { name: LEGS_WORKOUT_LINK }).click();
 
-    const exercises = page.getByRole('listitem');
+    // группа суперсета — тоже listitem: берём только самые внутренние строки
+    const exercises = page.getByRole('listitem').filter({ hasNot: page.getByRole('listitem') });
     await expect(exercises.filter({ hasText: LEG_EXTENSION_NAME })).toContainText('3 × 15');
     await expect(exercises.filter({ hasText: LEG_CURL_NAME })).toContainText('3 × 15');
   });

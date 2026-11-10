@@ -18,8 +18,11 @@ test('вторичный текст в истории использует пр�
   await expect(page.getByText('15.10.2026')).toHaveCSS('color', 'rgb(154, 163, 178)');
 });
 
-test('статус API на главной приглушён и не использует акцент', async ({ page }) => {
+test('подсказка на главной приглушена и не использует акцент', async ({ page }) => {
   await page.goto('/');
 
-  await expect(page.getByRole('status')).toHaveCSS('color', 'rgb(154, 163, 178)');
+  await expect(page.getByText('Выберите план и начинайте')).toHaveCSS(
+    'color',
+    'rgb(154, 163, 178)',
+  );
 });

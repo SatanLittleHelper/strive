@@ -9,10 +9,11 @@ import {
   untracked,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Location } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { TuiSwipe, type TuiSwipeEvent } from '@taiga-ui/cdk';
 import { TuiButton, TuiDialogService, TuiLink, TuiNotification, TuiTitle } from '@taiga-ui/core';
-import { TUI_CONFIRM, TuiBadge, TuiProgress, TuiSkeleton } from '@taiga-ui/kit';
+import { TUI_CONFIRM, TuiProgress, TuiSkeleton } from '@taiga-ui/kit';
 import { TuiCardLarge, TuiHeader } from '@taiga-ui/layout';
 import { finalize } from 'rxjs';
 import { getResourceViewState } from '../../api/resource-view-state';
@@ -25,10 +26,10 @@ import {
   getSwipeStep,
   isExerciseDone,
   isSessionDone,
+  FIRST_NAVIGATION_ID,
   NO_EDITOR_SET,
   SessionsService,
   getAdvanceTarget,
-  getSupersetLabel,
   type EditorSet,
   type SavedSetEvent,
 } from '..';
@@ -40,7 +41,6 @@ import { SET_FORM_ID } from '../set-editor';
   imports: [
     RouterLink,
     TuiButton,
-    TuiBadge,
     TuiLink,
     TuiNotification,
     TuiTitle,
@@ -60,6 +60,7 @@ import { SET_FORM_ID } from '../set-editor';
 export class ActiveSessionComponent {
   private readonly sessions = inject(SessionsService);
   private readonly router = inject(Router);
+  private readonly location = inject(Location);
   private readonly dialogs = inject(TuiDialogService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -84,9 +85,6 @@ export class ActiveSessionComponent {
     },
   });
   protected readonly currentExercise = computed(() => this.exercises()[this.currentIndex()]);
-  protected readonly supersetLabel = computed(() =>
-    getSupersetLabel({ exercises: this.exercises(), index: this.currentIndex() }),
-  );
   protected readonly isLastExercise = computed(
     () => this.currentIndex() >= this.exercises().length - 1,
   );
@@ -198,6 +196,18 @@ export class ActiveSessionComponent {
     if (target instanceof Element && target.closest('input, textarea')) return;
 
     this.moveBy(event.direction);
+  }
+
+  // первая навигация приложения — прямой заход на экран: назад по истории выйдет из приложения
+  protected goBack(): void {
+    const navigationId: unknown = history.state?.navigationId;
+    if (typeof navigationId === 'number' && navigationId > FIRST_NAVIGATION_ID) {
+      this.location.back();
+
+      return;
+    }
+
+    void this.router.navigateByUrl('/workouts');
   }
 
   protected requestFinish(): void {

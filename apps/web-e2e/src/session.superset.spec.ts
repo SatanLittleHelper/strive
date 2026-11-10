@@ -6,21 +6,11 @@ import { startSessionServer } from './support/session.server';
 
 const FIRST = 'Приседания со штангой';
 const SECOND = 'Жим лёжа';
-const SUPERSET_LABEL = `Суперсет ${FIRST} + ${SECOND}`;
 const SETS = 2;
 const GROUP = 1;
 
 test.describe('суперсет на экране тренировки', () => {
   test.use({ viewport: MOBILE_VIEWPORT });
-
-  test('[E5] над упражнением суперсета видна метка', async ({ page }) => {
-    await startSessionServer(page, {
-      session: makeSession({ exerciseCount: 3, supersetGroups: [GROUP, GROUP, null], sets: SETS }),
-    });
-    await page.goto('/workouts/session');
-
-    await expect(page.getByText(SUPERSET_LABEL, { exact: true })).toBeVisible();
-  });
 
   test('[E6] подходы чередуются на экране', async ({ page }) => {
     await startSessionServer(page, {
@@ -36,7 +26,7 @@ test.describe('суперсет на экране тренировки', () => {
     await expect(exerciseHeading(page, FIRST)).toBeVisible();
   });
 
-  test('[E7] одиночное упражнение без метки суперсета', async ({ page }) => {
+  test('[E7] метки суперсета над упражнением нет', async ({ page }) => {
     await startSessionServer(page, { session: makeSession({ sets: SETS }) });
     await page.goto('/workouts/session');
     await expect(exerciseHeading(page, FIRST)).toBeVisible();

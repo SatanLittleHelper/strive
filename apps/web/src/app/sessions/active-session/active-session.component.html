@@ -27,12 +27,14 @@
 							appearance="flat"
 							aria-label="К тренировкам"
 							iconStart="@tui.arrow-left"
-							routerLink="/workouts"
 							size="l"
 							tuiIconButton
 							type="button"
+							(click)="goBack()"
 						></button>
-						<h1 class="truncate" tuiTitle="s">{{ current.workout.name }}</h1>
+						<h1 class="cursor-pointer truncate" tuiTitle="s" (click)="goBack()">
+							{{ current.workout.name }}
+						</h1>
 					</div>
 					<button
 						appearance="flat"
@@ -47,9 +49,6 @@
 				</header>
 				@if (currentExercise(); as item) {
 					<div class="grid gap-2">
-						@if (supersetLabel(); as label) {
-							<span appearance="info" tuiBadge>{{ label }}</span>
-						}
 						<div class="flex items-baseline justify-between gap-3">
 							<h2 tuiTitle="l">{{ item.exercise.name }}</h2>
 							<span class="shrink-0 whitespace-nowrap" tuiTitle

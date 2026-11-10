@@ -1,4 +1,9 @@
-<a appearance="neutral" tuiCardLarge [routerLink]="['/workouts', workout().id]">
+<a
+	appearance="neutral"
+	class="hover:scale-[1.02]!"
+	tuiCardLarge
+	[routerLink]="['/workouts', workout().id]"
+>
 	<header tuiHeader>
 		<h2 tuiTitle>
 			{{ workout().name }}

@@ -4,7 +4,6 @@ export {
   getLastSetNumber,
   getAdvanceTarget,
   getSupersetIndexes,
-  getSupersetLabel,
   getRingMax,
   getSavedSetNumbers,
   isExerciseDone,
