@@ -1,0 +1,22 @@
+name: Cleanup images
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  packages: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: [strive-api, strive-web, strive-migrate]
+    steps:
+      - uses: actions/delete-package-versions@v5
+        with:
+          package-name: ${{ matrix.package }}
+          package-type: container
+          min-versions-to-keep: 10
