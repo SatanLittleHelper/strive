@@ -93,7 +93,7 @@ test.describe('выполнение тренировки на реальном A
     await startLegsWorkout(page);
     await savePlannedSets(page, 2);
     await page.reload();
-    await todayGroup(page).getByRole('button').first().click();
+    await todayGroup(page).getByRole('button').last().click();
     await weightField(page).fill(UPDATED_WEIGHT);
 
     await page.getByRole('button', { name: 'Сохранить изменения' }).click();
@@ -101,7 +101,7 @@ test.describe('выполнение тренировки на реальном A
 
     const rows = todayGroup(page).getByRole('button');
     await expect(rows).toHaveCount(2);
-    await expect(rows.nth(0)).toContainText(`${UPDATED_WEIGHT} кг × ${SEED_REPS} повт.`);
+    await expect(rows.nth(1)).toContainText(`${UPDATED_WEIGHT} кг × ${SEED_REPS} повт.`);
   });
 
   async function finishWithExtraSet(page: Page): Promise<void> {

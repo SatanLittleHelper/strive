@@ -1,10 +1,18 @@
 import { expect, test } from '@playwright/test';
 import { MOBILE_VIEWPORT } from './e2e.constants';
-import { fullExercise, historyOf, makeSession, savedSet, setsOf } from './support/session.fixtures';
+import {
+  fullExercise,
+  historyOf,
+  makeSession,
+  ok,
+  savedSet,
+  setsOf,
+} from './support/session.fixtures';
 import { repsField, saveButton, setForm, todayGroup, weightField } from './support/session.page';
 import { startSessionServer } from './support/session.server';
 
 const HTTP_ERROR = 500;
+const EMPTY_MESSAGE = 'Это упражнение ещё не выполнялось';
 const FIRST_DATE = '2026-10-29T12:00:00.000Z';
 const SECOND_DATE = '2026-10-22T12:00:00.000Z';
 const FIRST_DATE_TITLE = '29.10.2026';
@@ -49,9 +57,9 @@ test.describe('история упражнения и правка подход�
 
     await expect(rows).toHaveCount(2);
     await expect(rows.nth(0)).toContainText('60 кг × 6 повт.');
-    await expect(rows.nth(0)).toContainText('RPE 3');
+    await expect(rows.nth(0)).toContainText('RPE 4');
     await expect(rows.nth(1)).toContainText('60 кг × 6 повт.');
-    await expect(rows.nth(1)).toContainText('RPE 4');
+    await expect(rows.nth(1)).toContainText('RPE 3');
   });
 
   test('группы истории идут от новых дат к старым', async ({ page }) => {
@@ -62,6 +70,39 @@ test.describe('история упражнения и правка подход�
     const older = await page.getByRole('group', { name: SECOND_DATE_TITLE }).boundingBox();
 
     expect(newer?.y).toBeLessThan(older?.y ?? 0);
+  });
+
+  test('[E1] подходы в «Сегодня» и в прошлой дате идут от последнего к первому', async ({
+    page,
+  }) => {
+    await startSessionServer(page, {
+      session: makeSession({
+        exerciseCount: 1,
+        results: setsOf({ index: 0, setNumbers: [1, 2, 3] }),
+      }),
+      history: TWO_ENTRIES,
+    });
+    await page.goto('/workouts/session');
+
+    const today = todayGroup(page).getByRole('button');
+    const past = page.getByRole('group', { name: FIRST_DATE_TITLE }).getByRole('button');
+
+    await expect(today).toContainText(['Подход 3', 'Подход 2', 'Подход 1']);
+    await expect(past).toContainText(['Подход 2', 'Подход 1']);
+  });
+
+  test('[E16] порядок отображения не меняет даты и значения по умолчанию', async ({ page }) => {
+    await startSessionServer(page, {
+      session: makeSession({ weight: null }),
+      history: TWO_ENTRIES,
+    });
+    await page.goto('/workouts/session');
+
+    const newer = await page.getByRole('group', { name: FIRST_DATE_TITLE }).boundingBox();
+    const older = await page.getByRole('group', { name: SECOND_DATE_TITLE }).boundingBox();
+
+    expect(newer?.y).toBeLessThan(older?.y ?? 0);
+    await expect(weightField(page)).toHaveValue(/^60(\.0+)?$/);
   });
 
   test('тап по строке прошлой записи подставляет вес, повторы и RPE без сохранения', async ({
@@ -101,23 +142,74 @@ test.describe('история упражнения и правка подход�
     ).toBeDisabled();
   });
 
-  test('без прошлых записей — сообщение', async ({ page }) => {
+  test('[E28] без сегодняшних и прошлых подходов после загрузки — сообщение', async ({ page }) => {
     await startSessionServer(page, { history: { exercises: [] } });
     await page.goto('/workouts/session');
 
-    await expect(page.getByText('Это упражнение ещё не выполнялось')).toBeVisible();
+    await expect(page.getByText(EMPTY_MESSAGE)).toBeVisible();
   });
 
-  test('ошибка загрузки истории скрывает прошлые даты, страница работает', async ({ page }) => {
+  test('[E9] при сегодняшнем подходе и пустой прошлой истории сообщения нет', async ({ page }) => {
+    await startSessionServer(page, {
+      session: makeSession({ results: setsOf({ index: 0, setNumbers: [1] }) }),
+      history: { exercises: [] },
+    });
+    await page.goto('/workouts/session');
+
+    await expect(todayGroup(page)).toBeVisible();
+    await expect(page.getByText(EMPTY_MESSAGE)).toHaveCount(0);
+  });
+
+  test('[E29] пока история загружается, сообщения нет, после ответа оно появляется', async ({
+    page,
+  }) => {
+    const server = await startSessionServer(page, {
+      history: { exercises: [] },
+      holdHistory: true,
+    });
+    await page.goto('/workouts/session');
+    await expect(setForm(page)).toBeVisible();
+
+    const loading = page.getByRole('status', { name: 'Загрузка', exact: true });
+
+    await expect(loading).toBeVisible();
+    await expect(page.getByText(EMPTY_MESSAGE)).toHaveCount(0);
+
+    server.releaseHistory();
+
+    await expect(page.getByText(EMPTY_MESSAGE)).toBeVisible();
+    await expect(loading).toHaveCount(0);
+  });
+
+  test('[E30] ошибка истории показывает сообщение об ошибке, не пустое состояние; страница работает', async ({
+    page,
+  }) => {
     const server = await startSessionServer(page, { history: { status: HTTP_ERROR } });
     await page.goto('/workouts/session');
     await expect(setForm(page)).toBeVisible();
 
+    await expect(page.getByText('Не удалось загрузить данные')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Повторить' })).toBeVisible();
+    await expect(page.getByText(EMPTY_MESSAGE)).toHaveCount(0);
+    await expect(page.getByRole('group', { name: /^\d{2}\.\d{2}\.\d{4}$/ })).toHaveCount(0);
+
     await saveButton(page).click();
 
-    await expect(page.getByRole('group', { name: /^\d{2}\.\d{2}\.\d{4}$/ })).toHaveCount(0);
-    await expect(page.getByRole('alert')).toHaveCount(0);
     await expect.poll(() => server.saves.length).toBe(1);
+  });
+
+  test('«Повторить» перезапрашивает историю после ошибки', async ({ page }) => {
+    await startSessionServer(page, { history: { status: HTTP_ERROR } });
+    await page.goto('/workouts/session');
+    await expect(page.getByRole('button', { name: 'Повторить' })).toBeVisible();
+    await page.route('**/api/sessions/1/history', (route) =>
+      route.fulfill({ json: ok(TWO_ENTRIES) }),
+    );
+
+    await page.getByRole('button', { name: 'Повторить' }).click();
+
+    await expect(page.getByRole('group', { name: FIRST_DATE_TITLE })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Повторить' })).toHaveCount(0);
   });
 
   test('поздно пришедшая история не затирает введённый вес', async ({ page }) => {
@@ -175,7 +267,7 @@ test.describe('история упражнения и правка подход�
       session: makeSession({ results: setsOf({ index: 0, setNumbers: [1, 2] }) }),
     });
     await page.goto('/workouts/session');
-    await todayGroup(page).getByRole('button').first().click();
+    await todayGroup(page).getByRole('button').last().click();
     await weightField(page).fill('65');
 
     await page.getByRole('button', { name: 'Сохранить изменения' }).click();
@@ -189,7 +281,7 @@ test.describe('история упражнения и правка подход�
       session: makeSession({ results: setsOf({ index: 0, setNumbers: [1, 2] }) }),
     });
     await page.goto('/workouts/session');
-    await todayGroup(page).getByRole('button').first().click();
+    await todayGroup(page).getByRole('button').last().click();
 
     await page.getByRole('button', { name: 'Сохранить изменения' }).click();
 

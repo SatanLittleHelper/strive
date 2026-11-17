@@ -145,7 +145,7 @@ export class ActiveSessionComponent {
       (history.hasValue() ? history.value().exercises : []).map((item) => [item.exerciseId, item]),
     );
   });
-  protected readonly historyLoaded = computed(() => this.sessions.history.hasValue());
+  protected readonly historyStatus = computed(() => this.sessions.history.status());
   protected readonly finishing = signal(false);
   protected readonly confirming = signal(false);
   protected readonly pendingSaves = signal(0);
@@ -154,6 +154,10 @@ export class ActiveSessionComponent {
   constructor() {
     // Возврат через роутер должен перечитать сервер даже у уже созданного singleton-сервиса.
     this.active.reload();
+  }
+
+  protected reloadHistory(): void {
+    this.sessions.history.reload();
   }
 
   protected pendingChange(pending: boolean): void {

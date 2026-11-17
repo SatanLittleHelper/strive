@@ -1,0 +1,19 @@
+@switch (state()) {
+	@case ('loading') {
+		<div class="grid gap-3" role="status" [attr.aria-label]="loadingLabel()">
+			<span class="sr-only">{{ loadingLabel() }}</span>
+			<ng-content select="[loading]">
+				<tui-loader class="justify-self-center" size="l" />
+			</ng-content>
+		</div>
+	}
+	@case ('error') {
+		<app-error-state [message]="errorMessage()" (retry)="retry.emit()" />
+	}
+	@case ('empty') {
+		<app-empty-state [message]="emptyMessage()" />
+	}
+	@case ('ready') {
+		<ng-content />
+	}
+}
