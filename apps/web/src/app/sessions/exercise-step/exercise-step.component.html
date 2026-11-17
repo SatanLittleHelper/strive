@@ -47,9 +47,10 @@
 		[disabled]="disabled()"
 		[fillDisabled]="formSet() === null"
 		[groups]="groups()"
-		[loaded]="historyLoaded()"
+		[status]="historyStatus()"
 		[today]="today()"
 		(editSet)="selectSet.emit($event)"
 		(fillSet)="applyHistory($event)"
+		(retry)="retryHistory.emit()"
 	/>
 </section>

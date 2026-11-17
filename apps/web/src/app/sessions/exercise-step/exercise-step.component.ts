@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  output,
+  signal,
+  type ResourceStatus,
+} from '@angular/core';
 import type {
   ExerciseHistory,
   SetResult,
@@ -43,13 +51,14 @@ export class ExerciseStepComponent {
   readonly session = input.required<WorkoutSession>();
   readonly item = input.required<WorkoutExercise>();
   readonly history = input<ExerciseHistory>();
-  readonly historyLoaded = input(false);
+  readonly historyStatus = input.required<ResourceStatus>();
   readonly editorSet = input.required<EditorSet>();
   readonly disabled = input(false);
   readonly pendingChange = output<boolean>();
   readonly saved = output<SavedSetEvent>();
   readonly selectSet = output<number>();
   readonly addSet = output<void>();
+  readonly retryHistory = output<void>();
 
   protected readonly fillRequest = signal<FillRequest | null>(null);
 

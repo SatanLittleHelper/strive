@@ -25,7 +25,7 @@ function entryOf({
 }
 
 describe('Группы истории упражнения', () => {
-  it('группа «Сегодня» — подходы текущей сессии только этого упражнения по возрастанию номера', () => {
+  it('группа «Сегодня» — подходы текущей сессии только этого упражнения по убыванию номера', () => {
     const results = [
       ...setsOf({ workoutExerciseId: FIRST_ID, setNumbers: [3, 1] }),
       ...setsOf({ workoutExerciseId: SECOND_ID, setNumbers: [1] }),
@@ -33,7 +33,7 @@ describe('Группы истории упражнения', () => {
 
     const group = getTodayGroup({ exercise: planExercise({ id: FIRST_ID }), results });
 
-    expect(group?.map((set) => set.setNumber)).toEqual([1, 3]);
+    expect(group?.map((set) => set.setNumber)).toEqual([3, 1]);
   });
 
   it('без сохранённых подходов группы «Сегодня» нет', () => {
@@ -44,7 +44,10 @@ describe('Группы истории упражнения', () => {
 
   it('записи истории превращаются в группы по дате с сохранением порядка API', () => {
     const entries = [
-      entryOf({ sessionId: 1, daysAgo: 0 }),
+      {
+        ...entryOf({ sessionId: 1, daysAgo: 0 }),
+        sets: setsOf({ workoutExerciseId: FIRST_ID, setNumbers: [1, 2] }),
+      },
       entryOf({ sessionId: 2, daysAgo: 7 }),
       entryOf({ sessionId: 3, daysAgo: 14 }),
     ];
@@ -55,7 +58,12 @@ describe('Группы истории упражнения', () => {
     expect(groups.map((group) => group.finishedAt)).toEqual(
       entries.map((entry) => entry.finishedAt),
     );
-    expect(groups.map((group) => group.sets.map((set) => set.setNumber))).toEqual([[1], [2], [3]]);
+    expect(groups.map((group) => group.sets.map((set) => set.setNumber))).toEqual([
+      [2, 1],
+      [2],
+      [3],
+    ]);
+    expect(history.entries[0]?.sets.map((set) => set.setNumber)).toEqual([1, 2]);
   });
 
   it('групп прошлых дат не больше десяти', () => {

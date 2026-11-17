@@ -2,14 +2,20 @@ import type { ExerciseHistory, ExerciseHistoryEntry, SetResult } from '@strive/a
 import { HISTORY_GROUPS_LIMIT } from '../sessions.constants';
 import type { ExerciseResultsParams } from '../session-view.types';
 
+function sortSetsDescending(sets: SetResult[]): SetResult[] {
+  return [...sets].sort((first, second) => second.setNumber - first.setNumber);
+}
+
 export function getTodayGroup({ exercise, results }: ExerciseResultsParams): SetResult[] | null {
-  const sets = results
-    .filter((result) => result.workoutExerciseId === exercise.id)
-    .sort((first, second) => first.setNumber - second.setNumber);
+  const sets = sortSetsDescending(
+    results.filter((result) => result.workoutExerciseId === exercise.id),
+  );
 
   return sets.length > 0 ? sets : null;
 }
 
 export function getHistoryGroups(history: ExerciseHistory | undefined): ExerciseHistoryEntry[] {
-  return (history?.entries ?? []).slice(0, HISTORY_GROUPS_LIMIT);
+  return (history?.entries ?? [])
+    .slice(0, HISTORY_GROUPS_LIMIT)
+    .map((entry) => ({ ...entry, sets: sortSetsDescending(entry.sets) }));
 }

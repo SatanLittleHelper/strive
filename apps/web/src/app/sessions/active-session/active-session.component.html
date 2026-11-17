@@ -71,11 +71,12 @@
 								[disabled]="busy()"
 								[editorSet]="editorSet()"
 								[history]="histories().get(step.exercise.id)"
-								[historyLoaded]="historyLoaded()"
+								[historyStatus]="historyStatus()"
 								[item]="step"
 								[session]="current"
 								(addSet)="adding.set(true)"
 								(pendingChange)="pendingChange($event)"
+								(retryHistory)="reloadHistory()"
 								(saved)="onSaved($event)"
 								(selectSet)="selectedSet.set($event)"
 							/>
