@@ -56,6 +56,7 @@ export class ExerciseStepComponent {
   readonly disabled = input(false);
   readonly pendingChange = output<boolean>();
   readonly saved = output<SavedSetEvent>();
+  // сейчас без эмиттера: правка по нажатию вернётся в R2
   readonly selectSet = output<number>();
   readonly addSet = output<void>();
   readonly retryHistory = output<void>();
