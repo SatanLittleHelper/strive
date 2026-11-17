@@ -4,6 +4,7 @@ import { planExercise, range, sessionOf, setsOf } from '../test-support/session.
 import {
   canAddSet,
   countExerciseSets,
+  getExerciseCompletion,
   getRingMax,
   getAdvanceTarget,
   isExerciseDone,
@@ -304,5 +305,40 @@ describe('Повтор упражнения: прогресс по строке 
     });
 
     expect(target).toBe(2);
+  });
+});
+
+describe('Доля выполнения упражнения: getExerciseCompletion', () => {
+  const PLANNED = 4;
+  const EXTRA_SET = PLANNED + 1;
+
+  it('[fb-U7] 2 сохранённых подхода из 4 запланированных — доля 0.5', () => {
+    const exercise = planExercise({ id: FIRST_ID, sets: PLANNED });
+    const results = setsOf({ workoutExerciseId: FIRST_ID, setNumbers: [1, 2] });
+
+    expect(getExerciseCompletion({ exercise, results })).toBe(0.5);
+  });
+
+  it('[fb-U8] без подходов доля 0, при всех плановых подходах доля 1', () => {
+    const notStarted = planExercise({ id: FIRST_ID, sets: PLANNED });
+    const done = planExercise({ id: SECOND_ID, sets: PLANNED });
+    const results = setsOf({ workoutExerciseId: SECOND_ID, setNumbers: range(PLANNED) });
+
+    expect(getExerciseCompletion({ exercise: notStarted, results })).toBe(0);
+    expect(getExerciseCompletion({ exercise: done, results })).toBe(1);
+  });
+
+  it('[fb-U9] подход сверх плана вместе с плановыми не увеличивает долю выше 1', () => {
+    const exercise = planExercise({ id: FIRST_ID, sets: PLANNED });
+    const results = setsOf({ workoutExerciseId: FIRST_ID, setNumbers: range(EXTRA_SET) });
+
+    expect(getExerciseCompletion({ exercise, results })).toBe(1);
+  });
+
+  it('[fb-U9] один лишь подход сверх плана не засчитывается вместо планового', () => {
+    const exercise = planExercise({ id: FIRST_ID, sets: PLANNED });
+    const results = setsOf({ workoutExerciseId: FIRST_ID, setNumbers: [EXTRA_SET] });
+
+    expect(getExerciseCompletion({ exercise, results })).toBe(0);
   });
 });

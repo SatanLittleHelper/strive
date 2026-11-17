@@ -1,8 +1,10 @@
 export {
   canAddSet,
   countExerciseSets,
+  getExerciseCompletion,
   getLastSetNumber,
   getAdvanceTarget,
+  getSessionCompletion,
   getSupersetIndexes,
   getRingMax,
   getSavedSetNumbers,

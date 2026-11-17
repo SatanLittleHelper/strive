@@ -7,6 +7,36 @@
       "skillPath": "skills/angular-best-practices/SKILL.md",
       "computedHash": "8a0f0f438f5fc7ec25cae5b336f587156089e03f1cb9de436bc323e9f11e1416"
     },
+    "codex-implement": {
+      "source": "SatanLittleHelper/ai-dev-kit",
+      "sourceType": "github",
+      "skillPath": "skills/codex-implement/SKILL.md",
+      "computedHash": "6bd91779ec2f5b4790af219481173e09e5b6d870f9fd868926e9088b6cc46ede"
+    },
+    "doc-review": {
+      "source": "SatanLittleHelper/ai-dev-kit",
+      "sourceType": "github",
+      "skillPath": "skills/doc-review/SKILL.md",
+      "computedHash": "0f0facd2a235819104419db84f7150a0fe6702bb7102f798f8ca5ef39a356ca7"
+    },
+    "forgejo-pr-dashboard": {
+      "source": "SatanLittleHelper/ai-dev-kit",
+      "sourceType": "github",
+      "skillPath": "skills/forgejo-pr-dashboard/SKILL.md",
+      "computedHash": "058d6c5b72551c2fb39044a1a949366b73e6c1950ae9e51768091937e73e7ef7"
+    },
+    "forgejo-pr-feedback": {
+      "source": "SatanLittleHelper/ai-dev-kit",
+      "sourceType": "github",
+      "skillPath": "skills/forgejo-pr-feedback/SKILL.md",
+      "computedHash": "d25862e3f3410f1201e78db8f7e941abf1e423612d45523ffa58cb5e379b9f54"
+    },
+    "jira-writer": {
+      "source": "SatanLittleHelper/ai-dev-kit",
+      "sourceType": "github",
+      "skillPath": "skills/jira-writer/SKILL.md",
+      "computedHash": "9dce736fbcff969150cebed657e6a9c645cd6a7b302e28288c7b4dfc26b53509"
+    },
     "nestjs-best-practices": {
       "source": "kadajett/agent-nestjs-skills",
       "sourceType": "github",
@@ -17,31 +47,31 @@
       "source": "SatanLittleHelper/ai-dev-kit",
       "sourceType": "github",
       "skillPath": "skills/roadmap/SKILL.md",
-      "computedHash": "46d5562644436b7b9415c4bb4455af7e6b25b998a1b461576f6056b988b50890"
+      "computedHash": "f1c1fcca32561cd5b6cb19277de84767450453578fe61863041f892cd36f4feb"
     },
     "scaffolding-nestjs-app": {
       "source": "SatanLittleHelper/ai-dev-kit",
       "sourceType": "github",
       "skillPath": "skills/scaffolding-nestjs-app/SKILL.md",
-      "computedHash": "e7343c6fa172ceffe4655b50069c39e61797dca1e1dfadbecc5be12a352235f9"
+      "computedHash": "0383fa6956d09edb69f75854cf69900655acdfd3781ef8a578759d74dfff6a91"
     },
     "splitting-pr": {
       "source": "SatanLittleHelper/ai-dev-kit",
       "sourceType": "github",
       "skillPath": "skills/splitting-pr/SKILL.md",
-      "computedHash": "67de0faf1d5a26a5ab655048fef7b2e5d6272b9fb21fa10618fe04209516cb41"
+      "computedHash": "b758cec85caaf103405b80b9f323585cfb1c827ea27ac247dc0b144d2e4f07bf"
     },
     "testing-changes": {
       "source": "SatanLittleHelper/ai-dev-kit",
       "sourceType": "github",
       "skillPath": "skills/testing-changes/SKILL.md",
-      "computedHash": "cfbe01e033539b8c2328e9ba62a581c6dda687d35b69aeae086b156380dace63"
+      "computedHash": "93b9a90ca0a2f7538a92e0df3fe82d9fb8f79f9820ec3d314052b9871813558a"
     },
     "update-ai-dev-kit": {
       "source": "SatanLittleHelper/ai-dev-kit",
       "sourceType": "github",
       "skillPath": "skills/update-ai-dev-kit/SKILL.md",
-      "computedHash": "4ea3006c42eb8fda3f98754184570068bcdfd02cdee800c5da8444c3928a28e7"
+      "computedHash": "d18c276b253cd7eb08c8c05f60c948b3b563ac2e22818b12370fa119e3e8d97b"
     }
   }
 }

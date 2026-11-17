@@ -19,6 +19,8 @@ export const position = ({
   current: number;
   total: number;
 }): Locator => page.getByText(`${current} из ${total}`, { exact: true });
+export const progressBar = (page: Page): Locator =>
+  page.getByRole('progressbar', { name: 'Выполнено упражнений' });
 export const exerciseHeading = (page: Page, name: string): Locator =>
   page.getByRole('heading', { name, level: 2 });
 export const todayGroup = (page: Page): Locator => page.getByRole('group', { name: 'Сегодня' });

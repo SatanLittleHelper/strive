@@ -30,10 +30,15 @@ export function getRingMax(params: ExerciseResultsParams): number {
   return Math.max(params.exercise.sets, countExerciseSets(params));
 }
 
-function hasAllPlannedSets({ saved, planned }: { saved: Set<number>; planned: number }): boolean {
-  return Array.from({ length: planned }, (_, index) => index + 1).every((setNumber) =>
+// подходы сверх плана не засчитываются: считаются только номера 1…planned
+function countPlannedSaved({ saved, planned }: { saved: Set<number>; planned: number }): number {
+  return Array.from({ length: planned }, (_, index) => index + 1).filter((setNumber) =>
     saved.has(setNumber),
-  );
+  ).length;
+}
+
+function hasAllPlannedSets(params: { saved: Set<number>; planned: number }): boolean {
+  return countPlannedSaved(params) === params.planned;
 }
 
 export function isExerciseDone(params: ExerciseResultsParams): boolean {
@@ -43,6 +48,19 @@ export function isExerciseDone(params: ExerciseResultsParams): boolean {
 export function isSessionDone(session: WorkoutSession): boolean {
   return session.workout.exercises.every((exercise) =>
     isExerciseDone({ exercise, results: session.results }),
+  );
+}
+
+export function getExerciseCompletion({ exercise, results }: ExerciseResultsParams): number {
+  const planned = exercise.sets;
+
+  return countPlannedSaved({ saved: getSavedSetNumbers({ exercise, results }), planned }) / planned;
+}
+
+export function getSessionCompletion(session: WorkoutSession): number {
+  return session.workout.exercises.reduce(
+    (total, exercise) => total + getExerciseCompletion({ exercise, results: session.results }),
+    0,
   );
 }
 
