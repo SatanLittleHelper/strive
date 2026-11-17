@@ -14,9 +14,7 @@ const progressValue = (page: Page): Promise<number> =>
 test.describe('прогресс тренировки', () => {
   test.use({ viewport: MOBILE_VIEWPORT });
 
-  test('[fb-E26] подход сверх плана не входит в сумму прогресса', async ({
-    page,
-  }) => {
+  test('[fb-E26] подход сверх плана не входит в сумму прогресса', async ({ page }) => {
     await startSessionServer(page, {
       session: makeSession({
         results: [
