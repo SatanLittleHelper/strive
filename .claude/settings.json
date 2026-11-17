@@ -14,7 +14,8 @@
   },
   "enabledPlugins": {
     "polish@ai-dev-kit": true,
-    "pr-flow@ai-dev-kit": true
+    "pr-flow@ai-dev-kit": true,
+    "modern-web-guidance@googlechrome": true
   },
   "extraKnownMarketplaces": {
     "ai-dev-kit": {

@@ -53,6 +53,7 @@ __screenshots__/
 /apps/api/src/generated
 /libs/*/dist
 .vitest/
+.doc-review/
 .codex-implement/
 .playwright-mcp/
 .superpowers/
