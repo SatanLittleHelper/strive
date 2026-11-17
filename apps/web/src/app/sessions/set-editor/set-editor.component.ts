@@ -90,11 +90,12 @@ export class SetEditorComponent {
 
   private readonly initial = computed<SetFormValues>(() => {
     const saved = this.editorSet().mode === 'edit' ? this.result() : undefined;
-    if (saved) return toFormValues(saved);
-
+    const base = saved ? toFormValues(saved) : this.defaults();
     const fill = this.fillRequest();
 
-    return fill && fill.setNumber === this.setNumber() ? fill.values : this.defaults();
+    return fill && fill.setNumber === this.setNumber()
+      ? { ...base, ...fill.values, note: base.note }
+      : base;
   });
 
   constructor() {
@@ -106,19 +107,22 @@ export class SetEditorComponent {
       const key = this.resetKey();
 
       untracked(() => {
-        const edited =
-          this.appliedValues !== null &&
-          !isSameFormValues(this.form.getRawValue(), this.appliedValues);
-        if (key === this.appliedKey && fill === this.appliedFill && edited) return;
+        const keyChanged = key !== this.appliedKey;
+        const raw = this.form.getRawValue();
+        const edited = this.appliedValues !== null && !isSameFormValues(raw, this.appliedValues);
+        if (!keyChanged && fill === this.appliedFill && edited) return;
 
-        if (key !== this.appliedKey) {
+        if (keyChanged) {
           this.noteOpen.set(values.note !== '');
           this.error.set('');
         }
+
+        // подстановка и пересчёт значений по умолчанию не затирают введённую заметку
+        const next = keyChanged ? values : { ...values, note: raw.note };
         this.appliedKey = key;
         this.appliedFill = fill;
-        this.appliedValues = values;
-        this.form.reset(values);
+        this.appliedValues = next;
+        this.form.reset(next);
       });
     });
 

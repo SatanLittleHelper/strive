@@ -10,6 +10,8 @@ export const weightField = (page: Page): Locator =>
   setForm(page).getByLabel('Рабочий вес, кг', { exact: true });
 export const repsField = (page: Page): Locator =>
   setForm(page).getByLabel('Повторы', { exact: true });
+export const noteField = (page: Page): Locator =>
+  setForm(page).getByLabel('Заметка', { exact: true });
 export const position = ({
   page,
   current,

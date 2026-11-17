@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { MOBILE_VIEWPORT } from './e2e.constants';
 import {
+  fillSetForm,
   fullExercise,
   historyOf,
   makeSession,
@@ -8,7 +9,14 @@ import {
   savedSet,
   setsOf,
 } from './support/session.fixtures';
-import { repsField, saveButton, setForm, todayGroup, weightField } from './support/session.page';
+import {
+  noteField,
+  repsField,
+  saveButton,
+  setForm,
+  todayGroup,
+  weightField,
+} from './support/session.page';
 import { startSessionServer } from './support/session.server';
 
 const HTTP_ERROR = 500;
@@ -105,7 +113,7 @@ test.describe('история упражнения и правка подход�
     await expect(weightField(page)).toHaveValue(/^60(\.0+)?$/);
   });
 
-  test('тап по строке прошлой записи подставляет вес, повторы и RPE без сохранения', async ({
+  test('[E3] тап по строке прошлой записи подставляет вес, повторы и RPE, заметка остаётся, без сохранения', async ({
     page,
   }) => {
     const server = await startSessionServer(page, {
@@ -119,6 +127,7 @@ test.describe('история упражнения и правка подход�
       ]),
     });
     await page.goto('/workouts/session');
+    await fillSetForm(page, { weight: '40', reps: '3', note: 'тяжело в конце' }, 3);
 
     await page.getByRole('group', { name: FIRST_DATE_TITLE }).getByRole('button').click();
 
@@ -127,6 +136,32 @@ test.describe('история упражнения и правка подход�
     await expect(
       page.getByRole('radiogroup', { name: 'RPE от 1 до 5' }).getByRole('radio', { name: '4' }),
     ).toBeChecked();
+    await expect(noteField(page)).toHaveValue('тяжело в конце');
+    expect(server.saves).toEqual([]);
+  });
+
+  test('[E20] тап по сегодняшней записи подставляет значения, заметка и запись не меняются', async ({
+    page,
+  }) => {
+    const server = await startSessionServer(page, {
+      session: makeSession({
+        results: [pastSet({ setNumber: 1, weight: 40, reps: 10, rpe: 3 })],
+      }),
+    });
+    await page.goto('/workouts/session');
+    await fillSetForm(page, { weight: '55', reps: '8', note: 'разминка' }, 2);
+
+    await todayGroup(page).getByRole('button').click();
+
+    await expect(weightField(page)).toHaveValue('40');
+    await expect(repsField(page)).toHaveValue('10');
+    await expect(
+      page.getByRole('radiogroup', { name: 'RPE от 1 до 5' }).getByRole('radio', { name: '3' }),
+    ).toBeChecked();
+    await expect(noteField(page)).toHaveValue('разминка');
+    await expect(page.getByRole('button', { name: 'Сохранить подход', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Сохранить изменения' })).toHaveCount(0);
+    await expect(todayGroup(page).getByRole('button')).toContainText('40 кг × 10 повт.');
     expect(server.saves).toEqual([]);
   });
 
@@ -245,7 +280,9 @@ test.describe('история упражнения и правка подход�
     await expect(row).toContainText('RPE 4');
   });
 
-  test('тап по подходу в «Сегодня» открывает его на правку', async ({ page }) => {
+  test.fixme('(вернуть в R2) тап по подходу в «Сегодня» открывает его на правку', async ({
+    page,
+  }) => {
     await startSessionServer(page, {
       session: makeSession({ results: [pastSet({ setNumber: 1, weight: 60, reps: 6, rpe: 4 })] }),
     });
@@ -262,7 +299,9 @@ test.describe('история упражнения и правка подход�
     await expect(page.getByRole('button', { name: 'Сохранить изменения' })).toBeVisible();
   });
 
-  test('сохранение правки отправляет тот же номер подхода', async ({ page }) => {
+  test.fixme('(вернуть в R2) сохранение правки отправляет тот же номер подхода', async ({
+    page,
+  }) => {
     const server = await startSessionServer(page, {
       session: makeSession({ results: setsOf({ index: 0, setNumbers: [1, 2] }) }),
     });
@@ -276,7 +315,9 @@ test.describe('история упражнения и правка подход�
     expect(server.saves[0]?.body.weight).toBe(65);
   });
 
-  test('после правки форма возвращается к первому несохранённому подходу', async ({ page }) => {
+  test.fixme('(вернуть в R2) после правки форма возвращается к первому несохранённому подходу', async ({
+    page,
+  }) => {
     await startSessionServer(page, {
       session: makeSession({ results: setsOf({ index: 0, setNumbers: [1, 2] }) }),
     });
@@ -289,7 +330,7 @@ test.describe('история упражнения и правка подход�
     await expect(page.getByText('подход 3', { exact: true })).toBeVisible();
   });
 
-  test('после правки в полностью выполненном упражнении показывается карточка «Упражнение выполнено»', async ({
+  test.fixme('(вернуть в R2) после правки в полностью выполненном упражнении показывается карточка «Упражнение выполнено»', async ({
     page,
   }) => {
     await startSessionServer(page, {

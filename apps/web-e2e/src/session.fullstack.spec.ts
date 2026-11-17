@@ -89,7 +89,9 @@ test.describe('выполнение тренировки на реальном A
     await expect(rows.nth(1)).toContainText(`${SEED_WEIGHT} кг × ${SEED_REPS} повт.`);
   });
 
-  test('правка через «Сегодня» меняет подход без дубликата', async ({ page }) => {
+  test.fixme('(вернуть в R2) правка через «Сегодня» меняет подход без дубликата', async ({
+    page,
+  }) => {
     await startLegsWorkout(page);
     await savePlannedSets(page, 2);
     await page.reload();
