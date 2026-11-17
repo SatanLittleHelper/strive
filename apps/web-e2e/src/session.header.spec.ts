@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { MOBILE_VIEWPORT } from './e2e.constants';
 import { fullExercise, makeSession, ok } from './support/session.fixtures';
-import { position } from './support/session.page';
+import { position, progressBar } from './support/session.page';
 import { startSessionServer } from './support/session.server';
 
 const MIN_TOUCH_TARGET = 44;
@@ -21,10 +21,7 @@ test.describe('шапка экрана тренировки', () => {
     await expect(page.getByRole('heading', { name: 'Тренировка A', level: 1 })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Жим лёжа', level: 2 })).toBeVisible();
     await expect(position({ page, current: 2, total: 3 })).toBeVisible();
-    await expect(page.getByRole('progressbar', { name: 'Выполнено упражнений' })).toHaveAttribute(
-      'value',
-      '1',
-    );
+    await expect(progressBar(page)).toHaveAttribute('value', '1');
   });
 
   test('старые блоки шапки убраны', async ({ page }) => {

@@ -23,8 +23,8 @@ import {
   getEditorSet,
   getFirstUnfinishedExerciseIndex,
   getPrimaryAction,
+  getSessionCompletion,
   getSwipeStep,
-  isExerciseDone,
   isSessionDone,
   FIRST_NAVIGATION_ID,
   NO_EDITOR_SET,
@@ -93,13 +93,10 @@ export class ActiveSessionComponent {
 
     return session ? isSessionDone(session) : false;
   });
-  protected readonly completedExercises = computed(() => {
+  protected readonly sessionCompletion = computed(() => {
     const session = this.session();
-    if (!session) return 0;
 
-    return this.exercises().filter((exercise) =>
-      isExerciseDone({ exercise, results: session.results }),
-    ).length;
+    return session ? getSessionCompletion(session) : 0;
   });
 
   // выбор подхода для правки и запрос добавления живут, пока открыто текущее упражнение
