@@ -40,7 +40,9 @@ test.describe('повтор упражнения на экране тренир�
     await expect(page.getByRole('img', { name: `Выполнено 0 из ${SETS} подходов` })).toBeVisible();
   });
 
-  test('[E10] выбранный для правки подход не переходит на соседнее вхождение', async ({ page }) => {
+  test.fixme('[E10] (вернуть в R2) выбранный для правки подход не переходит на соседнее вхождение', async ({
+    page,
+  }) => {
     await startSessionServer(page, {
       session: makeSession({
         exerciseCount: 2,

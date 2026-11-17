@@ -32,7 +32,6 @@ export class ExerciseHistoryComponent {
   readonly status = input.required<ResourceStatus>();
   readonly disabled = input(false);
   readonly fillDisabled = input(false);
-  readonly editSet = output<number>();
   readonly fillSet = output<SetResult>();
   readonly retry = output<void>();
 

@@ -9,8 +9,14 @@
       "ticket": "TBD",
       "dependsOn": [],
       "estimate": {
-        "manual": { "min": 0.5, "max": 1 },
-        "agent": { "min": 0.3, "max": 0.5 },
+        "manual": {
+          "min": 0.5,
+          "max": 1
+        },
+        "agent": {
+          "min": 0.3,
+          "max": 0.5
+        },
         "basis": "plan-drafted",
         "actualDays": null
       },
@@ -26,8 +32,14 @@
       "ticket": "TBD",
       "dependsOn": [],
       "estimate": {
-        "manual": { "min": 1, "max": 2 },
-        "agent": { "min": 0.6, "max": 1 },
+        "manual": {
+          "min": 1,
+          "max": 2
+        },
+        "agent": {
+          "min": 0.6,
+          "max": 1
+        },
         "basis": "plan-drafted",
         "actualDays": 0.5
       },
@@ -43,13 +55,19 @@
       "ticket": "TBD",
       "dependsOn": ["H1"],
       "estimate": {
-        "manual": { "min": 1, "max": 2 },
-        "agent": { "min": 0.5, "max": 1 },
-        "basis": "initial",
-        "actualDays": null
+        "manual": {
+          "min": 0.5,
+          "max": 1
+        },
+        "agent": {
+          "min": 0.3,
+          "max": 0.5
+        },
+        "basis": "plan-drafted",
+        "actualDays": 0.5
       },
-      "stepFolder": null,
-      "status": "not-started",
+      "stepFolder": "docs/workout-feedback/steps/history-fill/",
+      "status": "closed",
       "specPath": null,
       "testPlanPath": null,
       "planPath": null
@@ -60,8 +78,14 @@
       "ticket": "TBD",
       "dependsOn": ["R1"],
       "estimate": {
-        "manual": { "min": 1, "max": 2 },
-        "agent": { "min": 0.5, "max": 1 },
+        "manual": {
+          "min": 1,
+          "max": 2
+        },
+        "agent": {
+          "min": 0.5,
+          "max": 1
+        },
         "basis": "initial",
         "actualDays": null
       },
@@ -77,8 +101,14 @@
       "ticket": "TBD",
       "dependsOn": [],
       "estimate": {
-        "manual": { "min": 1, "max": 2 },
-        "agent": { "min": 0.5, "max": 1 },
+        "manual": {
+          "min": 1,
+          "max": 2
+        },
+        "agent": {
+          "min": 0.5,
+          "max": 1
+        },
         "basis": "initial",
         "actualDays": null
       },
@@ -94,8 +124,14 @@
       "ticket": "TBD",
       "dependsOn": [],
       "estimate": {
-        "manual": { "min": 1, "max": 2 },
-        "agent": { "min": 0.6, "max": 1 },
+        "manual": {
+          "min": 1,
+          "max": 2
+        },
+        "agent": {
+          "min": 0.6,
+          "max": 1
+        },
         "basis": "initial",
         "actualDays": null
       },
@@ -111,8 +147,14 @@
       "ticket": "TBD",
       "dependsOn": ["R1"],
       "estimate": {
-        "manual": { "min": 0.5, "max": 1 },
-        "agent": { "min": 0.3, "max": 0.5 },
+        "manual": {
+          "min": 0.5,
+          "max": 1
+        },
+        "agent": {
+          "min": 0.3,
+          "max": 0.5
+        },
         "basis": "initial",
         "actualDays": null
       },
@@ -128,8 +170,14 @@
       "ticket": "TBD",
       "dependsOn": [],
       "estimate": {
-        "manual": { "min": 1.3, "max": 2.5 },
-        "agent": { "min": 0.7, "max": 1.3 },
+        "manual": {
+          "min": 1.3,
+          "max": 2.5
+        },
+        "agent": {
+          "min": 0.7,
+          "max": 1.3
+        },
         "basis": "initial",
         "actualDays": null
       },
@@ -145,8 +193,14 @@
       "ticket": "TBD",
       "dependsOn": [],
       "estimate": {
-        "manual": { "min": 0.5, "max": 1 },
-        "agent": { "min": 0.3, "max": 0.5 },
+        "manual": {
+          "min": 0.5,
+          "max": 1
+        },
+        "agent": {
+          "min": 0.3,
+          "max": 0.5
+        },
         "basis": "initial",
         "actualDays": null
       },
@@ -162,8 +216,14 @@
       "ticket": "TBD",
       "dependsOn": ["V0", "P1"],
       "estimate": {
-        "manual": { "min": 1, "max": 2 },
-        "agent": { "min": 0.5, "max": 1 },
+        "manual": {
+          "min": 1,
+          "max": 2
+        },
+        "agent": {
+          "min": 0.5,
+          "max": 1
+        },
         "basis": "initial",
         "actualDays": null
       },
@@ -179,8 +239,14 @@
       "ticket": "TBD",
       "dependsOn": ["V0", "R2"],
       "estimate": {
-        "manual": { "min": 1, "max": 2 },
-        "agent": { "min": 0.5, "max": 1 },
+        "manual": {
+          "min": 1,
+          "max": 2
+        },
+        "agent": {
+          "min": 0.5,
+          "max": 1
+        },
         "basis": "initial",
         "actualDays": null
       },
@@ -196,8 +262,14 @@
       "ticket": "TBD",
       "dependsOn": ["V0"],
       "estimate": {
-        "manual": { "min": 1, "max": 3 },
-        "agent": { "min": 0.5, "max": 1.5 },
+        "manual": {
+          "min": 1,
+          "max": 3
+        },
+        "agent": {
+          "min": 0.5,
+          "max": 1.5
+        },
         "basis": "initial",
         "actualDays": null
       },

@@ -49,7 +49,6 @@
 		[groups]="groups()"
 		[status]="historyStatus()"
 		[today]="today()"
-		(editSet)="selectSet.emit($event)"
 		(fillSet)="applyHistory($event)"
 		(retry)="retryHistory.emit()"
 	/>
