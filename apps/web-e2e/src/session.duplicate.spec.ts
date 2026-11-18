@@ -1,8 +1,15 @@
 import { expect, test } from '@playwright/test';
 import { MOBILE_VIEWPORT } from './e2e.constants';
 import { historyOf, makeSession, savedSet, setsOf } from './support/session.fixtures';
-import { exerciseHeading, position, saveButton, todayGroup } from './support/session.page';
+import {
+  exerciseHeading,
+  position,
+  saveButton,
+  todayGroup,
+  todayRow,
+} from './support/session.page';
 import { startSessionServer } from './support/session.server';
+import { swipeRow } from './support/swipe';
 
 const SETS = 2;
 const LATERAL_EXERCISE_ID = 2;
@@ -40,7 +47,7 @@ test.describe('повтор упражнения на экране тренир�
     await expect(page.getByRole('img', { name: `Выполнено 0 из ${SETS} подходов` })).toBeVisible();
   });
 
-  test.fixme('[E10] (вернуть в R2) выбранный для правки подход не переходит на соседнее вхождение', async ({
+  test('[E10] выбранный для правки подход не переходит на соседнее вхождение @touch', async ({
     page,
   }) => {
     await startSessionServer(page, {
@@ -52,12 +59,29 @@ test.describe('повтор упражнения на экране тренир�
       }),
     });
     await page.goto('/workouts/session');
-    await todayGroup(page).getByRole('button').first().click();
+    await swipeRow(page, { from: todayRow(page), direction: 'left' });
     await expect(page.getByRole('button', { name: 'Сохранить изменения' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Далее', exact: true }).click();
 
     await expect(position({ page, current: 2, total: 2 })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Сохранить подход', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Сохранить изменения' })).toHaveCount(0);
+  });
+
+  test('[E53] после ухода с упражнения и возврата правка не восстанавливается @touch', async ({
+    page,
+  }) => {
+    await startSessionServer(page, {
+      session: makeSession({ results: setsOf({ index: 0, setNumbers: [1] }) }),
+    });
+    await page.goto('/workouts/session');
+    await swipeRow(page, { from: todayRow(page), direction: 'left' });
+    await expect(page.getByRole('button', { name: 'Сохранить изменения' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Далее', exact: true }).click();
+    await page.getByRole('button', { name: 'Назад', exact: true }).click();
+
     await expect(page.getByRole('button', { name: 'Сохранить подход', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Сохранить изменения' })).toHaveCount(0);
   });

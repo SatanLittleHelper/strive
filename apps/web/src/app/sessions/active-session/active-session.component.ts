@@ -194,7 +194,7 @@ export class ActiveSessionComponent {
     if (this.busy()) return;
 
     const target = event.events[0]?.target;
-    if (target instanceof Element && target.closest('input, textarea')) return;
+    if (target instanceof Element && target.closest('input, textarea, [data-set-row]')) return;
 
     this.moveBy(event.direction);
   }

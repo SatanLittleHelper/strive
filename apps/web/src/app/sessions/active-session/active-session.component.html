@@ -75,6 +75,7 @@
 								[item]="step"
 								[session]="current"
 								(addSet)="adding.set(true)"
+								(cancelEdit)="selectedSet.set(null)"
 								(pendingChange)="pendingChange($event)"
 								(retryHistory)="reloadHistory()"
 								(saved)="onSaved($event)"

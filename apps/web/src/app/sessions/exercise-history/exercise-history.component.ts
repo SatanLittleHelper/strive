@@ -12,6 +12,7 @@ import {
   type ExerciseHistoryEntry,
   type SetResult,
 } from '@strive/api-interfaces';
+import { TuiSwipe, type TuiSwipeEvent } from '@taiga-ui/cdk';
 import { TuiCell, TuiTitle } from '@taiga-ui/core';
 import { TuiProgress } from '@taiga-ui/kit';
 import { TuiCardLarge } from '@taiga-ui/layout';
@@ -21,7 +22,15 @@ import { HISTORY_DATE_FORMAT } from '../sessions.constants';
 
 @Component({
   selector: 'app-exercise-history',
-  imports: [DatePipe, TuiCardLarge, TuiCell, ResourceStateComponent, TuiProgress, TuiTitle],
+  imports: [
+    DatePipe,
+    TuiCardLarge,
+    TuiCell,
+    ResourceStateComponent,
+    TuiProgress,
+    TuiTitle,
+    TuiSwipe,
+  ],
   templateUrl: './exercise-history.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
@@ -33,6 +42,7 @@ export class ExerciseHistoryComponent {
   readonly disabled = input(false);
   readonly fillDisabled = input(false);
   readonly fillSet = output<SetResult>();
+  readonly editSet = output<number>();
   readonly retry = output<void>();
 
   protected readonly viewState = computed(() =>
@@ -44,4 +54,10 @@ export class ExerciseHistoryComponent {
 
   protected readonly dateFormat = HISTORY_DATE_FORMAT;
   protected readonly rpeMax = SET_RESULT_LIMITS.rpeMax;
+
+  protected editToday(event: TuiSwipeEvent, setNumber: number): void {
+    if (this.disabled() || event.direction !== 'left') return;
+
+    this.editSet.emit(setNumber);
+  }
 }

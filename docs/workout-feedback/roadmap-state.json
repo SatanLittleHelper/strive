@@ -53,7 +53,9 @@
       "id": "R1",
       "title": "Подстановка из истории без затирания заметки",
       "ticket": "TBD",
-      "dependsOn": ["H1"],
+      "dependsOn": [
+        "H1"
+      ],
       "estimate": {
         "manual": {
           "min": 0.5,
@@ -76,7 +78,9 @@
       "id": "R2",
       "title": "Правка сегодняшнего подхода свайпом и кнопкой",
       "ticket": "TBD",
-      "dependsOn": ["R1"],
+      "dependsOn": [
+        "R1"
+      ],
       "estimate": {
         "manual": {
           "min": 1,
@@ -89,9 +93,9 @@
         "basis": "initial",
         "actualDays": null
       },
-      "stepFolder": null,
-      "status": "not-started",
-      "specPath": null,
+      "stepFolder": "docs/workout-feedback/steps/edit-today-set/",
+      "status": "closed",
+      "specPath": "docs/workout-feedback/steps/edit-today-set/2026-11-18-edit-today-set-design.md",
       "testPlanPath": null,
       "planPath": null
     },
@@ -145,7 +149,9 @@
       "id": "A1",
       "title": "Кнопка «Ещё подход» лишняя: убрать её с экрана тренировки",
       "ticket": "TBD",
-      "dependsOn": ["R1"],
+      "dependsOn": [
+        "R1"
+      ],
       "estimate": {
         "manual": {
           "min": 0.5,
@@ -214,7 +220,10 @@
       "id": "V1",
       "title": "Индикатор прогресса: частичное заполнение и суперсет",
       "ticket": "TBD",
-      "dependsOn": ["V0", "P1"],
+      "dependsOn": [
+        "V0",
+        "P1"
+      ],
       "estimate": {
         "manual": {
           "min": 1,
@@ -237,7 +246,10 @@
       "id": "V2",
       "title": "RPE-цвета, выравнивание и эталон истории",
       "ticket": "TBD",
-      "dependsOn": ["V0", "R2"],
+      "dependsOn": [
+        "V0",
+        "R2"
+      ],
       "estimate": {
         "manual": {
           "min": 1,
@@ -260,7 +272,9 @@
       "id": "V3",
       "title": "Кольца, заголовок, длинные названия и эталон тренировки",
       "ticket": "TBD",
-      "dependsOn": ["V0"],
+      "dependsOn": [
+        "V0"
+      ],
       "estimate": {
         "manual": {
           "min": 1,

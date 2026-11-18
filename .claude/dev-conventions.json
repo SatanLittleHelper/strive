@@ -1,0 +1,21 @@
+{
+  "codex": {
+    "profile": "codex",
+    "profiles": {
+      "codex": {
+        "model": "gpt-6.1-terra",
+        "effort": "medium",
+        "timeoutMin": 20
+      },
+      "local": {
+        "model": "YOUR-MODEL",
+        "provider": {
+          "name": "Local",
+          "baseUrl": "https://YOUR-HOST/v1",
+          "envKey": "LOCAL_LLM_API_KEY",
+          "wireApi": "responses"
+        }
+      }
+    }
+  }
+}

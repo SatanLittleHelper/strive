@@ -1,0 +1,8 @@
+[plugins."kit@ai-dev-kit"]
+enabled = true
+
+[plugins."angular-best-practices@ai-dev-kit"]
+enabled = true
+
+[plugins."nestjs-best-practices@ai-dev-kit"]
+enabled = true

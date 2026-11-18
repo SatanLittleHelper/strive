@@ -3,7 +3,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { DEVICE_ID_HEADER } from '@strive/api-interfaces';
 import { API_URL, LEGS_WORKOUT_LINK, MOBILE_VIEWPORT } from './e2e.constants';
 import { fillSetForm } from './support/session.fixtures';
-import { saveButton, todayGroup, weightField, repsField } from './support/session.page';
+import { saveButton, todayGroup, todayRow, weightField, repsField } from './support/session.page';
+import { swipeRow } from './support/swipe';
 
 const DEVICE_STORAGE_KEY = 'strive.device-id';
 const SEED_WEIGHT = '58';
@@ -89,16 +90,15 @@ test.describe('выполнение тренировки на реальном A
     await expect(rows.nth(1)).toContainText(`${SEED_WEIGHT} кг × ${SEED_REPS} повт.`);
   });
 
-  test.fixme('(вернуть в R2) правка через «Сегодня» меняет подход без дубликата', async ({
-    page,
-  }) => {
+  test('[E47] правка через «Сегодня» меняет подход без дубликата @touch', async ({ page }) => {
     await startLegsWorkout(page);
     await savePlannedSets(page, 2);
     await page.reload();
-    await todayGroup(page).getByRole('button').last().click();
+    await swipeRow(page, { from: todayRow(page, -1), direction: 'left' });
     await weightField(page).fill(UPDATED_WEIGHT);
 
     await page.getByRole('button', { name: 'Сохранить изменения' }).click();
+    await expect(page.getByRole('form', { name: 'Подход 3' })).toBeVisible();
     await page.reload();
 
     const rows = todayGroup(page).getByRole('button');
