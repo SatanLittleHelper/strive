@@ -56,8 +56,8 @@ export class ExerciseStepComponent {
   readonly disabled = input(false);
   readonly pendingChange = output<boolean>();
   readonly saved = output<SavedSetEvent>();
-  // сейчас без эмиттера: правка по нажатию вернётся в R2
   readonly selectSet = output<number>();
+  readonly cancelEdit = output<void>();
   readonly addSet = output<void>();
   readonly retryHistory = output<void>();
 
@@ -101,6 +101,11 @@ export class ExerciseStepComponent {
         })
       : undefined;
   });
+
+  protected startEdit(setNumber: number): void {
+    this.fillRequest.set(null);
+    this.selectSet.emit(setNumber);
+  }
 
   protected applyHistory(set: SetResult): void {
     const editor = this.formSet();

@@ -39,3 +39,11 @@ export async function swipe(
   }
   await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
 }
+
+export async function swipeRow(
+  page: Page,
+  { from, direction }: { from: Locator; direction: Direction },
+): Promise<void> {
+  await from.evaluate((element) => element.scrollIntoView({ block: 'center' }));
+  await swipe(page, { from, direction });
+}

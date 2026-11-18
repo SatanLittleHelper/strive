@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { MOBILE_VIEWPORT } from './e2e.constants';
 import {
   fillSetForm,
@@ -11,13 +11,18 @@ import {
 } from './support/session.fixtures';
 import {
   noteField,
+  position,
   repsField,
   saveButton,
   setForm,
   todayGroup,
+  todayRow,
   weightField,
 } from './support/session.page';
 import { startSessionServer } from './support/session.server';
+import { swipeRow } from './support/swipe';
+
+const SAVE_ERROR = 'Не удалось сохранить подход. Попробуйте ещё раз.';
 
 const HTTP_ERROR = 500;
 const EMPTY_MESSAGE = 'Это упражнение ещё не выполнялось';
@@ -280,49 +285,104 @@ test.describe('история упражнения и правка подход�
     await expect(row).toContainText('RPE 4');
   });
 
-  test.fixme('(вернуть в R2) тап по подходу в «Сегодня» открывает его на правку', async ({
+  test('[E2] свайп влево по строке «Сегодня» открывает подход на правку @touch', async ({
     page,
   }) => {
     await startSessionServer(page, {
-      session: makeSession({ results: [pastSet({ setNumber: 1, weight: 60, reps: 6, rpe: 4 })] }),
+      session: makeSession({
+        results: [
+          savedSet({
+            workoutExerciseId: 1,
+            setNumber: 1,
+            weight: 60,
+            reps: 6,
+            rpe: 4,
+            note: 'тяжело в конце',
+          }),
+        ],
+      }),
     });
     await page.goto('/workouts/session');
 
-    await todayGroup(page).getByRole('button').click();
+    await swipeRow(page, { from: todayRow(page), direction: 'left' });
 
     await expect(weightField(page)).toHaveValue('60');
     await expect(repsField(page)).toHaveValue('6');
     await expect(
       page.getByRole('radiogroup', { name: 'RPE от 1 до 5' }).getByRole('radio', { name: '4' }),
     ).toBeChecked();
+    await expect(noteField(page)).toHaveValue('тяжело в конце');
     await expect(page.getByText('правка 1', { exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Сохранить изменения' })).toBeVisible();
   });
 
-  test.fixme('(вернуть в R2) сохранение правки отправляет тот же номер подхода', async ({
+  test('[E46] свайп вправо по строке «Сегодня» правку не открывает @touch', async ({ page }) => {
+    await startSessionServer(page, {
+      session: makeSession({ results: [pastSet({ setNumber: 1, weight: 60, reps: 6, rpe: 4 })] }),
+    });
+    await page.goto('/workouts/session');
+
+    await swipeRow(page, { from: todayRow(page), direction: 'right' });
+
+    await expect(page.getByRole('form', { name: 'Подход 2' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Сохранить подход', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Сохранить изменения' })).toHaveCount(0);
+  });
+
+  test('[E51] свайп по строке «Сегодня» не переключает упражнение @touch', async ({ page }) => {
+    await startSessionServer(page, {
+      session: makeSession({ results: [pastSet({ setNumber: 1, weight: 60, reps: 6, rpe: 4 })] }),
+    });
+    await page.goto('/workouts/session');
+
+    await swipeRow(page, { from: todayRow(page), direction: 'left' });
+
+    await expect(position({ page, current: 1, total: 3 })).toBeVisible();
+    await expect(page.getByText('правка 1', { exact: true })).toBeVisible();
+  });
+
+  test('[E54] во время сохранения свайп по строке «Сегодня» правку не открывает @touch', async ({
     page,
   }) => {
+    const server = await startSessionServer(page, {
+      session: makeSession({ results: [pastSet({ setNumber: 1, weight: 60, reps: 6, rpe: 4 })] }),
+      holdSaves: true,
+    });
+    await page.goto('/workouts/session');
+    await saveButton(page).click();
+    await expect.poll(() => server.saves.length).toBe(1);
+
+    await swipeRow(page, { from: todayRow(page), direction: 'left' });
+
+    await expect(position({ page, current: 1, total: 3 })).toBeVisible();
+    await expect(page.getByRole('form', { name: 'Подход 2' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Сохранить изменения' })).toHaveCount(0);
+    server.releaseSaves();
+  });
+
+  test('[E17] сохранение правки отправляет тот же номер подхода @touch', async ({ page }) => {
     const server = await startSessionServer(page, {
       session: makeSession({ results: setsOf({ index: 0, setNumbers: [1, 2] }) }),
     });
     await page.goto('/workouts/session');
-    await todayGroup(page).getByRole('button').last().click();
+    await swipeRow(page, { from: todayRow(page, -1), direction: 'left' });
     await weightField(page).fill('65');
 
     await page.getByRole('button', { name: 'Сохранить изменения' }).click();
 
-    await expect.poll(() => server.saves[0]?.setNumber).toBe(1);
+    await expect.poll(() => server.saves.length).toBe(1);
+    expect(server.saves[0]?.setNumber).toBe(1);
     expect(server.saves[0]?.body.weight).toBe(65);
   });
 
-  test.fixme('(вернуть в R2) после правки форма возвращается к первому несохранённому подходу', async ({
+  test('[E18] после правки форма возвращается к первому несохранённому подходу @touch', async ({
     page,
   }) => {
     await startSessionServer(page, {
       session: makeSession({ results: setsOf({ index: 0, setNumbers: [1, 2] }) }),
     });
     await page.goto('/workouts/session');
-    await todayGroup(page).getByRole('button').last().click();
+    await swipeRow(page, { from: todayRow(page, -1), direction: 'left' });
 
     await page.getByRole('button', { name: 'Сохранить изменения' }).click();
 
@@ -330,19 +390,92 @@ test.describe('история упражнения и правка подход�
     await expect(page.getByText('подход 3', { exact: true })).toBeVisible();
   });
 
-  test.fixme('(вернуть в R2) после правки в полностью выполненном упражнении показывается карточка «Упражнение выполнено»', async ({
+  test('[E19] после правки в полностью выполненном упражнении показывается карточка «Упражнение выполнено» @touch', async ({
     page,
   }) => {
     await startSessionServer(page, {
       session: makeSession({ exerciseCount: 1, results: fullExercise(0) }),
     });
     await page.goto('/workouts/session');
-    await todayGroup(page).getByRole('button').nth(1).click();
+    await swipeRow(page, { from: todayRow(page, 1), direction: 'left' });
 
     await page.getByRole('button', { name: 'Сохранить изменения' }).click();
 
     await expect(page.getByRole('region', { name: 'Упражнение выполнено' })).toBeVisible();
     await expect(setForm(page)).toHaveCount(0);
+  });
+
+  test('[E52] ошибка сохранения правки оставляет правку открытой @touch', async ({ page }) => {
+    await startSessionServer(page, {
+      session: makeSession({ results: setsOf({ index: 0, setNumbers: [1, 2] }) }),
+      saveStatus: HTTP_ERROR,
+    });
+    await page.goto('/workouts/session');
+    await swipeRow(page, { from: todayRow(page, -1), direction: 'left' });
+    await weightField(page).fill('65');
+
+    await page.getByRole('button', { name: 'Сохранить изменения' }).click();
+
+    await expect(page.getByText(SAVE_ERROR)).toBeVisible();
+    await expect(weightField(page)).toHaveValue('65');
+    await expect(page.getByText('правка 1', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Сохранить изменения' })).toBeVisible();
+  });
+
+  test('[E50] правка открывается со значениями подхода, а не с прежней подстановкой из истории @touch', async ({
+    page,
+  }) => {
+    await startSessionServer(page, {
+      history: historyOf(1, [
+        {
+          sessionId: 11,
+          finishedAt: FIRST_DATE,
+          sets: [pastSet({ setNumber: 1, weight: 40, reps: 10, rpe: 3 })],
+        },
+      ]),
+    });
+    await page.goto('/workouts/session');
+    await page.getByRole('group', { name: FIRST_DATE_TITLE }).getByRole('button').click();
+    await expect(weightField(page)).toHaveValue('40');
+    await fillSetForm(page, { weight: '60', reps: '6', rpe: '4' }, 1);
+    await saveButton(page).click();
+    await expect(page.getByRole('form', { name: 'Подход 2' })).toBeVisible();
+
+    await swipeRow(page, { from: todayRow(page), direction: 'left' });
+
+    await expect(page.getByRole('form', { name: 'Подход 1' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Сохранить изменения' })).toBeVisible();
+    await expect(weightField(page)).toHaveValue('60');
+    await expect(repsField(page)).toHaveValue('6');
+    await expect(
+      page.getByRole('radiogroup', { name: 'RPE от 1 до 5' }).getByRole('radio', { name: '4' }),
+    ).toBeChecked();
+  });
+
+  test('[E48] «Отменить правку» закрывает правку без запроса на сервер @touch', async ({
+    page,
+  }) => {
+    const server = await startSessionServer(page, {
+      session: makeSession({ results: setsOf({ index: 0, setNumbers: [1, 2] }) }),
+    });
+    await page.goto('/workouts/session');
+    await swipeRow(page, { from: todayRow(page, -1), direction: 'left' });
+    await weightField(page).fill('65');
+
+    await page.getByRole('button', { name: 'Отменить правку' }).click();
+
+    await expect(page.getByRole('form', { name: 'Подход 3' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Сохранить подход', exact: true })).toBeVisible();
+    await expect(todayRow(page, -1)).toContainText('62.5 кг × 7 повт.');
+    expect(server.saves).toEqual([]);
+  });
+
+  test('[E49] вне режима правки кнопки «Отменить правку» нет', async ({ page }) => {
+    await startSessionServer(page);
+    await page.goto('/workouts/session');
+    await expect(setForm(page)).toBeVisible();
+
+    await expect(page.getByRole('button', { name: 'Отменить правку' })).toHaveCount(0);
   });
 
   test('без сохранённых подходов группы «Сегодня» нет', async ({ page }) => {

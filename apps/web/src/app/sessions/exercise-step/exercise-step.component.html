@@ -24,6 +24,18 @@
 						(saved)="saved.emit($event)"
 					/>
 				}
+				@if (set.mode === 'edit') {
+					<button
+						appearance="secondary"
+						size="m"
+						tuiButton
+						type="button"
+						[disabled]="disabled()"
+						(click)="cancelEdit.emit()"
+					>
+						Отменить правку
+					</button>
+				}
 			}
 		</div>
 	</div>
@@ -49,6 +61,7 @@
 		[groups]="groups()"
 		[status]="historyStatus()"
 		[today]="today()"
+		(editSet)="startEdit($event)"
 		(fillSet)="applyHistory($event)"
 		(retry)="retryHistory.emit()"
 	/>

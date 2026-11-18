@@ -26,6 +26,9 @@ export const progressBar = (page: Page): Locator =>
 export const exerciseHeading = (page: Page, name: string): Locator =>
   page.getByRole('heading', { name, level: 2 });
 export const todayGroup = (page: Page): Locator => page.getByRole('group', { name: 'Сегодня' });
+// index -1 — последняя строка группы
+export const todayRow = (page: Page, index = 0): Locator =>
+  todayGroup(page).getByRole('button').nth(index);
 export const finishButton = (page: Page): Locator =>
   page.locator('app-active-session header').getByRole('button', { name: 'Завершить', exact: true });
 export const bottomFinishButton = (page: Page): Locator =>
