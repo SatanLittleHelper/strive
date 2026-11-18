@@ -10,18 +10,47 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \"$CLAUDE_PROJECT_DIR/.claude/ai-dev-kit/rules/hooks/kit-sync.js\" ]; then node \"$CLAUDE_PROJECT_DIR/.claude/ai-dev-kit/rules/hooks/kit-sync.js\" --agent claude; else echo '{\"systemMessage\":\"ai-dev-kit: submodule .claude/ai-dev-kit не инициализирован. Выполни: git submodule update --init .claude/ai-dev-kit\"}'; fi",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   },
   "enabledPlugins": {
     "polish@ai-dev-kit": true,
     "pr-flow@ai-dev-kit": true,
-    "modern-web-guidance@googlechrome": true
+    "modern-web-guidance@googlechrome": true,
+    "kit@ai-dev-kit": true,
+    "angular-best-practices@ai-dev-kit": true,
+    "nestjs-best-practices@ai-dev-kit": true,
+    "superpowers@superpowers-marketplace": true,
+    "plannotator@plannotator": true
   },
   "extraKnownMarketplaces": {
     "ai-dev-kit": {
       "source": {
         "source": "github",
         "repo": "SatanLittleHelper/ai-dev-kit"
+      },
+      "autoUpdate": true
+    },
+    "superpowers-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "obra/superpowers-marketplace"
+      }
+    },
+    "plannotator": {
+      "source": {
+        "source": "github",
+        "repo": "backnotprop/plannotator"
       }
     }
   }

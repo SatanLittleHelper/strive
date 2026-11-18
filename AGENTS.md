@@ -38,28 +38,28 @@ This file is always in context through `rules/RULES.md`. It routes work to detai
 
 ## Routing
 
-| Situation                                                                     | Required action                                                                                                                                                                                        |
-| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Idea, new behavior, or architecture                                           | Read `rules/skills/brainstorming.md`, then invoke `superpowers:brainstorming`; approval per `rules/skills/document-approval.md`                                                                        |
-| Test plan before the implementation plan (test-worthy layers)                 | Read `rules/skills/writing-test-plans.md` and run its review loop (`doc-review --type=test-plan`, 3 iterations); approval per `rules/skills/document-approval.md`                                      |
-| Multi-step plan before implementation                                         | Read `rules/skills/writing-plans.md`, then invoke `superpowers:writing-plans`; validate the draft with `doc-review --type=plan` (3 iterations) before approval per `rules/skills/document-approval.md` |
-| Test scope, assertions, or coverage                                           | Read `rules/base/testing.md`                                                                                                                                                                           |
-| Test-worthy implementation or bug fix                                         | Read `rules/base/testing.md` and `rules/base/test-execution-policy.md`, then invoke `superpowers:test-driven-development`                                                                              |
-| Commit or branch                                                              | Read `rules/base/git-and-commits.md`                                                                                                                                                                   |
-| Known file path, Bash vs MCP, or dedicated-tool choice                        | Read `rules/base/mcp-tool-priority.md`                                                                                                                                                                 |
-| Claim work complete, fixed, or passing                                        | Read `rules/skills/verification-before-completion.md` and run its required checks                                                                                                                      |
-| Test the current changes by hand ("протестируй изменения", "test my changes") | Invoke `testing-changes`                                                                                                                                                                               |
-| Create a PR ("сделай ПР", "open a PR")                                        | Follow instructions injected by `pr-flow`; if unavailable, read `rules/base/workflow-dependencies.md` and offer installation                                                                           |
-| Required skill, mod, plugin, or CLI is unavailable                            | Read `rules/base/workflow-dependencies.md`; name the dependency and offer installation with the exact command                                                                                          |
-| Execute a written plan via subagents                                          | Read `rules/skills/subagent-driven-development.md`                                                                                                                                                     |
-| Execute a written plan with checkpoints                                       | Read `rules/skills/executing-plans.md`                                                                                                                                                                 |
-| Long-running Plannotator process                                              | Read `rules/skills/plannotator.md`                                                                                                                                                                     |
-| NestJS code                                                                   | Read `rules/nestjs/index.md`, then the relevant topic file(s)                                                                                                                                          |
-| Angular code                                                                  | Read `rules/angular/index.md`, then the relevant topic file(s)                                                                                                                                         |
-| Write a Jira task ("напиши задачу", "сделай задачу")                          | Invoke `jira-writer`                                                                                                                                                                                   |
-| Roadmap work                                                                  | Invoke `roadmap`                                                                                                                                                                                       |
-| Shared vs personal file                                                       | Read `rules/base/local-vs-shared.md`                                                                                                                                                                   |
-| Artifact or temp-file location                                                | Read `rules/base/artifacts-and-tmp.md`                                                                                                                                                                 |
+| Situation | Required action |
+|---|---|
+| Idea, new behavior, or architecture | Read `rules/skills/brainstorming.md`, then invoke `superpowers:brainstorming`; approval per `rules/skills/document-approval.md` |
+| Test plan before the implementation plan (test-worthy layers) | Read `rules/skills/writing-test-plans.md` and run its review loop (`doc-review --type=test-plan`, 3 iterations); approval per `rules/skills/document-approval.md` |
+| Multi-step plan before implementation | Read `rules/skills/writing-plans.md`, then invoke `superpowers:writing-plans`; validate the draft with `doc-review --type=plan` (3 iterations) before approval per `rules/skills/document-approval.md` |
+| Test scope, assertions, or coverage | Read `rules/base/testing.md` |
+| Test-worthy implementation or bug fix | Read `rules/base/testing.md` and `rules/base/test-execution-policy.md`, then invoke `superpowers:test-driven-development` |
+| Commit or branch | Read `rules/base/git-and-commits.md` |
+| Known file path, Bash vs MCP, or dedicated-tool choice | Read `rules/base/mcp-tool-priority.md` |
+| Claim work complete, fixed, or passing | Read `rules/skills/verification-before-completion.md` and run its required checks |
+| Test the current changes by hand ("протестируй изменения", "test my changes") | Invoke `testing-changes` |
+| Create a PR ("сделай ПР", "open a PR") | Follow instructions injected by `pr-flow`; if unavailable, read `rules/base/workflow-dependencies.md` and offer installation |
+| Required skill, mod, plugin, or CLI is unavailable | Read `rules/base/workflow-dependencies.md`; name the dependency and offer installation with the exact command |
+| Execute a written plan via subagents | Read `rules/skills/subagent-driven-development.md` |
+| Execute a written plan with checkpoints | Read `rules/skills/executing-plans.md` |
+| Long-running Plannotator process | Read `rules/skills/plannotator.md` |
+| NestJS code | Read `rules/nestjs/index.md`, then the relevant topic file(s) |
+| Angular code | Read `rules/angular/index.md`, then the relevant topic file(s) |
+| Write a Jira task ("напиши задачу", "сделай задачу") | Invoke `jira-writer` |
+| Roadmap work | Invoke `roadmap` |
+| Shared vs personal file | Read `rules/base/local-vs-shared.md` |
+| Artifact or temp-file location | Read `rules/base/artifacts-and-tmp.md` |
 
 Never silently skip a missing routed skill or file. Follow `rules/base/workflow-dependencies.md`; do not reconstruct missing content from memory or claim the dependent stage was completed.
 
@@ -76,7 +76,7 @@ Never silently skip a missing routed skill or file. Follow `rules/base/workflow-
 
 When a routed rule needs a project value, read `.claude/dev-conventions.json` once. If the value is needed but absent, ask and save it; never invent it.
 
-Keys: `ticketPrefix` (commit and branch prefix, `rules/base/git-and-commits.md`); `testing` (`testing-changes` skill settings); `codex` (shared by `codex-implement` and `doc-review`: `profiles.<name>` — `codex` by default and `local` (your own OpenAI-compatible model server, shipped with `YOUR-…` placeholders to fill in), both added by `setup.sh` / `update-ai-dev-kit` — with `model`, `effort`, `timeoutMin` and a backend: inline `provider {baseUrl, envKey}`, `modelProvider` or `codexProfile`; `implement` / `review` choose the default profile per skill. The API key lives only in the env var named by `envKey`, never in this file). The skills have defaults and handle missing keys themselves, so do not ask for them.
+Keys: `ticketPrefix` (commit and branch prefix, `rules/base/git-and-commits.md`); `testing` (`kit:testing-changes` skill settings); `codex` (shared by `codex-implement` and `doc-review`: `profiles.<name>` — `codex` by default and `local` (your own OpenAI-compatible model server, shipped with `YOUR-…` placeholders to fill in), both added by `setup.sh` / `update-ai-dev-kit` — with `model`, `effort`, `timeoutMin` and a backend: inline `provider {baseUrl, envKey}`, `modelProvider` or `codexProfile`; `implement` / `review` choose the default profile per skill. The API key lives only in the env var named by `envKey`, never in this file). The skills have defaults and handle missing keys themselves, so do not ask for them.
 
 # Naming
 
@@ -94,15 +94,15 @@ Keys: `ticketPrefix` (commit and branch prefix, `rules/base/git-and-commits.md`)
 
 # Splitting a Growing Module
 
-| Content                                                                 | File                                                                                                                                     |
-| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Any type/interface, even a single one                                   | `*.types.ts`                                                                                                                             |
-| Constants used by 2+ files of the module                                | `*.constants.ts` (one per folder, not one per class). A constant with a single consumer stays a local `const` in that file               |
-| Custom error classes (2+ in the module)                                 | `*.errors.ts`, the message lives inside the class. One error class stays in its consumer's file. No file that holds only message strings |
-| Pure builders/formatters without side effects or DI                     | `*.helpers.ts`                                                                                                                           |
-| Pure row/payload → domain mappers with no branching beyond `?? default` | `*.mapper.ts`                                                                                                                            |
-| Type guards                                                             | Beside the narrowed type in `*.types.ts`                                                                                                 |
-| Class/handler                                                           | Only the class and imports                                                                                                               |
+| Content | File |
+|---|---|
+| Any type/interface, even a single one | `*.types.ts` |
+| Constants used by 2+ files of the module | `*.constants.ts` (one per folder, not one per class). A constant with a single consumer stays a local `const` in that file |
+| Custom error classes (2+ in the module) | `*.errors.ts`, the message lives inside the class. One error class stays in its consumer's file. No file that holds only message strings |
+| Pure builders/formatters without side effects or DI | `*.helpers.ts` |
+| Pure row/payload → domain mappers with no branching beyond `?? default` | `*.mapper.ts` |
+| Type guards | Beside the narrowed type in `*.types.ts` |
+| Class/handler | Only the class and imports |
 
 Exception — Storybook stories: a story module and its support files (`*.stories.ts`, story-opening helpers such as `stories.ts` in an e2e `support/` folder) are not split by this table. Types, pure formatters, and the side-effecting function may stay together in one file; do not split them into `*.types.ts`/`*.helpers.ts`.
 
@@ -113,6 +113,27 @@ Exception — API URLs: an HTTP route string (`'/api/...'`) lives only in the AP
 Keep mappers separate from helpers. Every folder that contains more than one file exposes its public API through an `index.ts`; code outside the folder imports from the folder (`../health`), never from its individual files. Files inside the same folder import one another directly. A single-file folder needs no barrel. A barrel exports only the public API; never re-export internal types. A grouping folder containing class dot-subfolders may have an aggregating `index.ts`, but siblings import one another directly to avoid cycles.
 
 Tested units use a dot-notation subfolder and local barrel (`some-service/some-service.ts`, `.spec.ts`, `index.ts`). Untested constants/types stay flat. Exclude pure `*.mapper.ts` files from test discovery/coverage.
+
+# Minimal Change
+Applies to implementation, bug fixes, refactors, and dependency choices; design stays with brainstorming. Before writing, read the code the change touches and list every place it must reach (callers, tests, fixtures, config, exports) and what it could break for users. That is scope; extra features are not.
+
+Take the first option that fully works:
+
+1. Does it need to exist? Skip options, flexibility, and features nobody asked for; name them in one line.
+2. Already in this codebase (helper, component, service, pattern)? Use it the way the surrounding code does.
+3. Standard library or platform feature? Use it, unless the project has its own component.
+4. An installed dependency? Use it. Never add a dependency for a few lines.
+5. Can it be one line a reader gets at a glance? One line.
+6. Otherwise, the minimum code that works.
+
+- No abstraction, wrapper, option, config, or "for later" code nobody asked for; keep the codebase's structure.
+- Bug fix: grep every caller of the function you touch, then fix the root cause once in the shared code.
+- Moved or merged code keeps its error handling and validation. Of equal-size options, take the one correct on edge cases.
+- A shortcut with a known limit gets a one-line comment: `// TODO: <the limit>, <when to upgrade>`.
+- Tests follow `rules/base/testing.md`; this file neither adds nor removes them.
+
+Never cut: validation at trust boundaries, error handling that prevents data loss, security, accessibility, anything the user asked for.
+<!-- Adapted from https://github.com/DietrichGebert/ponytail (MIT, DietrichGebert) -->
 
 # Workflow & Misc Code Style
 

@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$(git rev-parse --show-toplevel)/.claude/ai-dev-kit/rules/hooks/kit-sync.js\"; if [ -f \"$f\" ]; then node \"$f\" --agent codex; else echo '{\"systemMessage\":\"ai-dev-kit: submodule .claude/ai-dev-kit не инициализирован. Выполни: git submodule update --init .claude/ai-dev-kit\"}'; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
