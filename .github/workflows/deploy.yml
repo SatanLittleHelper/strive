@@ -120,6 +120,9 @@ jobs:
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" "bash -s -- '$TAG'" <<'REMOTE'
           set -euo pipefail
           cd /opt/strive
+          # освобождаем место до pull: иначе при впритык заполненном диске распаковка слоёв падает
+          docker image prune -af
+          docker builder prune -af
           if grep -q '^IMAGE_TAG=' .env; then
             sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=$1/" .env
           else
