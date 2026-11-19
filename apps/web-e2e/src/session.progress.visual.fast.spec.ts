@@ -5,8 +5,6 @@ import { VISUAL_NOW, VISUAL_STYLES, VISUAL_USE } from './support/visual';
 
 test.describe('индикатор прогресса против макета', () => {
   test.use(VISUAL_USE);
-  // эталоны сняты в Chromium: в других движках шрифты сглаживаются иначе
-  test.skip(({ browserName }) => browserName !== 'chromium');
 
   test('[rf-E30] индикатор с частичным прогрессом и суперсетом совпадает с эталоном', async ({
     page,

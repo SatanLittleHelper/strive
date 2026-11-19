@@ -5,8 +5,6 @@ import { VISUAL_NOW, VISUAL_STYLES, VISUAL_USE } from './support/visual';
 
 test.describe('экран тренировки против макетов', () => {
   test.use(VISUAL_USE);
-  // эталоны сняты в Chromium: в других движках шрифты сглаживаются иначе
-  test.skip(({ browserName }) => browserName !== 'chromium');
 
   test('[rf-E36] мобильные кольца и заголовок совпадают с эталоном', async ({ page }) => {
     await page.clock.install({ time: VISUAL_NOW });

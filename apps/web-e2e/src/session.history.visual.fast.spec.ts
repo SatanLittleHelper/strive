@@ -18,8 +18,6 @@ const pastSets = [1, 2, 3, 4, 5].map((rpe, index) =>
 
 test.describe('история против макета', () => {
   test.use(VISUAL_USE);
-  // эталоны сняты в Chromium: в других движках шрифты сглаживаются иначе
-  test.skip(({ browserName }) => browserName !== 'chromium');
 
   test('[rf-E33] история с RPE-цветами совпадает с эталоном', async ({ page }) => {
     await page.clock.install({ time: VISUAL_NOW });
