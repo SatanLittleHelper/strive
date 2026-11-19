@@ -91,7 +91,7 @@ test.describe('история упражнения и правка подход�
     await startSessionServer(page, {
       session: makeSession({
         exerciseCount: 1,
-        results: setsOf({ index: 0, setNumbers: [1, 2, 3] }),
+        results: [1, 2, 3].map((setNumber) => savedSet({ setNumber, weight: setNumber * 10 })),
       }),
       history: TWO_ENTRIES,
     });
@@ -100,8 +100,8 @@ test.describe('история упражнения и правка подход�
     const today = todayGroup(page).getByRole('button');
     const past = page.getByRole('group', { name: FIRST_DATE_TITLE }).getByRole('button');
 
-    await expect(today).toContainText(['Подход 3', 'Подход 2', 'Подход 1']);
-    await expect(past).toContainText(['Подход 2', 'Подход 1']);
+    await expect(today).toContainText(['30 кг', '20 кг', '10 кг']);
+    await expect(past).toContainText(['RPE 4', 'RPE 3']);
   });
 
   test('[E16] порядок отображения не меняет даты и значения по умолчанию', async ({ page }) => {

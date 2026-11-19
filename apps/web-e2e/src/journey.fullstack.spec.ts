@@ -36,21 +36,22 @@ test.describe('сквозной сценарий на реальном API', () 
 
     await page.getByRole('button', { name: 'Завершить', exact: true }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Завершить', exact: true }).click();
-    await expect(page).toHaveURL(/\/history$/);
+    await expect(page).toHaveURL(/\/history\/\d+$/);
 
     const main = page.getByRole('main');
-    const row = main.getByRole('link', { name: LEGS_WORKOUT_LINK });
-    await test.step('список', async () => {
-      await expect(row).toContainText(EXPECTED_SUMMARY);
-    });
-
     await test.step('детали', async () => {
-      await row.click();
       const sets = main.getByRole('listitem');
       await expect(sets).toHaveCount(2);
       await expect(sets.nth(0)).toContainText('60 кг × 8');
       await expect(sets.nth(1)).toContainText('60 кг × 6');
       await expect(main).toContainText(EXPECTED_VOLUME);
+    });
+
+    await test.step('список', async () => {
+      await page.getByRole('link', { name: '← История' }).click();
+      await expect(main.getByRole('link', { name: LEGS_WORKOUT_LINK })).toContainText(
+        EXPECTED_SUMMARY,
+      );
     });
   });
 });

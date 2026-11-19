@@ -7,6 +7,9 @@ const workspaceRoot = fileURLToPath(new URL('../../', import.meta.url));
 
 export default defineConfig({
   testDir: './src',
+  snapshotPathTemplate: `${workspaceRoot}/docs/workout-feedback/reference/{arg}{ext}`,
+  // Допуск 1% учитывает небольшие различия сглаживания шрифтов и скруглений.
+  expect: { toHaveScreenshot: { animations: 'disabled', maxDiffPixelRatio: 0.01 } },
   fullyParallel: true,
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,

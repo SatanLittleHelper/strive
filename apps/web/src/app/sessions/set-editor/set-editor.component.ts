@@ -147,7 +147,7 @@ export class SetEditorComponent {
     }
 
     const { weight, reps, rpe, note } = this.form.getRawValue();
-    if (weight === null || reps === null) return;
+    if (reps === null) return;
 
     const setNumber = this.setNumber();
     const resultsBefore = this.results();
@@ -159,7 +159,7 @@ export class SetEditorComponent {
         sessionId: this.sessionId(),
         workoutExerciseId: this.workoutExerciseId(),
         setNumber,
-        payload: toSaveSetRequest({ weight, reps, rpe, note }),
+        payload: toSaveSetRequest({ weight: weight ?? 0, reps, rpe, note }),
       })
       .pipe(
         takeUntilDestroyed(this.destroyRef),

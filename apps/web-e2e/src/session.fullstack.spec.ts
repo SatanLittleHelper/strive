@@ -1,19 +1,30 @@
 import { randomUUID } from 'node:crypto';
-import { expect, test, type Page } from '@playwright/test';
-import { DEVICE_ID_HEADER } from '@strive/api-interfaces';
+import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
+import {
+  DEFAULT_RPE,
+  DEVICE_ID_HEADER,
+  type WorkoutSession,
+  type WorkoutSummary,
+} from '@strive/api-interfaces';
 import { API_URL, LEGS_WORKOUT_LINK, MOBILE_VIEWPORT } from './e2e.constants';
 import { fillSetForm } from './support/session.fixtures';
-import { saveButton, todayGroup, todayRow, weightField, repsField } from './support/session.page';
+import {
+  bottomFinishButton,
+  saveButton,
+  todayGroup,
+  todayRow,
+  weightField,
+  repsField,
+} from './support/session.page';
 import { swipeRow } from './support/swipe';
 
 const DEVICE_STORAGE_KEY = 'strive.device-id';
 const SEED_WEIGHT = '58';
 const SEED_REPS = '15';
-const DEFAULT_RPE = '3';
+const DEFAULT_RPE_LABEL = '3';
+const FALLBACK_WEIGHT = 20;
 const UPDATED_WEIGHT = '65';
-const EXTRA_RPE = '4';
 const PLANNED_SETS = 3;
-const EXTRA_SET_NUMBER = 4;
 
 test.afterEach(async ({ page, request }) => {
   // У каждого browser context своё устройство; завершаем оставшуюся сессию даже после ошибки теста.
@@ -74,7 +85,7 @@ test.describe('выполнение тренировки на реальном A
     await expect(
       page
         .getByRole('radiogroup', { name: 'RPE от 1 до 5' })
-        .getByRole('radio', { name: DEFAULT_RPE }),
+        .getByRole('radio', { name: DEFAULT_RPE_LABEL }),
     ).toBeChecked();
   });
 
@@ -106,37 +117,62 @@ test.describe('выполнение тренировки на реальном A
     await expect(rows.nth(1)).toContainText(`${UPDATED_WEIGHT} кг × ${SEED_REPS} повт.`);
   });
 
-  async function finishWithExtraSet(page: Page): Promise<void> {
+  async function savePlanViaApi(page: Page, request: APIRequestContext): Promise<number> {
+    await page.goto('/');
+    const deviceId = await page.evaluate((key) => localStorage.getItem(key), DEVICE_STORAGE_KEY);
+    const headers = { [DEVICE_ID_HEADER]: deviceId ?? '' };
+    const catalog = (await (await request.get(`${API_URL}/api/workouts`, { headers })).json()) as {
+      data: WorkoutSummary[];
+    };
+    const legs = catalog.data.find((workout) => LEGS_WORKOUT_LINK.test(workout.name));
+    if (!legs) throw new Error('Тренировка «Ноги» не найдена в seed');
+    const started = (await (
+      await request.post(`${API_URL}/api/sessions`, { headers, data: { workoutId: legs.id } })
+    ).json()) as { data: WorkoutSession };
+    const { id, workout } = started.data;
+    for (const exercise of workout.exercises) {
+      for (let setNumber = 1; setNumber <= exercise.sets; setNumber += 1) {
+        const saved = await request.put(
+          `${API_URL}/api/sessions/${id}/sets/${exercise.id}/${setNumber}`,
+          {
+            headers,
+            data: {
+              weight: exercise.weight ?? FALLBACK_WEIGHT,
+              reps: exercise.reps,
+              rpe: DEFAULT_RPE,
+              note: null,
+            },
+          },
+        );
+        expect(saved.ok()).toBeTruthy();
+      }
+    }
+
+    return workout.exercises.reduce((total, exercise) => total + exercise.sets, 0);
+  }
+
+  test('[rf-E3] тренировка завершается без добавления подходов', async ({ page, request }) => {
+    // seed-тренировка «Ноги» содержит суперсет и упражнение без веса: все плановые подходы кладём через API
+    const plannedTotal = await savePlanViaApi(page, request);
+    await page.goto('/workouts/session');
+
+    await bottomFinishButton(page).click();
+    await expect(page).toHaveURL(/\/history\/\d+$/);
+
+    await expect(page.getByRole('main').getByRole('listitem')).toHaveCount(plannedTotal);
+  });
+
+  test('[rf-E6] пустой вес сохраняется как 0 в истории', async ({ page }) => {
     await startLegsWorkout(page);
-    await savePlannedSets(page, PLANNED_SETS);
-    // после последнего планового подхода экран перешёл к следующему упражнению
-    await page.getByRole('button', { name: 'Назад', exact: true }).click();
-    await page.getByRole('button', { name: 'Ещё подход' }).click();
-    await fillSetForm(page, { rpe: EXTRA_RPE }, EXTRA_SET_NUMBER);
+    await fillSetForm(page, { weight: '' }, 1);
     await saveButton(page).click();
     await expect(
-      page.getByRole('img', { name: `Выполнено ${EXTRA_SET_NUMBER} из ${PLANNED_SETS} подходов` }),
+      page.getByRole('img', { name: `Выполнено 1 из ${PLANNED_SETS} подходов` }),
     ).toBeVisible();
     await page.getByRole('button', { name: 'Завершить', exact: true }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Завершить', exact: true }).click();
-    await expect(page).toHaveURL(/\/history$/);
-    await page.getByRole('main').getByRole('link', { name: LEGS_WORKOUT_LINK }).click();
-  }
+    await expect(page).toHaveURL(/\/history\/\d+$/);
 
-  test('дополнительный подход виден в деталях завершённой тренировки', async ({ page }) => {
-    await finishWithExtraSet(page);
-
-    await expect(page.getByRole('main').getByRole('listitem')).toHaveCount(EXTRA_SET_NUMBER);
-  });
-
-  test('RPE дополнительного подхода виден в деталях', async ({ page }) => {
-    await finishWithExtraSet(page);
-
-    await expect(
-      page
-        .getByRole('main')
-        .getByRole('listitem')
-        .nth(EXTRA_SET_NUMBER - 1),
-    ).toContainText(`RPE ${EXTRA_RPE}`);
+    await expect(page.getByRole('main').getByRole('listitem').first()).toContainText('0 кг');
   });
 });

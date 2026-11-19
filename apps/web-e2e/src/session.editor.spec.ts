@@ -2,7 +2,14 @@ import { expect, test } from '@playwright/test';
 import { SET_RESULT_LIMITS } from '@strive/api-interfaces';
 import { MOBILE_VIEWPORT } from './e2e.constants';
 import { fillSetForm, makeSession, selectRpe } from './support/session.fixtures';
-import { position, repsField, saveButton, setForm, weightField } from './support/session.page';
+import {
+  position,
+  repsField,
+  saveButton,
+  setForm,
+  todayGroup,
+  weightField,
+} from './support/session.page';
 import { startSessionServer } from './support/session.server';
 
 const HTTP_ERROR = 500;
@@ -13,7 +20,7 @@ const SAVE_ERROR = 'Не удалось сохранить подход. Поп�
 test.describe('ввод подхода', () => {
   test.use({ viewport: MOBILE_VIEWPORT });
 
-  test('ошибка пустого веса не меняет высоту полей', async ({ page }) => {
+  test('ошибка пустых повторов не меняет высоту полей', async ({ page }) => {
     await startSessionServer(page);
     await page.goto('/workouts/session');
     const heightBefore = [
@@ -21,9 +28,9 @@ test.describe('ввод подхода', () => {
       await repsField(page).boundingBox(),
     ];
 
-    await weightField(page).fill('');
+    await repsField(page).fill('');
     await saveButton(page).click();
-    await expect(setForm(page).locator('tui-error').first()).toBeVisible();
+    await expect(setForm(page).locator('tui-error').nth(1)).toBeVisible();
 
     expect(
       await weightField(page)
@@ -125,15 +132,29 @@ test.describe('ввод подхода', () => {
       .toBe(SET_RESULT_LIMITS.noteMaxLength);
   });
 
-  test('пустой вес не отправляется и показывает ошибку у поля', async ({ page }) => {
+  test('[rf-E4] пустой вес сохраняется с весом 0', async ({ page }) => {
     const server = await startSessionServer(page);
     await page.goto('/workouts/session');
-    await fillSetForm(page, { weight: '' });
+    await fillSetForm(page, { weight: '', reps: '8', rpe: '3' });
+
+    await saveButton(page).click();
+
+    await expect
+      .poll(() => server.saves[0]?.body)
+      .toEqual({ weight: 0, reps: 8, rpe: 3, note: null });
+    await expect(todayGroup(page).getByRole('button')).toContainText('0 кг × 8 повт.');
+    await expect(page.getByRole('form', { name: 'Подход 2' })).toBeVisible();
+  });
+
+  test('[rf-E5] пустые повторы не отправляются и показывают ошибку у поля', async ({ page }) => {
+    const server = await startSessionServer(page);
+    await page.goto('/workouts/session');
+    await fillSetForm(page, { reps: '' });
 
     await saveButton(page).click();
 
     await expect(page.getByText('Обязательное поле')).toBeVisible();
-    await expect(weightField(page)).toHaveAttribute('aria-invalid', 'true');
+    await expect(repsField(page)).toHaveAttribute('aria-invalid', 'true');
     expect(server.saves).toEqual([]);
   });
 

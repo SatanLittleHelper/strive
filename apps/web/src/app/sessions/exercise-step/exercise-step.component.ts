@@ -16,7 +16,6 @@ import type {
 import { TuiButton, TuiTitle } from '@taiga-ui/core';
 import { TuiCardLarge } from '@taiga-ui/layout';
 import {
-  canAddSet,
   countExerciseSets,
   findResult,
   getHistoryGroups,
@@ -58,7 +57,6 @@ export class ExerciseStepComponent {
   readonly saved = output<SavedSetEvent>();
   readonly selectSet = output<number>();
   readonly cancelEdit = output<void>();
-  readonly addSet = output<void>();
   readonly retryHistory = output<void>();
 
   protected readonly fillRequest = signal<FillRequest | null>(null);
@@ -70,7 +68,6 @@ export class ExerciseStepComponent {
 
   protected readonly savedCount = computed(() => countExerciseSets(this.resultsParams()));
   protected readonly ringMax = computed(() => getRingMax(this.resultsParams()));
-  protected readonly canAdd = computed(() => canAddSet(this.resultsParams()));
   protected readonly today = computed(() => getTodayGroup(this.resultsParams()));
   protected readonly groups = computed(() => getHistoryGroups(this.history()));
   protected readonly formSet = computed<ActiveEditorSet | null>(() => {

@@ -157,3 +157,20 @@ export async function fillSetForm(
 export function rowId(index: number): number {
   return index + 1;
 }
+
+export const LONG_EXERCISE_NAME =
+  'Жим штанги лёжа узким хватом на наклонной скамье с паузой в нижней точке и медленным негативом';
+
+export function makeLongNameSession(options: SessionOptions = {}): WorkoutSession {
+  const session = makeSession(options);
+  const [first, ...rest] = session.workout.exercises;
+  if (!first) throw new Error('В тренировке нет упражнений');
+
+  return {
+    ...session,
+    workout: {
+      ...session.workout,
+      exercises: [{ ...first, exercise: { ...first.exercise, name: LONG_EXERCISE_NAME } }, ...rest],
+    },
+  };
+}

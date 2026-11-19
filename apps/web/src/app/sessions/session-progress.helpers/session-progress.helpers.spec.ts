@@ -1,8 +1,6 @@
-import { SET_RESULT_LIMITS } from '@strive/api-interfaces';
 import { describe, expect, it } from 'vitest';
 import { planExercise, range, sessionOf, setsOf } from '../test-support/session.fixtures';
 import {
-  canAddSet,
   countExerciseSets,
   getExerciseCompletion,
   getRingMax,
@@ -69,15 +67,6 @@ describe('Прогресс упражнения и тренировки', () => 
     );
 
     expect(isSessionDone(sessionOf({ exercises: [first, second, third], results }))).toBe(true);
-  });
-
-  it('добавление подхода недоступно на пределе', () => {
-    const limit = SET_RESULT_LIMITS.setNumberMax;
-    const atLimit = setsOf({ workoutExerciseId: FIRST_ID, setNumbers: range(limit) });
-    const belowLimit = setsOf({ workoutExerciseId: FIRST_ID, setNumbers: range(limit - 1) });
-
-    expect(canAddSet({ exercise: first, results: atLimit })).toBe(false);
-    expect(canAddSet({ exercise: first, results: belowLimit })).toBe(true);
   });
 });
 
@@ -341,4 +330,67 @@ describe('Доля выполнения упражнения: getExerciseComplet
 
     expect(getExerciseCompletion({ exercise, results })).toBe(0);
   });
+});
+
+describe('Цель автоперехода для отсчёта', () => {
+  const plain = [planExercise({ id: 1 }), planExercise({ id: 2 }), planExercise({ id: 3 })];
+  const pair = [
+    planExercise({ id: 1, supersetGroup: 1 }),
+    planExercise({ id: 2, supersetGroup: 1 }),
+    planExercise({ id: 3 }),
+  ];
+
+  it('[rf-U6] после последнего планового подхода обычного упражнения целью становится следующее', () => {
+    const target = getAdvanceTarget({
+      exercises: plain,
+      resultsBefore: setsOf({ workoutExerciseId: 1, setNumbers: [1, 2] }),
+      currentIndex: 0,
+      savedSetNumber: 3,
+    });
+
+    expect(target).toBe(1);
+  });
+
+  it.each([
+    {
+      title: 'последнего упражнения',
+      currentIndex: 2,
+      resultsBefore: setsOf({ workoutExerciseId: 3, setNumbers: [1, 2] }),
+      savedSetNumber: 3,
+    },
+    {
+      title: 'правки уже сохранённого подхода',
+      currentIndex: 0,
+      resultsBefore: setsOf({ workoutExerciseId: 1, setNumbers: [1, 2, 3] }),
+      savedSetNumber: 2,
+    },
+  ])('[rf-U7] цели нет после $title', ({ currentIndex, resultsBefore, savedSetNumber }) => {
+    expect(
+      getAdvanceTarget({ exercises: plain, resultsBefore, currentIndex, savedSetNumber }),
+    ).toBeNull();
+  });
+
+  it.each([
+    {
+      title: 'из первого во второе',
+      currentIndex: 0,
+      resultsBefore: [],
+      savedSetNumber: 1,
+      target: 1,
+    },
+    {
+      title: 'из второго в первое',
+      currentIndex: 1,
+      resultsBefore: setsOf({ workoutExerciseId: 1, setNumbers: [1] }),
+      savedSetNumber: 1,
+      target: 0,
+    },
+  ])(
+    '[rf-U8] в суперсете цель — упражнение группы $title',
+    ({ currentIndex, resultsBefore, savedSetNumber, target }) => {
+      expect(
+        getAdvanceTarget({ exercises: pair, resultsBefore, currentIndex, savedSetNumber }),
+      ).toBe(target);
+    },
+  );
 });

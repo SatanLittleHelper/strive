@@ -1,9 +1,4 @@
-import {
-  SET_RESULT_LIMITS,
-  type SetResult,
-  type WorkoutExercise,
-  type WorkoutSession,
-} from '@strive/api-interfaces';
+import { type SetResult, type WorkoutExercise, type WorkoutSession } from '@strive/api-interfaces';
 import type {
   AdvanceParams,
   AdvanceTargetParams,
@@ -20,10 +15,6 @@ export function getSavedSetNumbers({ exercise, results }: ExerciseResultsParams)
 
 export function countExerciseSets(params: ExerciseResultsParams): number {
   return getSavedSetNumbers(params).size;
-}
-
-export function getLastSetNumber(params: ExerciseResultsParams): number {
-  return Math.max(0, ...getSavedSetNumbers(params));
 }
 
 export function getRingMax(params: ExerciseResultsParams): number {
@@ -62,10 +53,6 @@ export function getSessionCompletion(session: WorkoutSession): number {
     (total, exercise) => total + getExerciseCompletion({ exercise, results: session.results }),
     0,
   );
-}
-
-export function canAddSet(params: ExerciseResultsParams): boolean {
-  return getLastSetNumber(params) < SET_RESULT_LIMITS.setNumberMax;
 }
 
 export function shouldAdvanceAfterSave({
