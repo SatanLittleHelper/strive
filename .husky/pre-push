@@ -1,2 +1,2 @@
 npm run format:check
-npx nx affected -t lint typecheck test --base=origin/main --head=HEAD
+npx nx affected -t lint typecheck test e2e --base=origin/main --head=HEAD

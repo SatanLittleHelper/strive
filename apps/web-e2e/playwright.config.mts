@@ -3,10 +3,16 @@ import { fileURLToPath } from 'node:url';
 
 const isCI = Boolean(process.env['CI']);
 const startupTimeout = 120_000;
+// эталоны визуальных тестов сняты локально в Chromium: в CI (Linux) и в других движках шрифты сглаживаются иначе
+const visualSpecs = /\.visual\.fast\.spec\.ts$/;
 const workspaceRoot = fileURLToPath(new URL('../../', import.meta.url));
 
 export default defineConfig({
   testDir: './src',
+  testIgnore: isCI ? visualSpecs : undefined,
+  snapshotPathTemplate: `${workspaceRoot}/docs/workout-feedback/reference/{arg}{ext}`,
+  // Допуск 1% учитывает небольшие различия сглаживания шрифтов и скруглений.
+  expect: { toHaveScreenshot: { animations: 'disabled', maxDiffPixelRatio: 0.01 } },
   fullyParallel: true,
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,
@@ -40,8 +46,18 @@ export default defineConfig({
     ...(isCI
       ? []
       : [
-          { name: 'firefox', use: { ...devices['Desktop Firefox'] }, grepInvert: /@touch/ },
-          { name: 'webkit', use: { ...devices['Desktop Safari'] }, grepInvert: /@touch/ },
+          {
+            name: 'firefox',
+            use: { ...devices['Desktop Firefox'] },
+            grepInvert: /@touch/,
+            testIgnore: visualSpecs,
+          },
+          {
+            name: 'webkit',
+            use: { ...devices['Desktop Safari'] },
+            grepInvert: /@touch/,
+            testIgnore: visualSpecs,
+          },
         ]),
   ],
 });

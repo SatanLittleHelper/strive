@@ -1,5 +1,5 @@
 <div class="grid justify-items-center gap-2">
-	<app-ring [color]="repsColor" [label]="repsLabel()" [max]="fullValue" [value]="fullValue">
+	<app-ring [color]="ringColor" [label]="repsLabel()" [max]="fullValue" [value]="fullValue">
 		<b tuiTitle>{{ reps() }}</b>
 	</app-ring>
 	<span tuiTitle class="text-center">
@@ -8,7 +8,7 @@
 	</span>
 </div>
 <div class="grid justify-items-center gap-2">
-	<app-ring [color]="weightColor" [label]="weightLabel()" [max]="fullValue" [value]="fullValue">
+	<app-ring [color]="ringColor" [label]="weightLabel()" [max]="fullValue" [value]="fullValue">
 		<b tuiTitle>{{ weightText() }}</b>
 	</app-ring>
 	<span tuiTitle class="text-center">

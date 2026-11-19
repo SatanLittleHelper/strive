@@ -1,0 +1,30 @@
+<progress
+	class="sr-only"
+	aria-label="Выполнено упражнений"
+	[max]="max()"
+	[value]="value()"
+></progress>
+<ol aria-hidden="true" class="flex gap-2 px-1 py-1" data-testid="progress-segments">
+	@for (group of segments(); track $index) {
+		<li
+			class="flex"
+			[class.rounded-full]="group.superset"
+			[attr.data-superset]="group.superset ? '' : null"
+			[style.flex]="group.members.length + ' 1 0%'"
+			[style.outline]="group.superset ? '1px solid var(--tui-status-info)' : null"
+			[style.outline-offset]="group.superset ? '2px' : null"
+		>
+			<ol class="flex flex-1" [class.gap-0.5]="group.superset">
+				@for (segment of group.members; track segment.id) {
+					<li
+						class="h-1.5 flex-1 overflow-hidden rounded-full bg-muted"
+						data-segment
+						[attr.data-group]="segment.group"
+					>
+						<span class="block h-full bg-accent" [style.width.%]="segment.fill * 100"></span>
+					</li>
+				}
+			</ol>
+		</li>
+	}
+</ol>

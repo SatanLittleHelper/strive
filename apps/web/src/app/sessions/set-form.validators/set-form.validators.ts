@@ -23,7 +23,6 @@ function maxDecimalPlaces(places: number): ValidatorFn {
 }
 
 export const WEIGHT_VALIDATORS: ValidatorFn[] = [
-  Validators.required,
   Validators.min(WEIGHT_MIN),
   Validators.max(SET_RESULT_LIMITS.weightMax),
   maxDecimalPlaces(WEIGHT_DECIMAL_PLACES),

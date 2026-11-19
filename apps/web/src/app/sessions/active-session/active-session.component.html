@@ -21,7 +21,7 @@
 		}
 		@case ('ready') {
 			@if (session(); as current) {
-				<header class="flex items-center justify-between gap-2">
+				<header class="flex min-w-0 items-center justify-between gap-2">
 					<div class="flex min-w-0 items-center gap-1">
 						<button
 							appearance="flat"
@@ -32,12 +32,13 @@
 							type="button"
 							(click)="goBack()"
 						></button>
-						<h1 class="cursor-pointer truncate" tuiTitle="s" (click)="goBack()">
+						<h1 class="min-w-0 cursor-pointer truncate" tuiTitle="s" (click)="goBack()">
 							{{ current.workout.name }}
 						</h1>
 					</div>
 					<button
 						appearance="flat"
+						class="shrink-0"
 						size="s"
 						tuiButton
 						type="button"
@@ -46,24 +47,34 @@
 					>
 						Завершить
 					</button>
+					<span class="sr-only">{{ currentIndex() + 1 }} из {{ exercises().length }}</span>
 				</header>
 				@if (currentExercise(); as item) {
 					<div class="grid gap-2">
-						<div class="flex items-baseline justify-between gap-3">
-							<h2 tuiTitle="l">{{ item.exercise.name }}</h2>
-							<span class="shrink-0 whitespace-nowrap" tuiTitle
-								>{{ currentIndex() + 1 }} из {{ exercises().length }}</span
-							>
-						</div>
-						<progress
-							tuiProgressBar
-							size="s"
-							aria-label="Выполнено упражнений"
-							[segments]="exercises().length"
-							[value]="sessionCompletion()"
-							[max]="exercises().length"
-						></progress>
+						<h2 tuiTitle="m">
+							<span class="line-clamp-2 min-w-0">{{ item.exercise.name }}</span>
+						</h2>
+						<app-session-progress [session]="current" />
 					</div>
+					@if (pendingAdvance(); as pending) {
+						<div
+							appearance="info"
+							class="flex items-center justify-between gap-3"
+							role="status"
+							tuiNotification
+						>
+							<span class="sr-only"
+								>Переход к «{{ pendingAdvanceName() }}» через {{ advanceSeconds }} с</span
+							>
+							<span aria-hidden="true"
+								>Переход к «{{ pendingAdvanceName() }}» через {{ pending.secondsLeft }} с</span
+							>
+							<button appearance="flat" size="s" tuiButton type="button" (click)="cancelAdvance()">
+								Отменить
+							</button>
+						</div>
+					}
+
 					<div (tuiSwipe)="onSwipe($event)">
 						<!-- Однокомпонентный @for пересоздаёт шаг при смене упражнения: сбрасывается запрос подстановки -->
 						@for (step of [item]; track step.id) {
@@ -74,12 +85,11 @@
 								[historyStatus]="historyStatus()"
 								[item]="step"
 								[session]="current"
-								(addSet)="adding.set(true)"
 								(cancelEdit)="selectedSet.set(null)"
 								(pendingChange)="pendingChange($event)"
 								(retryHistory)="reloadHistory()"
 								(saved)="onSaved($event)"
-								(selectSet)="selectedSet.set($event)"
+								(selectSet)="selectSet($event)"
 							/>
 						}
 					</div>
@@ -87,7 +97,10 @@
 				@if (error()) {
 					<div tuiNotification appearance="negative" role="alert">{{ error() }}</div>
 				}
-				<div class="sticky bottom-[calc(var(--spacing-nav)+0.75rem)] grid gap-2 bg-bg py-2 md:static">
+				<div
+					data-testid="session-actions"
+					class="sticky bottom-[calc(var(--spacing-nav)+0.75rem)] grid gap-2 bg-bg py-2 md:static"
+				>
 					@if (primaryAction() === 'save') {
 						<button size="l" tuiButton type="submit" [attr.form]="formId" [disabled]="busy()">
 							{{ primaryLabel() }}

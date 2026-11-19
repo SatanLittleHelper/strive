@@ -1,5 +1,11 @@
 <section class="grid gap-4" [attr.aria-label]="item().exercise.name">
-	<div appearance="neutral" aria-label="План и ввод подхода" role="group" tuiCardLarge="compact">
+	<div
+		appearance="neutral"
+		aria-label="План и ввод подхода"
+		class="mt-4 pt-8"
+		role="group"
+		tuiCardLarge="compact"
+	>
 		<div class="grid gap-4">
 			<app-set-rings
 				[editorSet]="editorSet()"
@@ -42,17 +48,6 @@
 	@if (formSet() === null) {
 		<section appearance="neutral" aria-label="Упражнение выполнено" class="grid gap-3" tuiCardLarge>
 			<h3 tuiTitle>Упражнение выполнено</h3>
-			@if (canAdd()) {
-				<button
-					appearance="secondary"
-					tuiButton
-					type="button"
-					[disabled]="disabled()"
-					(click)="addSet.emit()"
-				>
-					Ещё подход
-				</button>
-			}
 		</section>
 	}
 	<app-exercise-history

@@ -13,9 +13,9 @@ import { Location } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { TuiSwipe, type TuiSwipeEvent } from '@taiga-ui/cdk';
 import { TuiButton, TuiDialogService, TuiLink, TuiNotification, TuiTitle } from '@taiga-ui/core';
-import { TUI_CONFIRM, TuiProgress, TuiSkeleton } from '@taiga-ui/kit';
+import { TUI_CONFIRM, TuiSkeleton } from '@taiga-ui/kit';
 import { TuiCardLarge, TuiHeader } from '@taiga-ui/layout';
-import { finalize } from 'rxjs';
+import { finalize, interval, Subject, take, takeUntil } from 'rxjs';
 import { getResourceViewState } from '../../api/resource-view-state';
 import { EmptyStateComponent } from '../../shared/empty-state';
 import { ErrorStateComponent } from '../../shared/error-state';
@@ -23,18 +23,23 @@ import {
   getEditorSet,
   getFirstUnfinishedExerciseIndex,
   getPrimaryAction,
-  getSessionCompletion,
   getSwipeStep,
+  getSupersetIndexes,
   isSessionDone,
   FIRST_NAVIGATION_ID,
   NO_EDITOR_SET,
   SessionsService,
   getAdvanceTarget,
   type EditorSet,
+  type PendingAdvance,
   type SavedSetEvent,
 } from '..';
 import { ExerciseStepComponent } from '../exercise-step';
 import { SET_FORM_ID } from '../set-editor';
+import { SessionProgressComponent } from '../session-progress';
+
+const AUTO_ADVANCE_SECONDS = 3;
+const TICK_MS = 1000;
 
 @Component({
   selector: 'app-active-session',
@@ -46,7 +51,7 @@ import { SET_FORM_ID } from '../set-editor';
     TuiTitle,
     TuiHeader,
     TuiSwipe,
-    TuiProgress,
+    SessionProgressComponent,
     TuiCardLarge,
     TuiSkeleton,
     EmptyStateComponent,
@@ -63,6 +68,7 @@ export class ActiveSessionComponent {
   private readonly location = inject(Location);
   private readonly dialogs = inject(TuiDialogService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly advanceCancelled = new Subject<void>();
 
   protected readonly formId = SET_FORM_ID;
   protected readonly active = this.sessions.active;
@@ -93,20 +99,11 @@ export class ActiveSessionComponent {
 
     return session ? isSessionDone(session) : false;
   });
-  protected readonly sessionCompletion = computed(() => {
-    const session = this.session();
 
-    return session ? getSessionCompletion(session) : 0;
-  });
-
-  // выбор подхода для правки и запрос добавления живут, пока открыто текущее упражнение
+  // выбор подхода для правки живёт, пока открыто текущее упражнение
   protected readonly selectedSet = linkedSignal<number | null, number | null>({
     source: () => this.currentExercise()?.id ?? null,
     computation: () => null,
-  });
-  protected readonly adding = linkedSignal<number | null, boolean>({
-    source: () => this.currentExercise()?.id ?? null,
-    computation: () => false,
   });
   protected readonly editorSet = computed<EditorSet>(() => {
     const exercise = this.currentExercise();
@@ -117,7 +114,6 @@ export class ActiveSessionComponent {
       exercise,
       results: session.results,
       selected: this.selectedSet(),
-      adding: this.adding(),
     });
   });
   protected readonly primaryAction = computed(() =>
@@ -150,6 +146,13 @@ export class ActiveSessionComponent {
   protected readonly confirming = signal(false);
   protected readonly pendingSaves = signal(0);
   protected readonly error = signal('');
+  protected readonly advanceSeconds = AUTO_ADVANCE_SECONDS;
+  protected readonly pendingAdvance = signal<PendingAdvance | null>(null);
+  protected readonly pendingAdvanceName = computed(() => {
+    const pending = this.pendingAdvance();
+
+    return pending ? (this.exercises()[pending.target]?.exercise.name ?? '') : '';
+  });
 
   constructor() {
     // Возврат через роутер должен перечитать сервер даже у уже созданного singleton-сервиса.
@@ -166,16 +169,55 @@ export class ActiveSessionComponent {
 
   protected onSaved({ setNumber, resultsBefore }: SavedSetEvent): void {
     this.selectedSet.set(null);
-    this.adding.set(false);
+    this.cancelAdvance();
 
+    const currentIndex = this.currentIndex();
     const target = getAdvanceTarget({
       exercises: this.exercises(),
       resultsBefore,
-      currentIndex: this.currentIndex(),
+      currentIndex,
       savedSetNumber: setNumber,
     });
-    // busy ещё держит сохранение (finalize идёт после next), поэтому индекс меняется напрямую
-    if (target !== null) this.currentIndex.set(target);
+    if (target === null) return;
+
+    // суперсет переключается сразу; busy ещё держит сохранение, поэтому индекс меняется напрямую
+    if (getSupersetIndexes({ exercises: this.exercises(), index: currentIndex }).length > 0) {
+      this.currentIndex.set(target);
+      return;
+    }
+
+    this.startAdvance(target);
+  }
+
+  protected selectSet(setNumber: number): void {
+    this.cancelAdvance();
+    this.selectedSet.set(setNumber);
+  }
+
+  protected cancelAdvance(): void {
+    this.advanceCancelled.next();
+    this.pendingAdvance.set(null);
+  }
+
+  private startAdvance(target: number): void {
+    this.pendingAdvance.set({ target, secondsLeft: AUTO_ADVANCE_SECONDS });
+
+    interval(TICK_MS)
+      .pipe(
+        take(AUTO_ADVANCE_SECONDS),
+        takeUntil(this.advanceCancelled),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((tick) => {
+        const secondsLeft = AUTO_ADVANCE_SECONDS - tick - 1;
+        if (secondsLeft > 0) {
+          this.pendingAdvance.set({ target, secondsLeft });
+          return;
+        }
+
+        this.pendingAdvance.set(null);
+        this.currentIndex.set(target);
+      });
   }
 
   protected go(direction: 'left' | 'right'): void {
@@ -213,6 +255,7 @@ export class ActiveSessionComponent {
 
   protected requestFinish(): void {
     if (this.busy()) return;
+    this.cancelAdvance();
     if (this.sessionDone()) {
       this.finish();
       return;
@@ -238,9 +281,12 @@ export class ActiveSessionComponent {
   }
 
   private moveBy(direction: 'left' | 'right' | 'top' | 'bottom'): void {
-    this.currentIndex.update((index) =>
-      getSwipeStep({ index, count: this.exercises().length, direction }),
-    );
+    const index = this.currentIndex();
+    const next = getSwipeStep({ index, count: this.exercises().length, direction });
+    if (next === index) return;
+
+    this.cancelAdvance();
+    this.currentIndex.set(next);
   }
 
   private finish(): void {
@@ -257,8 +303,8 @@ export class ActiveSessionComponent {
         finalize(() => this.finishing.set(false)),
       )
       .subscribe({
-        next: () => {
-          void this.router.navigateByUrl('/history');
+        next: (finished) => {
+          void this.router.navigateByUrl(`/history/${finished.id}`);
         },
         error: () => this.error.set('Не удалось завершить тренировку. Попробуйте ещё раз.'),
       });

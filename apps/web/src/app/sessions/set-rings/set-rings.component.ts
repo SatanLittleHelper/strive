@@ -2,12 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { TuiTitle } from '@taiga-ui/core';
 import { RingComponent } from '../ring';
 import type { EditorSet } from '../session-view.types';
-import {
-  FULL_RING_VALUE,
-  NO_WEIGHT_TEXT,
-  REPS_RING_COLOR,
-  WEIGHT_RING_COLOR,
-} from './set-rings.constants';
+import { FULL_RING_VALUE, NO_WEIGHT_TEXT, RING_COLOR } from './set-rings.constants';
 
 @Component({
   selector: 'app-set-rings',
@@ -25,8 +20,7 @@ export class SetRingsComponent {
   readonly editorSet = input.required<EditorSet>();
 
   protected readonly fullValue = FULL_RING_VALUE;
-  protected readonly repsColor = REPS_RING_COLOR;
-  protected readonly weightColor = WEIGHT_RING_COLOR;
+  protected readonly ringColor = RING_COLOR;
 
   protected readonly weightText = computed(() => {
     const weight = this.weight();

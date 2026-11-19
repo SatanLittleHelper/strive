@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { TuiLoader } from '@taiga-ui/core';
 import type { ResourceViewState } from '../../api/resource-view-state';
 import { EmptyStateComponent } from '../empty-state';
@@ -20,5 +20,6 @@ export class ResourceStateComponent {
   readonly emptyMessage = input(DEFAULT_EMPTY_MESSAGE);
   readonly loadingLabel = input(DEFAULT_LOADING_LABEL);
   readonly errorMessage = input(DEFAULT_ERROR_MESSAGE);
+  readonly hideEmpty = input(false, { transform: booleanAttribute });
   readonly retry = output<void>();
 }

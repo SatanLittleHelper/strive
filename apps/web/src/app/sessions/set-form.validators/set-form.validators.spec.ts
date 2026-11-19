@@ -18,25 +18,28 @@ const errorsOf = <T>(value: T, validators: ValidatorFn[]) =>
 
 describe('Валидаторы полей подхода', () => {
   describe('вес', () => {
-    it('U1 · пустой вес — обязательное поле', () => {
-      expect(errorsOf<number | null>(null, WEIGHT_VALIDATORS)).toHaveProperty('required');
+    it('[rf-U4] пустой вес допустим', () => {
+      expect(errorsOf<number | null>(null, WEIGHT_VALIDATORS)).toBeNull();
     });
 
-    it('U2 · вес ниже нуля отклоняется', () => {
-      expect(errorsOf(-1, WEIGHT_VALIDATORS)).toHaveProperty('min');
+    it.each([
+      { title: 'ниже нуля', value: -1, error: 'min' },
+      { title: 'выше максимума', value: weightMax + 1, error: 'max' },
+      {
+        title: 'с тремя знаками после запятой',
+        value: WEIGHT_THREE_DECIMALS,
+        error: 'maxDecimalPlaces',
+      },
+    ])('[rf-U5] вес $title отклоняется', ({ value, error }) => {
+      expect(errorsOf(value, WEIGHT_VALIDATORS)).toHaveProperty(error);
     });
 
-    it('U3 · вес выше максимума отклоняется', () => {
-      expect(errorsOf(weightMax + 1, WEIGHT_VALIDATORS)).toHaveProperty('max');
-    });
-
-    it('U4 · вес с тремя знаками после запятой отклоняется', () => {
-      expect(errorsOf(WEIGHT_THREE_DECIMALS, WEIGHT_VALIDATORS)).toHaveProperty('maxDecimalPlaces');
-    });
-
-    it.each([0, WEIGHT_TWO_DECIMALS, weightMax])('U5 · допустимый вес %s принимается', (weight) => {
-      expect(errorsOf(weight, WEIGHT_VALIDATORS)).toBeNull();
-    });
+    it.each([0, WEIGHT_TWO_DECIMALS, weightMax])(
+      '[rf-U5] допустимый вес %s принимается',
+      (weight) => {
+        expect(errorsOf(weight, WEIGHT_VALIDATORS)).toBeNull();
+      },
+    );
   });
 
   describe('повторы', () => {

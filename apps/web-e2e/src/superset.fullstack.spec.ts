@@ -57,11 +57,7 @@ test.describe('суперсет на реальном API', () => {
       await saveSet(page, Math.floor((index % (GROUP_LENGTH * SETS_PER_ROW)) / GROUP_LENGTH) + 1);
     }
     await page.getByRole('button', { name: 'Завершить', exact: true }).first().click();
-    await expect(page).toHaveURL(/\/history$/);
-    await page
-      .getByRole('main')
-      .getByRole('link', { name: new RegExp(workout.workoutName) })
-      .click();
+    await expect(page).toHaveURL(/\/history\/\d+$/);
 
     await expect(page.getByRole('heading', { level: 2 })).toHaveText([
       block,
