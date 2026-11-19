@@ -11,7 +11,9 @@
 		<app-error-state [message]="errorMessage()" (retry)="retry.emit()" />
 	}
 	@case ('empty') {
-		<app-empty-state [message]="emptyMessage()" />
+		@if (!hideEmpty()) {
+			<app-empty-state [message]="emptyMessage()" />
+		}
 	}
 	@case ('ready') {
 		<ng-content />

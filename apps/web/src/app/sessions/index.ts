@@ -13,10 +13,8 @@ export {
 export type { SetFormValues } from './session-form.types';
 export { SESSION_CONFLICT_STATUS } from './sessions.constants';
 export {
-  canAddSet,
   countExerciseSets,
   getExerciseCompletion,
-  getLastSetNumber,
   getAdvanceTarget,
   getSessionCompletion,
   getSupersetIndexes,
@@ -30,6 +28,7 @@ export type {
   ActiveEditorSet,
   EditorSet,
   PrimaryAction,
+  PendingAdvance,
   SavedSetEvent,
 } from './session-view.types';
 

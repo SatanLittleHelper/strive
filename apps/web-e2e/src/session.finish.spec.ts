@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { DESKTOP_VIEWPORT, MOBILE_VIEWPORT } from './e2e.constants';
-import { fullExercise, makeSession, setsOf } from './support/session.fixtures';
+import { fullExercise, makeSession, ok, setsOf, STARTED_AT } from './support/session.fixtures';
 import {
   bottomFinishButton,
   finishButton,
@@ -8,9 +8,17 @@ import {
   saveButton,
   setForm,
 } from './support/session.page';
+import {
+  makeFinishedSession,
+  makeSummary,
+  mockSessionList,
+  mockSummary,
+} from './support/history.fixtures';
 import { startSessionServer } from './support/session.server';
 
 const HTTP_ERROR = 500;
+const SESSION_ID = 1;
+const OTHER_SESSION_ID = 8;
 const MAX_COLUMN_WIDTH = 720;
 const ALL_DONE = [...fullExercise(0), ...fullExercise(1), ...fullExercise(2)];
 const FIRST_MISSING_SET = [
@@ -22,6 +30,43 @@ const FINISH_DIALOG = 'Завершить тренировку?';
 
 test.describe('действие и завершение', () => {
   test.use({ viewport: MOBILE_VIEWPORT });
+
+  test('[rf-E7] завершение открывает детали именно этой тренировки', async ({ page }) => {
+    await startSessionServer(page, { session: makeSession({ results: ALL_DONE }) });
+    await mockSessionList(page, [
+      makeFinishedSession({ id: OTHER_SESSION_ID, name: 'Тренировка B' }),
+    ]);
+    await mockSummary({
+      page,
+      id: SESSION_ID,
+      response: makeSummary({ id: SESSION_ID, workoutName: 'Тренировка A' }),
+    });
+    await page.goto('/workouts/session');
+
+    await bottomFinishButton(page).click();
+
+    await expect(page).toHaveURL(/\/history\/1$/);
+    await expect(page.getByRole('heading', { name: 'Тренировка A', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Тренировка B' })).toHaveCount(0);
+  });
+
+  test('[rf-E9] из деталей можно вернуться к списку', async ({ page }) => {
+    await startSessionServer(page, { session: makeSession({ results: ALL_DONE }) });
+    await mockSessionList(page, [makeFinishedSession({ id: SESSION_ID, name: 'Тренировка A' })]);
+    await mockSummary({
+      page,
+      id: SESSION_ID,
+      response: makeSummary({ id: SESSION_ID, workoutName: 'Тренировка A' }),
+    });
+    await page.goto('/workouts/session');
+    await bottomFinishButton(page).click();
+    await expect(page).toHaveURL(/\/history\/1$/);
+
+    await page.getByRole('link', { name: '← История' }).click();
+
+    await expect(page).toHaveURL(/\/history$/);
+    await expect(page.getByRole('main').getByRole('listitem')).toContainText('Тренировка A');
+  });
 
   test('«Следующее упражнение» переключает на следующее', async ({ page }) => {
     await startSessionServer(page, { session: makeSession({ results: fullExercise(0) }) });
@@ -40,7 +85,7 @@ test.describe('действие и завершение', () => {
 
     await finishButton(page).click();
 
-    await expect(page).toHaveURL(/\/history$/);
+    await expect(page).toHaveURL(/\/history\/1$/);
     await expect(page.getByRole('dialog')).toHaveCount(0);
     expect(server.finishes).toEqual(['POST']);
   });
@@ -54,7 +99,7 @@ test.describe('действие и завершение', () => {
     await expect(page.getByRole('dialog')).toContainText(FINISH_DIALOG);
   });
 
-  test('«Продолжить тренировку» в диалоге не завершает тренировку', async ({ page }) => {
+  test('[rf-E8] «Продолжить тренировку» в диалоге не завершает тренировку', async ({ page }) => {
     const server = await startSessionServer(page);
     await page.goto('/workouts/session');
     await finishButton(page).click();
@@ -65,14 +110,14 @@ test.describe('действие и завершение', () => {
     expect(server.finishes).toEqual([]);
   });
 
-  test('подтверждение завершает тренировку и ведёт в историю', async ({ page }) => {
+  test('[rf-E8] подтверждение завершает тренировку и открывает её детали', async ({ page }) => {
     const server = await startSessionServer(page);
     await page.goto('/workouts/session');
     await finishButton(page).click();
 
     await page.getByRole('dialog').getByRole('button', { name: 'Завершить', exact: true }).click();
 
-    await expect(page).toHaveURL(/\/history$/);
+    await expect(page).toHaveURL(/\/history\/1$/);
     expect(server.finishes).toEqual(['POST']);
   });
 
@@ -100,22 +145,30 @@ test.describe('действие и завершение', () => {
 
     await bottomFinishButton(page).click();
 
-    await expect(page).toHaveURL(/\/history$/);
+    await expect(page).toHaveURL(/\/history\/1$/);
     await expect(page.getByRole('dialog')).toHaveCount(0);
     expect(server.finishes).toEqual(['POST']);
   });
 
-  test('ошибка завершения показывается, тренировка остаётся открытой', async ({ page }) => {
+  test('[rf-E10] ошибка завершения оставляет на экране тренировки, повтор открывает детали', async ({
+    page,
+  }) => {
     await startSessionServer(page, { finishStatus: HTTP_ERROR });
     await page.goto('/workouts/session');
     await finishButton(page).click();
-
     await page.getByRole('dialog').getByRole('button', { name: 'Завершить', exact: true }).click();
-
     await expect(page.getByRole('alert')).toContainText(
       'Не удалось завершить тренировку. Попробуйте ещё раз.',
     );
     await expect(page).toHaveURL(/\/workouts\/session$/);
+    await page.route('**/api/sessions/1/finish', (route) =>
+      route.fulfill({ json: ok({ ...makeSession(), finishedAt: STARTED_AT }) }),
+    );
+
+    await finishButton(page).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Завершить', exact: true }).click();
+
+    await expect(page).toHaveURL(/\/history\/1$/);
   });
 
   test('на 375×667 кнопка действия видна над нижней навигацией', async ({ page }) => {

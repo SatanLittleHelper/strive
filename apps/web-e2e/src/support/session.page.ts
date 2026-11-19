@@ -33,3 +33,6 @@ export const finishButton = (page: Page): Locator =>
   page.locator('app-active-session header').getByRole('button', { name: 'Завершить', exact: true });
 export const bottomFinishButton = (page: Page): Locator =>
   page.getByRole('button', { name: 'Завершить тренировку', exact: true });
+
+export const countdown = (page: Page): Locator =>
+  page.getByRole('status').filter({ hasText: 'Переход к' });

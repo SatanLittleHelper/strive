@@ -20,7 +20,7 @@ export interface AdvanceTargetParams {
 }
 
 export interface ActiveEditorSet {
-  mode: 'plan' | 'edit' | 'extra';
+  mode: 'plan' | 'edit';
   setNumber: number;
 }
 
@@ -35,7 +35,6 @@ export interface EditorSetParams {
   exercise: WorkoutExercise;
   results: SetResult[];
   selected: number | null;
-  adding: boolean;
 }
 
 export type PrimaryAction = 'save' | 'next' | 'finish';
@@ -49,4 +48,9 @@ export interface PrimaryActionParams {
 export interface SavedSetEvent {
   setNumber: number;
   resultsBefore: SetResult[];
+}
+
+export interface PendingAdvance {
+  target: number;
+  secondsLeft: number;
 }

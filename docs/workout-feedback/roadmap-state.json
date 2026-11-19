@@ -117,10 +117,10 @@
         "actualDays": null
       },
       "stepFolder": null,
-      "status": "not-started",
-      "specPath": null,
+      "status": "closed",
+      "specPath": "docs/superpowers/specs/2026-11-18-workout-feedback-remaining-design.md",
       "testPlanPath": null,
-      "planPath": null
+      "planPath": "docs/superpowers/plans/2026-11-18-workout-feedback-remaining.md"
     },
     {
       "id": "T2",
@@ -140,10 +140,10 @@
         "actualDays": null
       },
       "stepFolder": null,
-      "status": "not-started",
-      "specPath": null,
+      "status": "closed",
+      "specPath": "docs/superpowers/specs/2026-11-18-workout-feedback-remaining-design.md",
       "testPlanPath": null,
-      "planPath": null
+      "planPath": "docs/superpowers/plans/2026-11-18-workout-feedback-remaining.md"
     },
     {
       "id": "A1",
@@ -165,10 +165,10 @@
         "actualDays": null
       },
       "stepFolder": null,
-      "status": "not-started",
-      "specPath": null,
+      "status": "closed",
+      "specPath": "docs/superpowers/specs/2026-11-18-workout-feedback-remaining-design.md",
       "testPlanPath": null,
-      "planPath": null
+      "planPath": "docs/superpowers/plans/2026-11-18-workout-feedback-remaining.md"
     },
     {
       "id": "N1",
@@ -188,10 +188,10 @@
         "actualDays": null
       },
       "stepFolder": null,
-      "status": "not-started",
-      "specPath": null,
+      "status": "closed",
+      "specPath": "docs/superpowers/specs/2026-11-18-workout-feedback-remaining-design.md",
       "testPlanPath": null,
-      "planPath": null
+      "planPath": "docs/superpowers/plans/2026-11-18-workout-feedback-remaining.md"
     },
     {
       "id": "V0",
@@ -211,10 +211,10 @@
         "actualDays": null
       },
       "stepFolder": null,
-      "status": "not-started",
-      "specPath": null,
+      "status": "closed",
+      "specPath": "docs/superpowers/specs/2026-11-18-workout-feedback-remaining-design.md",
       "testPlanPath": null,
-      "planPath": null
+      "planPath": "docs/superpowers/plans/2026-11-18-workout-feedback-remaining.md"
     },
     {
       "id": "V1",
@@ -237,10 +237,10 @@
         "actualDays": null
       },
       "stepFolder": null,
-      "status": "not-started",
-      "specPath": null,
+      "status": "closed",
+      "specPath": "docs/superpowers/specs/2026-11-18-workout-feedback-remaining-design.md",
       "testPlanPath": null,
-      "planPath": null
+      "planPath": "docs/superpowers/plans/2026-11-18-workout-feedback-remaining.md"
     },
     {
       "id": "V2",
@@ -263,10 +263,10 @@
         "actualDays": null
       },
       "stepFolder": null,
-      "status": "not-started",
-      "specPath": null,
+      "status": "closed",
+      "specPath": "docs/superpowers/specs/2026-11-18-workout-feedback-remaining-design.md",
       "testPlanPath": null,
-      "planPath": null
+      "planPath": "docs/superpowers/plans/2026-11-18-workout-feedback-remaining.md"
     },
     {
       "id": "V3",
@@ -288,10 +288,10 @@
         "actualDays": null
       },
       "stepFolder": null,
-      "status": "not-started",
-      "specPath": null,
+      "status": "closed",
+      "specPath": "docs/superpowers/specs/2026-11-18-workout-feedback-remaining-design.md",
       "testPlanPath": null,
-      "planPath": null
+      "planPath": "docs/superpowers/plans/2026-11-18-workout-feedback-remaining.md"
     }
   ]
 }

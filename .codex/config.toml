@@ -6,3 +6,6 @@ enabled = true
 
 [plugins."nestjs-best-practices@ai-dev-kit"]
 enabled = true
+
+[plugins."pr-flow@ai-dev-kit"]
+enabled = true
