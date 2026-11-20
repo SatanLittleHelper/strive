@@ -51,8 +51,8 @@ export interface SharedSummaryView {
 }
 
 export interface SharedView {
-  workoutName: string;
   progressSession: WorkoutSession;
+  currentId: number | null;
   counters: SharedCounters;
   rows: SharedRowView[];
   summary: SharedSummaryView | null;

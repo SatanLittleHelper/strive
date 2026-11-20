@@ -9,7 +9,7 @@ import {
   untracked,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Location } from '@angular/common';
+import { Location, ViewportScroller } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { TuiSwipe, type TuiSwipeEvent } from '@taiga-ui/cdk';
 import {
@@ -79,6 +79,7 @@ export class ActiveSessionComponent {
   private readonly location = inject(Location);
   private readonly dialogs = inject(TuiDialogService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly viewport = inject(ViewportScroller);
   private readonly advanceCancelled = new Subject<void>();
 
   protected readonly formId = SET_FORM_ID;
@@ -180,6 +181,12 @@ export class ActiveSessionComponent {
     this.active.reload();
   }
 
+  // смена упражнения возвращает страницу к началу
+  private selectExercise(index: number): void {
+    this.currentIndex.set(index);
+    this.viewport.scrollToPosition([0, 0]);
+  }
+
   protected reloadHistory(): void {
     this.sessions.history.reload();
   }
@@ -203,7 +210,7 @@ export class ActiveSessionComponent {
 
     // суперсет переключается сразу; busy ещё держит сохранение, поэтому индекс меняется напрямую
     if (getSupersetIndexes({ exercises: this.exercises(), index: currentIndex }).length > 0) {
-      this.currentIndex.set(target);
+      this.selectExercise(target);
       return;
     }
 
@@ -237,7 +244,7 @@ export class ActiveSessionComponent {
         }
 
         this.pendingAdvance.set(null);
-        this.currentIndex.set(target);
+        this.selectExercise(target);
       });
   }
 
@@ -307,7 +314,7 @@ export class ActiveSessionComponent {
     if (next === index) return;
 
     this.cancelAdvance();
-    this.currentIndex.set(next);
+    this.selectExercise(next);
   }
 
   // с активной ссылкой нажатие открывает меню, поэтому здесь только первый выпуск
