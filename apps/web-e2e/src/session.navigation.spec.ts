@@ -31,6 +31,22 @@ test.describe('навигация между упражнениями', () => {
     await expect(position({ page, current: 2, total: 3 })).toBeVisible();
   });
 
+  test('смена упражнения возвращает страницу к началу', async ({ page }) => {
+    await startSessionServer(page);
+    await page.goto('/workouts/session');
+    await expect(position({ page, current: 1, total: 3 })).toBeVisible();
+    await page.evaluate(() => {
+      document.body.style.minHeight = '3000px';
+      window.scrollTo(0, 500);
+    });
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+
+    await page.getByRole('button', { name: 'Далее', exact: true }).click();
+
+    await expect(position({ page, current: 2, total: 3 })).toBeVisible();
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  });
+
   test('на границах списка «Назад» и «Далее» отключены', async ({ page }) => {
     await startSessionServer(page);
     await page.goto('/workouts/session');

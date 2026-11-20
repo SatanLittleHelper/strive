@@ -4,12 +4,7 @@ import type {
   WorkoutExercise,
   WorkoutSession,
 } from '@strive/api-interfaces';
-import {
-  getFirstUnfinishedExerciseIndex,
-  getSavedSetNumbers,
-  isExerciseDone,
-  isSessionDone,
-} from '../sessions';
+import { getSavedSetNumbers, isExerciseDone } from '../sessions';
 import { groupSupersets } from '../workouts';
 import type {
   SharedCounters,
@@ -59,18 +54,18 @@ function getStatus({
   exercise,
   results,
   finished,
-  currentId,
+  currentIds,
 }: {
   exercise: WorkoutExercise;
   results: SetResult[];
   finished: boolean;
-  currentId: number | undefined;
+  currentIds: Set<number>;
 }): SharedExerciseStatus {
   // у завершённой тренировки «выполнено» значит «есть хотя бы один подход»
   if (finished) {
     return results.some((result) => result.workoutExerciseId === exercise.id) ? 'done' : 'skipped';
   }
-  if (exercise.id === currentId) return 'current';
+  if (currentIds.has(exercise.id)) return 'current';
 
   return isExerciseDone({ exercise, results }) ? 'done' : 'todo';
 }
@@ -79,15 +74,18 @@ export function toSharedView(shared: SharedSessionResponse): SharedView {
   const progressSession = toProgressSession(shared);
   const { results } = progressSession;
   const finished = shared.finishedAt !== null;
-  // «текущее» — первое незавершённое; когда выполнено всё, метки нет
-  const currentId =
-    !finished && !isSessionDone(progressSession)
-      ? shared.workout.exercises[getFirstUnfinishedExerciseIndex(progressSession)]?.id
-      : undefined;
-  const rows = groupSupersets(shared.workout.exercises).map(({ items, superset }) => ({
+  const groups = groupSupersets(shared.workout.exercises);
+  // «текущее» — незавершённые упражнения первой незавершённой строки плана: в суперсете подходы
+  // чередуются, поэтому раскрыт весь суперсет; когда выполнено всё, метки нет
+  const isOpen = (exercise: WorkoutExercise) => !isExerciseDone({ exercise, results });
+  const currentRow = finished ? undefined : groups.find(({ items }) => items.some(isOpen));
+  const active = (currentRow?.items ?? []).filter(isOpen);
+  const currentIds = new Set(active.map((exercise) => exercise.id));
+  const expandedIds = new Set(currentRow?.items.map((exercise) => exercise.id));
+  const rows = groups.map(({ items, superset }) => ({
     superset,
     items: items.map((exercise): SharedExerciseView => {
-      const status = getStatus({ exercise, results, finished, currentId });
+      const status = getStatus({ exercise, results, finished, currentIds });
 
       return {
         id: exercise.id,
@@ -95,17 +93,16 @@ export function toSharedView(shared: SharedSessionResponse): SharedView {
         status,
         doneSets: countDoneSets(exercise, results),
         plannedSets: exercise.sets,
-        sets:
-          status === 'current'
-            ? shared.results.filter((result) => result.workoutExerciseId === exercise.id)
-            : [],
+        sets: expandedIds.has(exercise.id)
+          ? shared.results.filter((result) => result.workoutExerciseId === exercise.id)
+          : [],
       };
     }),
   }));
 
   return {
-    workoutName: shared.workout.name,
     progressSession,
+    currentId: active[0]?.id ?? null,
     counters: getCounters(progressSession),
     rows,
     summary:

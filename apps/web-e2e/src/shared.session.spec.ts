@@ -20,8 +20,9 @@ const PLAN_SET_TEXT = '62.5 кг × 7';
 // подходы раскрыты только у текущего упражнения
 const CURRENT_SETS_A = 1;
 const CURRENT_SETS_B = 2;
+const SUPERSET_SETS = 2;
+const STATUS_HEADING = 'Тренировка идёт';
 const WORKOUT_NAME = 'Тренировка A';
-const SECOND_EXERCISE = 'Жим лёжа';
 const SECRET_NOTE = 'Секретная заметка';
 
 // первое упражнение выполнено, во втором один подход из трёх
@@ -49,23 +50,20 @@ test.describe('страница друга', () => {
 
     await page.goto(SHARED_PATH);
 
-    await expect(page.getByRole('heading', { name: WORKOUT_NAME, level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: STATUS_HEADING, level: 1 })).toBeVisible();
+    await expect(page.getByText(WORKOUT_NAME)).toHaveCount(0);
     await expect(progressBar(page)).toHaveJSProperty('max', EXERCISES);
     await expect
       .poll(() => progressBar(page).evaluate((element: HTMLProgressElement) => element.value))
       .toBeCloseTo(1 + 2 / PLANNED_SETS);
     await expect(page.getByText('Осталось подходов: 4 из 9', { exact: true })).toBeVisible();
     await expect(page.getByText('Осталось упражнений: 2 из 3', { exact: true })).toBeVisible();
-    await expect(page.getByText(PLAN_SET_TEXT)).toHaveCount(CURRENT_SETS_A);
-    await expect(page.getByText('RPE 4')).toHaveCount(CURRENT_SETS_A);
+    // подходы чередуются, поэтому раскрыты оба упражнения суперсета
+    await expect(page.getByText(PLAN_SET_TEXT)).toHaveCount(SUPERSET_SETS);
+    await expect(page.getByText('RPE 4')).toHaveCount(SUPERSET_SETS);
     await expect(page.getByText('Завершено', { exact: true })).toHaveCount(1);
-    await expect(page.getByText('Не начато', { exact: true })).toHaveCount(1);
-    await expect(
-      page
-        .getByRole('listitem')
-        .filter({ has: page.getByText(SECOND_EXERCISE) })
-        .getByText('Сейчас', { exact: true }),
-    ).toBeVisible();
+    await expect(page.getByText('Сейчас', { exact: true })).toHaveCount(2);
+    await expect(page.getByText('Не начато', { exact: true })).toHaveCount(0);
     // суперсет из двух последних упражнений отмечен
     await expect(page.getByRole('list', { name: 'Суперсет' })).toHaveCount(1);
   });
@@ -145,7 +143,7 @@ test.describe('страница друга', () => {
 
     await page.clock.runFor(SHARED_POLL_MS);
 
-    await expect(page.getByRole('heading', { name: WORKOUT_NAME, level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: STATUS_HEADING, level: 1 })).toBeVisible();
   });
 
   test('[ss-E20] состояние загрузки до первого ответа', async ({ page }) => {
@@ -164,7 +162,7 @@ test.describe('страница друга', () => {
     await expect(page.getByText(INVALID_MESSAGE)).toHaveCount(0);
     await expect(page.getByRole('heading', { name: WORKOUT_NAME })).toHaveCount(0);
     release();
-    await expect(page.getByRole('heading', { name: WORKOUT_NAME, level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: STATUS_HEADING, level: 1 })).toBeVisible();
   });
 
   test('[ss-E21] страница открывается вне оболочки приложения и не показывает заметок', async ({
@@ -179,7 +177,7 @@ test.describe('страница друга', () => {
     await mockShared(page, [{ body: withNote }]);
 
     await page.goto(SHARED_PATH);
-    await expect(page.getByRole('heading', { name: WORKOUT_NAME, level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: STATUS_HEADING, level: 1 })).toBeVisible();
 
     await expect(page.locator('app-shell')).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Strive' })).toHaveCount(0);
