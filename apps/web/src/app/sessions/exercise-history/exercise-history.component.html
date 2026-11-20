@@ -29,8 +29,8 @@
 	@if (today(); as sets) {
 		<div appearance="neutral" aria-label="Сегодня" class="grid gap-2" role="group" tuiCardLarge>
 			<h3 tuiTitle>Сегодня</h3>
-			@for (set of sets; track set.setNumber) {
-				<div data-set-row (tuiSwipe)="editToday($event, set.setNumber)">
+			@for (set of sets; track set.workoutExerciseId + '-' + set.setNumber) {
+				<div data-set-row (tuiSwipe)="editToday($event, set)">
 					<ng-container [ngTemplateOutlet]="setRow" [ngTemplateOutletContext]="{ $implicit: set }" />
 				</div>
 			}

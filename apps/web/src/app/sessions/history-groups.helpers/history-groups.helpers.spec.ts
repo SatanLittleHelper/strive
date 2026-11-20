@@ -31,15 +31,33 @@ describe('Группы истории упражнения', () => {
       ...setsOf({ workoutExerciseId: SECOND_ID, setNumbers: [1] }),
     ];
 
-    const group = getTodayGroup({ exercise: planExercise({ id: FIRST_ID }), results });
+    const exercise = planExercise({ id: FIRST_ID });
+    const other = planExercise({ id: SECOND_ID, exerciseId: 99 });
+
+    const group = getTodayGroup({ exercise, exercises: [exercise, other], results });
 
     expect(group?.map((set) => set.setNumber)).toEqual([3, 1]);
+  });
+
+  it('группа «Сегодня» объединяет подходы всех строк плана с тем же упражнением', () => {
+    const first = planExercise({ id: FIRST_ID, exerciseId: 5 });
+    const second = planExercise({ id: SECOND_ID, exerciseId: 5 });
+    const results = [
+      ...setsOf({ workoutExerciseId: FIRST_ID, setNumbers: [1, 2] }),
+      ...setsOf({ workoutExerciseId: SECOND_ID, setNumbers: [1, 2] }),
+    ];
+
+    const group = getTodayGroup({ exercise: second, exercises: [first, second], results });
+
+    expect(group).toHaveLength(4);
   });
 
   it('без сохранённых подходов группы «Сегодня» нет', () => {
     const results = setsOf({ workoutExerciseId: SECOND_ID, setNumbers: [1] });
 
-    expect(getTodayGroup({ exercise: planExercise({ id: FIRST_ID }), results })).toBeNull();
+    const exercise = planExercise({ id: FIRST_ID });
+
+    expect(getTodayGroup({ exercise, exercises: [exercise], results })).toBeNull();
   });
 
   it('записи истории превращаются в группы по дате с сохранением порядка API', () => {
@@ -76,18 +94,19 @@ describe('Группы истории упражнения', () => {
     expect(groups).toHaveLength(HISTORY_GROUPS_LIMIT);
     expect(groups.map((group) => group.sessionId)).toEqual(range(HISTORY_GROUPS_LIMIT));
   });
-  it('[U6] подходы «Сегодня» относятся к своей строке плана', () => {
+  it('[U6] «Сегодня» повторяющегося упражнения включает подходы всех его строк плана', () => {
     const SHARED_EXERCISE_ID = 50;
     const FIRST_ROW_ID = 1;
     const SECOND_ROW_ID = 2;
+    const first = planExercise({ id: FIRST_ROW_ID, exerciseId: SHARED_EXERCISE_ID });
     const second = planExercise({ id: SECOND_ROW_ID, exerciseId: SHARED_EXERCISE_ID });
     const results = [
       ...setsOf({ workoutExerciseId: FIRST_ROW_ID, setNumbers: [1, 2, 3] }),
       ...setsOf({ workoutExerciseId: SECOND_ROW_ID, setNumbers: [1] }),
     ];
 
-    const group = getTodayGroup({ exercise: second, results });
+    const group = getTodayGroup({ exercise: second, exercises: [first, second], results });
 
-    expect(group?.map((set) => set.setNumber)).toEqual([1]);
+    expect(group).toHaveLength(4);
   });
 });

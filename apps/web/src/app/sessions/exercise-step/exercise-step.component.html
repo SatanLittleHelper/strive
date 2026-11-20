@@ -51,6 +51,7 @@
 		</section>
 	}
 	<app-exercise-history
+		[workoutExerciseId]="item().id"
 		[disabled]="disabled()"
 		[fillDisabled]="formSet() === null"
 		[groups]="groups()"

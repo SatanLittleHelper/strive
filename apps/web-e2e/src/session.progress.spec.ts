@@ -99,4 +99,15 @@ test.describe('прогресс тренировки', () => {
     await expect(page.locator('[data-superset]')).toHaveCount(1);
     await expect(page.getByText(/^Суперсет/)).toHaveCount(0);
   });
+  test('текущий суперсет на полосе прогресса выделен', async ({ page }) => {
+    await startSessionServer(page, { session: makeSession({ supersetGroups: [1, 1, null] }) });
+    await page.goto('/workouts/session');
+    await expect(page.locator('[data-superset][data-current]')).toHaveCount(1);
+
+    await page.getByRole('button', { name: 'Далее', exact: true }).click();
+    await page.getByRole('button', { name: 'Далее', exact: true }).click();
+
+    await expect(page.locator('[data-superset]')).toHaveCount(1);
+    await expect(page.locator('[data-current]')).toHaveCount(0);
+  });
 });

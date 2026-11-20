@@ -1,15 +1,28 @@
 import type { ExerciseHistory, ExerciseHistoryEntry, SetResult } from '@strive/api-interfaces';
 import { HISTORY_GROUPS_LIMIT } from '../sessions.constants';
-import type { ExerciseResultsParams } from '../session-view.types';
+import type { TodayGroupParams } from '../session-view.types';
 
 function sortSetsDescending(sets: SetResult[]): SetResult[] {
   return [...sets].sort((first, second) => second.setNumber - first.setNumber);
 }
 
-export function getTodayGroup({ exercise, results }: ExerciseResultsParams): SetResult[] | null {
-  const sets = sortSetsDescending(
-    results.filter((result) => result.workoutExerciseId === exercise.id),
+// «Сегодня» общее для всех строк плана с этим упражнением, новые подходы сверху
+export function getTodayGroup({
+  exercise,
+  exercises,
+  results,
+}: TodayGroupParams): SetResult[] | null {
+  const rowIds = new Set(
+    exercises
+      .filter((item) => item.exercise.id === exercise.exercise.id)
+      .map((item) => item.id),
   );
+  const sets = results
+    .filter((result) => rowIds.has(result.workoutExerciseId))
+    .sort(
+      (first, second) =>
+        second.completedAt.localeCompare(first.completedAt) || second.setNumber - first.setNumber,
+    );
 
   return sets.length > 0 ? sets : null;
 }
