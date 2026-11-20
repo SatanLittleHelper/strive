@@ -84,7 +84,7 @@
 						<h2 tuiTitle="m">
 							<span class="line-clamp-2 min-w-0">{{ item.exercise.name }}</span>
 						</h2>
-						<app-session-progress [session]="current" />
+						<app-session-progress [currentId]="item.id" [session]="current" />
 					</div>
 					@if (pendingAdvance(); as pending) {
 						<div

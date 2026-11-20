@@ -36,6 +36,7 @@ const RPE_COLORS = [
   host: { class: 'block' },
 })
 export class ExerciseHistoryComponent {
+  readonly workoutExerciseId = input.required<number>();
   readonly today = input.required<SetResult[] | null>();
   readonly groups = input.required<ExerciseHistoryEntry[]>();
   readonly status = input.required<ResourceStatus>();
@@ -62,9 +63,11 @@ export class ExerciseHistoryComponent {
       : (RPE_COLORS[rpe - 1] ?? 'var(--color-text-muted)');
   }
 
-  protected editToday(event: TuiSwipeEvent, setNumber: number): void {
-    if (this.disabled() || event.direction !== 'left') return;
+  protected editToday(event: TuiSwipeEvent, set: SetResult): void {
+    // подходы других строк плана с тем же упражнением видны, но правятся на своей строке
+    const isOwn = set.workoutExerciseId === this.workoutExerciseId();
+    if (this.disabled() || !isOwn || event.direction !== 'left') return;
 
-    this.editSet.emit(setNumber);
+    this.editSet.emit(set.setNumber);
   }
 }

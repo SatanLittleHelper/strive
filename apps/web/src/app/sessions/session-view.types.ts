@@ -5,6 +5,10 @@ export interface ExerciseResultsParams {
   results: SetResult[];
 }
 
+export interface TodayGroupParams extends ExerciseResultsParams {
+  exercises: WorkoutExercise[];
+}
+
 export interface AdvanceParams {
   exercise: WorkoutExercise;
   resultsBefore: SetResult[];

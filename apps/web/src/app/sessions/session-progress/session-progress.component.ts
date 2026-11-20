@@ -11,6 +11,7 @@ import { getExerciseCompletion, getSessionCompletion } from '..';
 })
 export class SessionProgressComponent {
   readonly session = input.required<WorkoutSession>();
+  readonly currentId = input<number | null>(null);
 
   protected readonly max = computed(() => this.session().workout.exercises.length);
   protected readonly value = computed(() => getSessionCompletion(this.session()));
@@ -19,6 +20,7 @@ export class SessionProgressComponent {
 
     return groupSupersets(workout.exercises).map(({ items, superset }) => ({
       superset,
+      current: superset && items.some((exercise) => exercise.id === this.currentId()),
       members: items.map((exercise) => ({
         id: exercise.id,
         fill: getExerciseCompletion({ exercise, results }),
