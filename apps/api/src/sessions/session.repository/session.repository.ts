@@ -9,12 +9,14 @@ import {
   SET_RESULT_LIMITS,
   type SaveSetResultRequest,
   type SessionHistoryResponse,
+  type ShareLink,
   type WorkoutSession,
 } from '@strive/api-interfaces';
 import { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/index.js';
 import { toSession, toSetResult } from '../session.mapper.js';
 import { toFinishedSessionExercises } from '../session-exercises.helpers/index.js';
+import { generateShareToken, toShareLink } from '../session-share/index.js';
 import { isFinishedSession } from '../session.types.js';
 import type {
   FinishedSessionExercises,
@@ -26,6 +28,7 @@ import {
   SESSION_LIST_LIMIT,
   HISTORY_ENTRIES_PER_EXERCISE,
   HISTORY_SESSIONS_LIMIT,
+  SHARE_TTL_MS,
 } from '../sessions.constants.js';
 
 @Injectable()
@@ -163,6 +166,62 @@ export class SessionRepository {
     }
 
     return this.getOwned(deviceId, sessionId);
+  }
+
+  async getOrCreateShare(deviceId: string, sessionId: number): Promise<ShareLink> {
+    const current = await this.getShare(deviceId, sessionId);
+    if (current) return current;
+
+    const now = new Date();
+    // Одно условное обновление: остальные запросы читают ссылку победителя.
+    await this.prisma.workout_session.updateMany({
+      where: {
+        id: sessionId,
+        device_id: deviceId,
+        OR: [{ share_token: null }, { share_expires_at: { lte: now } }],
+      },
+      data: {
+        share_token: generateShareToken(),
+        share_expires_at: new Date(now.getTime() + SHARE_TTL_MS),
+      },
+    });
+
+    const created = await this.getShare(deviceId, sessionId);
+    if (created === null) throw new ConflictException('Не удалось выдать ссылку');
+
+    return created;
+  }
+
+  async revokeShare(deviceId: string, sessionId: number): Promise<void> {
+    const { count } = await this.prisma.workout_session.updateMany({
+      where: { id: sessionId, device_id: deviceId },
+      data: { share_token: null, share_expires_at: null },
+    });
+
+    if (count === 0) throw new NotFoundException('Сессия не найдена');
+  }
+
+  // читает только колонки ссылки, без плана и подходов; чужая или отсутствующая сессия — 404
+  private async getShare(deviceId: string, sessionId: number): Promise<ShareLink | null> {
+    const row = await this.prisma.workout_session.findFirst({
+      where: { id: sessionId, device_id: deviceId },
+      select: { share_token: true, share_expires_at: true },
+    });
+
+    if (row === null) throw new NotFoundException('Сессия не найдена');
+
+    return toShareLink(row);
+  }
+
+  async getByShareToken(token: string): Promise<WorkoutSession> {
+    const row = await this.prisma.workout_session.findFirst({
+      where: { share_token: token, share_expires_at: { gt: new Date() } },
+      include: SESSION_INCLUDE,
+    });
+
+    if (row === null) throw new NotFoundException('Ссылка недействительна');
+
+    return toSession(row);
   }
 
   async getHistory(deviceId: string, sessionId: number): Promise<SessionHistoryResponse> {

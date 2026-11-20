@@ -38,3 +38,15 @@ export interface WorkoutOptions {
   name?: string;
   description?: string | null;
 }
+
+export interface ShareFixture {
+  client: pg.Client;
+  sessionId: string;
+  token: string;
+  expiresAt: string;
+}
+
+export interface ShareColumns {
+  token: string | null;
+  expiresAt: string | null;
+}

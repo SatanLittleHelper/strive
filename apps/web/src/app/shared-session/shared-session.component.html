@@ -1,0 +1,101 @@
+<ng-template #exerciseRow let-item="item">
+	<li class="grid">
+		<div tuiCell="l">
+			<span tuiTitle>
+				{{ item.name }}
+				<span tuiSubtitle>Подходов: {{ item.doneSets }} из {{ item.plannedSets }}</span>
+			</span>
+			<span tuiBadge [appearance]="appearanceFor(item.status)">{{ labelFor(item.status) }}</span>
+		</div>
+		@if (item.sets.length > 0) {
+			<ul class="grid pb-2">
+				@for (set of item.sets; track set.setNumber) {
+					<li tuiCell="l">
+						<span tuiTitle>
+							{{ set.weight }} кг × {{ set.reps }}
+							@if (set.rpe !== null) {
+								<span tuiSubtitle>RPE {{ set.rpe }}</span>
+							}
+						</span>
+					</li>
+				}
+			</ul>
+		}
+	</li>
+</ng-template>
+
+<section class="grid gap-4">
+	@if (offline() && state() !== 'invalid') {
+		<div appearance="warning" role="status" tuiNotification>Нет соединения. Повторяем попытку…</div>
+	}
+	@switch (state()) {
+		@case ('invalid') {
+			<app-empty-state message="Ссылка недействительна" />
+		}
+		@case ('loading') {
+			<div role="status" aria-label="Загрузка тренировки" class="grid gap-3">
+				@for (row of skeletonRows; track row) {
+					<div aria-hidden="true" tuiCell="l" [tuiSkeleton]="true">
+						<span tuiTitle>Название упражнения</span>
+					</div>
+				}
+			</div>
+		}
+		@case ('ready') {
+			@if (view(); as current) {
+				<header tuiHeader>
+					<h1 tuiTitle="l">
+						{{ current.workoutName }}
+						<span tuiSubtitle>{{ current.summary ? 'Тренировка завершена' : 'Тренировка идёт' }}</span>
+					</h1>
+				</header>
+				@if (current.summary; as summary) {
+					<div class="flex flex-wrap gap-2">
+						<span appearance="neutral" tuiBadge>
+							{{ formatDuration(summary.startedAt, summary.finishedAt) }}
+						</span>
+						<span appearance="neutral" tuiBadge>{{ formatVolume(summary.totalVolume) }}</span>
+						<span appearance="neutral" tuiBadge>Упражнений: {{ summary.exerciseCount }}</span>
+						<span appearance="neutral" tuiBadge>Подходов: {{ summary.setCount }}</span>
+					</div>
+				} @else {
+					<div class="flex flex-wrap gap-2">
+						<span appearance="neutral" tuiBadge>
+							Осталось подходов: {{ current.counters.remainingSets }} из {{ current.counters.totalSets }}
+						</span>
+						<span appearance="neutral" tuiBadge>
+							Осталось упражнений: {{ current.counters.remainingExercises }} из
+							{{ current.counters.totalExercises }}
+						</span>
+					</div>
+					<app-session-progress [session]="current.progressSession" />
+				}
+				<ol
+					appearance="neutral"
+					class="grid gap-0! [&_[tuiCell]]:m-0! [&_[tuiCell]]:box-border! [&_[tuiCell]]:min-h-14! [&_[tuiCell]]:w-full! [&_[tuiCell]]:px-3!"
+					tuiCardLarge
+				>
+					@for (row of current.rows; track row.items[0].id) {
+						@if (row.superset) {
+							<li
+								class="my-3 rounded-xl bg-(--tui-background-neutral-1) shadow-[inset_4px_0_0_var(--tui-background-accent-1)]"
+								data-superset
+							>
+								<ul aria-label="Суперсет" class="grid">
+									@for (item of row.items; track item.id) {
+										<ng-container [ngTemplateOutlet]="exerciseRow" [ngTemplateOutletContext]="{ item }" />
+									}
+								</ul>
+							</li>
+						} @else {
+							<ng-container
+								[ngTemplateOutlet]="exerciseRow"
+								[ngTemplateOutletContext]="{ item: row.items[0] }"
+							/>
+						}
+					}
+				</ol>
+			}
+		}
+	}
+</section>

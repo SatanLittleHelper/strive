@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Inject,
@@ -15,6 +16,7 @@ import type {
   SessionHistoryResponse,
   SessionListResponse,
   SessionSummary,
+  ShareLink,
   WorkoutSession,
 } from '@strive/api-interfaces';
 import { VALIDATION_PIPE_OPTIONS } from '../common/validation-pipe.constants.js';
@@ -104,5 +106,24 @@ export class SessionsController {
     params: SessionIdDto,
   ): Promise<WorkoutSession> {
     return this.sessions.finish(deviceId, params.id);
+  }
+
+  @Post(':id/share')
+  share(
+    @DeviceId() deviceId: string,
+    @Param(new ValidationPipe({ ...VALIDATION_PIPE_OPTIONS, expectedType: SessionIdDto }))
+    params: SessionIdDto,
+  ): Promise<ShareLink> {
+    return this.sessions.getOrCreateShare(deviceId, params.id);
+  }
+
+  @Delete(':id/share')
+  @HttpCode(204)
+  async revokeShare(
+    @DeviceId() deviceId: string,
+    @Param(new ValidationPipe({ ...VALIDATION_PIPE_OPTIONS, expectedType: SessionIdDto }))
+    params: SessionIdDto,
+  ): Promise<void> {
+    await this.sessions.revokeShare(deviceId, params.id);
   }
 }

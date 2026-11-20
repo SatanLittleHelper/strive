@@ -25,3 +25,5 @@ export interface FinishedSessionExercises {
 export function isFinishedSession(session: WorkoutSession): session is FinishedWorkoutSession {
   return session.finishedAt !== null;
 }
+
+export type ShareRow = Pick<SessionRow, 'share_token' | 'share_expires_at'>;

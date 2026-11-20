@@ -2,10 +2,11 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ApplicationRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import type { SessionHistoryResponse, WorkoutSession } from '@strive/api-interfaces';
+import type { SessionHistoryResponse, ShareLink, WorkoutSession } from '@strive/api-interfaces';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SessionsService } from './sessions.service';
 
+const SHARE: ShareLink = { token: 'share-token', expiresAt: '2026-11-21T12:00:00.000Z' };
 const SESSION_ID = 42;
 const WORKOUT_ID = 2;
 const EXERCISE_ID = 3;
@@ -151,6 +152,34 @@ describe('Сервис сессий', () => {
     expect(statuses).toEqual([conflict]);
     expect(sessions.active.value()).toEqual({ session: SESSION });
   });
+  it('[ss-U9] выпуск ссылки кладёт share в активную сессию', async () => {
+    const sessions = await service();
+    sessions.active.set({ session: SESSION });
+
+    sessions.share(SESSION_ID).subscribe();
+    const request = TestBed.inject(HttpTestingController).expectOne(
+      `/api/sessions/${SESSION_ID}/share`,
+    );
+    expect(request.request.method).toBe('POST');
+    request.flush(SHARE);
+
+    expect(sessions.active.value()).toEqual({ session: { ...SESSION, share: SHARE } });
+  });
+
+  it('[ss-U10] отзыв обнуляет share у активной сессии', async () => {
+    const sessions = await service();
+    sessions.active.set({ session: { ...SESSION, share: SHARE } });
+
+    sessions.revokeShare(SESSION_ID).subscribe();
+    const request = TestBed.inject(HttpTestingController).expectOne(
+      `/api/sessions/${SESSION_ID}/share`,
+    );
+    expect(request.request.method).toBe('DELETE');
+    request.flush(null);
+
+    expect(sessions.active.value()).toEqual({ session: { ...SESSION, share: null } });
+  });
+
   it('не запрашивает историю, пока нет активной сессии', async () => {
     const sessions = await service();
 

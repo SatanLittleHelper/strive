@@ -12,14 +12,23 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Location } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { TuiSwipe, type TuiSwipeEvent } from '@taiga-ui/cdk';
-import { TuiButton, TuiDialogService, TuiLink, TuiNotification, TuiTitle } from '@taiga-ui/core';
+import {
+  TuiButton,
+  TuiDataList,
+  TuiDialogService,
+  TuiDropdown,
+  TuiLink,
+  TuiNotification,
+  TuiTitle,
+} from '@taiga-ui/core';
 import { TUI_CONFIRM, TuiSkeleton } from '@taiga-ui/kit';
 import { TuiCardLarge, TuiHeader } from '@taiga-ui/layout';
-import { finalize, interval, Subject, take, takeUntil } from 'rxjs';
+import { finalize, interval, Subject, take, takeUntil, type Observable } from 'rxjs';
 import { getResourceViewState } from '../../api/resource-view-state';
 import { EmptyStateComponent } from '../../shared/empty-state';
 import { ErrorStateComponent } from '../../shared/error-state';
 import {
+  shareLink,
   getEditorSet,
   getFirstUnfinishedExerciseIndex,
   getPrimaryAction,
@@ -46,6 +55,8 @@ const TICK_MS = 1000;
   imports: [
     RouterLink,
     TuiButton,
+    TuiDataList,
+    TuiDropdown,
     TuiLink,
     TuiNotification,
     TuiTitle,
@@ -146,6 +157,16 @@ export class ActiveSessionComponent {
   protected readonly confirming = signal(false);
   protected readonly pendingSaves = signal(0);
   protected readonly error = signal('');
+  protected readonly sharing = signal(false);
+  protected readonly menuOpen = signal(false);
+  protected readonly shareNotice = signal('');
+  protected readonly shareError = signal('');
+  // просроченная локальная ссылка считается отсутствующей: нажатие снова выпустит её
+  protected readonly hasShare = computed(() => {
+    const share = this.session()?.share ?? null;
+
+    return share !== null && Date.parse(share.expiresAt) > Date.now();
+  });
   protected readonly advanceSeconds = AUTO_ADVANCE_SECONDS;
   protected readonly pendingAdvance = signal<PendingAdvance | null>(null);
   protected readonly pendingAdvanceName = computed(() => {
@@ -287,6 +308,83 @@ export class ActiveSessionComponent {
 
     this.cancelAdvance();
     this.currentIndex.set(next);
+  }
+
+  // с активной ссылкой нажатие открывает меню, поэтому здесь только первый выпуск
+  protected onShareClick(): void {
+    if (this.hasShare()) return;
+
+    this.share();
+  }
+
+  // отправка из меню идёт синхронно, в жесте пользователя: Web Share не работает после await
+  protected shareIssued(): void {
+    // TODO: ссылка может быть отозвана в другой вкладке, перечитывать active перед отправкой
+    const issued = this.session()?.share ?? null;
+    this.menuOpen.set(false);
+    this.clearShareMessages();
+
+    if (issued !== null) void this.deliver(issued.token);
+  }
+
+  protected revokeShare(): void {
+    const session = this.session();
+    this.menuOpen.set(false);
+    if (!session || this.sharing()) return;
+
+    this.runShareAction({
+      request: this.sessions.revokeShare(session.id),
+      onNext: () => this.shareNotice.set('Ссылка отозвана'),
+      errorText: 'Не удалось отозвать ссылку. Попробуйте ещё раз.',
+    });
+  }
+
+  private share(): void {
+    const session = this.session();
+    if (!session || this.sharing()) return;
+
+    this.runShareAction({
+      request: this.sessions.share(session.id),
+      onNext: (link) => void this.deliver(link.token),
+      errorText: 'Не удалось создать ссылку. Попробуйте ещё раз.',
+    });
+  }
+
+  private runShareAction<T>({
+    request,
+    onNext,
+    errorText,
+  }: {
+    request: Observable<T>;
+    onNext: (value: T) => void;
+    errorText: string;
+  }): void {
+    this.sharing.set(true);
+    this.clearShareMessages();
+
+    request
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.sharing.set(false)),
+      )
+      .subscribe({ next: onNext, error: () => this.shareError.set(errorText) });
+  }
+
+  private clearShareMessages(): void {
+    this.shareNotice.set('');
+    this.shareError.set('');
+  }
+
+  private async deliver(token: string): Promise<void> {
+    const outcome = await shareLink({ token });
+
+    if (outcome === 'copied') this.shareNotice.set('Ссылка скопирована');
+    else if (outcome === 'failed') {
+      // ссылка уже выдана: следующее нажатие откроет меню, где «Поделиться» сработает в жесте
+      this.shareError.set(
+        'Не удалось поделиться ссылкой. Нажмите на кнопку и выберите «Поделиться».',
+      );
+    }
   }
 
   private finish(): void {

@@ -53,6 +53,7 @@ test('на телефоне навигация закреплена внизу �
 test('на телефоне подписи вкладок отцентрованы и не прижаты к краям экрана', async ({ page }) => {
   await page.setViewportSize(MOBILE_VIEWPORT);
   await page.goto('/');
+  await expect(mainNavigation(page).getByRole('link')).toHaveCount(NAV_TAB_COUNT);
 
   const tabs = await mainNavigation(page)
     .getByRole('link')
