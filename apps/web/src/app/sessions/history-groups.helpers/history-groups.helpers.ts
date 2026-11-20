@@ -13,9 +13,7 @@ export function getTodayGroup({
   results,
 }: TodayGroupParams): SetResult[] | null {
   const rowIds = new Set(
-    exercises
-      .filter((item) => item.exercise.id === exercise.exercise.id)
-      .map((item) => item.id),
+    exercises.filter((item) => item.exercise.id === exercise.exercise.id).map((item) => item.id),
   );
   const sets = results
     .filter((result) => rowIds.has(result.workoutExerciseId))
