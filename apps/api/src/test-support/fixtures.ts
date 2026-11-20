@@ -3,6 +3,8 @@ import type pg from 'pg';
 import type {
   FinishSessionFixture,
   SessionFixture,
+  ShareColumns,
+  ShareFixture,
   SetResultFixture,
   WorkoutExerciseFixture,
   WorkoutOptions,
@@ -135,4 +137,35 @@ export async function insertSetResult({
      VALUES ($1, $2, $3, $4, $5, $6, $7)`,
     [sessionId, rowId, setNumber, weight, reps, rpe, note],
   );
+}
+
+export async function setShare({
+  client,
+  sessionId,
+  token,
+  expiresAt,
+}: ShareFixture): Promise<void> {
+  await client.query(
+    `UPDATE workout_session SET share_token = $2, share_expires_at = $3::timestamptz WHERE id = $1`,
+    [sessionId, token, expiresAt],
+  );
+}
+
+export async function getShareColumns({
+  client,
+  sessionId,
+}: {
+  client: pg.Client;
+  sessionId: string;
+}): Promise<ShareColumns> {
+  const result = await client.query<{ share_token: string | null; share_expires_at: Date | null }>(
+    `SELECT share_token, share_expires_at FROM workout_session WHERE id = $1`,
+    [sessionId],
+  );
+  const row = result.rows[0];
+
+  return {
+    token: row?.share_token ?? null,
+    expiresAt: row?.share_expires_at?.toISOString() ?? null,
+  };
 }

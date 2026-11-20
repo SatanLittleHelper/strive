@@ -17,8 +17,10 @@ export type {
 export { DEFAULT_RPE, SET_RESULT_LIMITS } from './set-result.constants.js';
 export type {
   ActiveSessionResponse,
+  ActiveSharedSession,
   ExerciseHistory,
   ExerciseHistoryEntry,
+  FinishedSharedSession,
   SaveSetResultRequest,
   SessionExerciseResults,
   SessionHistoryResponse,
@@ -27,6 +29,9 @@ export type {
   SessionSummary,
   SetResult,
   SetResultParamsRequest,
+  ShareLink,
+  SharedSessionResponse,
+  SharedSetResult,
   StartSessionRequest,
   WorkoutSession,
 } from './workout-session.types.js';

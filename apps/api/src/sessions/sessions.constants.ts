@@ -14,3 +14,6 @@ export const HISTORY_ENTRIES_PER_EXERCISE = 10;
 export const HISTORY_SESSIONS_LIMIT = 100;
 // Размер списка завершённых тренировок на экране истории.
 export const SESSION_LIST_LIMIT = 20;
+
+// Срок общей ссылки: сутки с момента создания.
+export const SHARE_TTL_MS = 24 * 60 * 60 * 1000;

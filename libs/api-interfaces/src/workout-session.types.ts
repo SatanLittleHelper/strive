@@ -10,12 +10,18 @@ export interface SetResult {
   completedAt: string;
 }
 
+export interface ShareLink {
+  token: string;
+  expiresAt: string;
+}
+
 export interface WorkoutSession {
   id: number;
   workout: Workout;
   startedAt: string;
   finishedAt: string | null;
   results: SetResult[];
+  share?: ShareLink | null;
 }
 
 export interface SessionExerciseResults {
@@ -80,3 +86,24 @@ export interface ExerciseHistory {
 export interface SessionHistoryResponse {
   exercises: ExerciseHistory[];
 }
+
+export type SharedSetResult = Omit<SetResult, 'note'>;
+
+interface SharedSessionBase {
+  workout: Workout;
+  startedAt: string;
+  results: SharedSetResult[];
+}
+
+export interface ActiveSharedSession extends SharedSessionBase {
+  finishedAt: null;
+}
+
+export interface FinishedSharedSession extends SharedSessionBase {
+  finishedAt: string;
+  exerciseCount: number;
+  setCount: number;
+  totalVolume: number;
+}
+
+export type SharedSessionResponse = ActiveSharedSession | FinishedSharedSession;

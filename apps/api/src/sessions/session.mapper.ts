@@ -1,5 +1,6 @@
 import type { SetResult, WorkoutSession } from '@strive/api-interfaces';
 import { toWorkout } from '../workouts/index.js';
+import { toShareLink } from './session-share/index.js';
 import type { SessionRow, SetResultRow } from './session.types.js';
 
 export function toSetResult(result: SetResultRow): SetResult {
@@ -21,5 +22,6 @@ export function toSession(row: SessionRow): WorkoutSession {
     startedAt: row.started_at.toISOString(),
     finishedAt: row.finished_at?.toISOString() ?? null,
     results: row.set_results.map(toSetResult),
+    share: toShareLink(row),
   };
 }

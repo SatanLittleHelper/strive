@@ -36,18 +36,48 @@
 							{{ current.workout.name }}
 						</h1>
 					</div>
-					<button
-						appearance="flat"
-						class="shrink-0"
-						size="s"
-						tuiButton
-						type="button"
-						[disabled]="busy()"
-						(click)="requestFinish()"
-					>
-						Завершить
-					</button>
+					<div class="flex shrink-0 items-center gap-1">
+						<button
+							aria-label="Поделиться"
+							iconStart="@tui.share"
+							size="s"
+							tuiDropdown
+							tuiDropdownAlign="end"
+							tuiIconButton
+							type="button"
+							[appearance]="hasShare() ? 'secondary' : 'flat'"
+							[disabled]="sharing()"
+							[tuiDropdownEnabled]="hasShare()"
+							[(tuiDropdownOpen)]="menuOpen"
+							(click)="onShareClick()"
+						>
+							<tui-data-list *tuiDropdown size="s">
+								<button iconStart="@tui.share" tuiOption type="button" (click)="shareIssued()">
+									Поделиться
+								</button>
+								<button iconStart="@tui.link-2-off" tuiOption type="button" (click)="revokeShare()">
+									Отозвать ссылку
+								</button>
+							</tui-data-list>
+						</button>
+						<button
+							appearance="flat"
+							size="s"
+							tuiButton
+							type="button"
+							[disabled]="busy()"
+							(click)="requestFinish()"
+						>
+							Завершить
+						</button>
+					</div>
 					<span class="sr-only">{{ currentIndex() + 1 }} из {{ exercises().length }}</span>
+					@if (shareNotice()) {
+						<div tuiNotification appearance="positive" role="status">{{ shareNotice() }}</div>
+					}
+					@if (shareError()) {
+						<div tuiNotification appearance="negative" role="alert">{{ shareError() }}</div>
+					}
 				</header>
 				@if (currentExercise(); as item) {
 					<div class="grid gap-2">

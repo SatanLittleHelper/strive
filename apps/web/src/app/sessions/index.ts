@@ -37,3 +37,5 @@ export { getPrimaryAction } from './primary-action.helpers';
 export { FIRST_NAVIGATION_ID, NO_EDITOR_SET, RPE_VALUES } from './sessions.constants';
 
 export { getHistoryGroups, getTodayGroup } from './history-groups.helpers';
+
+export { shareLink } from './share-link.helpers';

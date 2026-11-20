@@ -6,6 +6,7 @@ import type {
   SessionHistoryResponse,
   SessionListResponse,
   SessionSummary,
+  ShareLink,
   WorkoutSession,
 } from '@strive/api-interfaces';
 import { tap, type Observable } from 'rxjs';
@@ -62,5 +63,24 @@ export class SessionsService {
     return this.http
       .post<WorkoutSession>(`${SESSIONS_URL}/${sessionId}/finish`, {})
       .pipe(tap(() => this.active.set({ session: null })));
+  }
+
+  share(sessionId: number): Observable<ShareLink> {
+    return this.http
+      .post<ShareLink>(`${SESSIONS_URL}/${sessionId}/share`, {})
+      .pipe(tap((link) => this.setShare(link)));
+  }
+
+  revokeShare(sessionId: number): Observable<void> {
+    return this.http
+      .delete<void>(`${SESSIONS_URL}/${sessionId}/share`)
+      .pipe(tap(() => this.setShare(null)));
+  }
+
+  private setShare(share: ShareLink | null): void {
+    if (!this.active.hasValue()) return;
+
+    const { session } = this.active.value();
+    if (session) this.active.set({ session: { ...session, share } });
   }
 }
