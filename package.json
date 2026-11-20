@@ -23,7 +23,7 @@
     "db:migrate:dev": "prisma migrate dev --config apps/api/prisma.config.ts",
     "format": "prettier --write apps libs nx.json package.json tsconfig*.json eslint.config.mjs README.md .github/workflows/ci.yml .github/workflows/deploy.yml devops/compose.prod.yml",
     "format:check": "prettier --check apps libs nx.json package.json tsconfig*.json eslint.config.mjs README.md .github/workflows/ci.yml .github/workflows/deploy.yml devops/compose.prod.yml",
-    "prepare": "husky"
+    "prepare": "git config core.hooksPath .husky || true"
   },
   "dependencies": {
     "@angular/common": "22.2.3",
@@ -83,7 +83,6 @@
     "dotenv": "18.0.9",
     "eslint": "10.13.0",
     "eslint-config-prettier": "10.1.8",
-    "husky": "9.1.7",
     "jsdom": "30.1.3",
     "less": "4.9.1",
     "lint-staged": "17.6.0",

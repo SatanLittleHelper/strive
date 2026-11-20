@@ -10,8 +10,15 @@
 			class="flex"
 			[class.rounded-full]="group.superset"
 			[attr.data-superset]="group.superset ? '' : null"
+			[attr.data-current]="group.current ? '' : null"
 			[style.flex]="group.members.length + ' 1 0%'"
-			[style.outline]="group.superset ? '1px solid var(--tui-status-info)' : null"
+			[style.outline]="
+				group.current
+					? '2px solid var(--color-accent)'
+					: group.superset
+						? '1px solid var(--tui-status-info)'
+						: null
+			"
 			[style.outline-offset]="group.superset ? '2px' : null"
 		>
 			<ol class="flex flex-1" [class.gap-0.5]="group.superset">

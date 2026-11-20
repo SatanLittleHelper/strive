@@ -68,7 +68,9 @@ export class ExerciseStepComponent {
 
   protected readonly savedCount = computed(() => countExerciseSets(this.resultsParams()));
   protected readonly ringMax = computed(() => getRingMax(this.resultsParams()));
-  protected readonly today = computed(() => getTodayGroup(this.resultsParams()));
+  protected readonly today = computed(() =>
+    getTodayGroup({ ...this.resultsParams(), exercises: this.session().workout.exercises }),
+  );
   protected readonly groups = computed(() => getHistoryGroups(this.history()));
   protected readonly formSet = computed<ActiveEditorSet | null>(() => {
     const set = this.editorSet();
