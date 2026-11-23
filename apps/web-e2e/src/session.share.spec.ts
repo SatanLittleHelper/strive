@@ -38,6 +38,8 @@ test.describe('общая ссылка на экране тренировки', 
       browserName !== 'chromium',
       'Разрешения буфера обмена настраиваются только в Chromium',
     );
+    // Фиксированное время: срок ссылки LINK.expiresAt не должен истечь относительно реальных часов
+    await page.clock.setFixedTime(new Date('2026-11-20T12:00:00.000Z'));
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     // Web Share есть не во всех сборках Chromium: проверяем запасной путь с буфером
     await page.addInitScript(() =>

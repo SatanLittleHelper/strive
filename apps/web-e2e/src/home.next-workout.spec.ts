@@ -1,144 +1,125 @@
-import { expect, test, type Page, type Route } from '@playwright/test';
-import type { WorkoutSession } from '@strive/api-interfaces';
-import { MOBILE_VIEWPORT } from './e2e.constants';
-import { fulfillAfterDelay, mockSessionList } from './support/history.fixtures';
-import { errorBody, makeSession, mockActive, ok } from './support/session.fixtures';
+import { expect, test, type Page } from '@playwright/test';
+import type { HomeResponse } from '@strive/api-interfaces';
+import { mockHome } from './support/home.fixtures';
+import { errorBody, makeSession, mockActive, mockHistory, ok } from './support/session.fixtures';
 
-const HTTP_ERROR = 500;
-const CATALOG = [
-  { id: 1, name: 'Ноги', description: null, exerciseCount: 5 },
-  { id: 2, name: 'Спина', description: null, exerciseCount: 5 },
-  { id: 3, name: 'Грудь', description: null, exerciseCount: 5 },
-];
-const nextCard = (page: Page) => page.getByRole('link', { name: /Следующая тренировка/ });
-const loading = (page: Page) => page.getByRole('status', { name: 'Загрузка следующей тренировки' });
+const session = makeSession();
+const active = { kind: 'active', workoutName: session.workout.name } satisfies HomeResponse;
+const next = {
+  kind: 'next',
+  workout: { id: 5, name: 'Грудь', exerciseCount: 3 },
+} satisfies HomeResponse;
+const homeRequest = 'GET /api/home';
 
-function finishedOf(workoutId: number): WorkoutSession {
-  const base = makeSession();
-
-  return {
-    ...base,
-    id: 100 + workoutId,
-    workout: { ...base.workout, id: workoutId },
-    finishedAt: '2026-11-10T10:00:00.000Z',
-  };
+function watchApi(page: Page): string[] {
+  const requests: string[] = [];
+  page.on('request', (request) => {
+    const { pathname } = new URL(request.url());
+    if (pathname.startsWith('/api/')) requests.push(`${request.method()} ${pathname}`);
+  });
+  return requests;
 }
 
-async function mockCatalog(page: Page, data: unknown) {
-  await page.route('**/api/workouts', (route) => route.fulfill({ json: ok(data) }));
+async function openHome(page: Page): Promise<void> {
+  await Promise.all([page.waitForResponse('**/api/home'), page.goto('/')]);
+  await expect(page.getByRole('status', { name: 'Загрузка главной' })).toHaveCount(0);
 }
 
-async function openHome(page: Page) {
-  await page.goto('/');
+async function openActiveSession({
+  page,
+  navigate,
+}: {
+  page: Page;
+  navigate: () => Promise<unknown>;
+}) {
+  await mockActive(page, session);
+  await mockHistory(page);
+  const activeResponse = page.waitForResponse('**/api/sessions/active');
+  const historyResponse = page.waitForResponse(`**/api/sessions/${session.id}/history`);
+  await navigate();
+  await Promise.all([activeResponse, historyResponse]);
+  await expect(page).toHaveURL(/\/workouts\/session$/);
+  await expect(page.getByRole('heading', { name: session.workout.name, level: 1 })).toBeVisible();
 }
 
-test.describe('карточка следующей тренировки', () => {
-  test.use({ viewport: MOBILE_VIEWPORT });
+test('[E3] показывает продолжение после ровно одного запроса', async ({ page }) => {
+  const requests = watchApi(page);
+  await mockHome(page, active);
+  await openHome(page);
+  await expect(page.getByRole('complementary', { name: 'Незавершённая тренировка' })).toContainText(
+    session.workout.name,
+  );
+  await expect(page.getByRole('link', { name: 'Продолжить' })).toBeVisible();
+  await expect(page.getByText('Следующая тренировка')).toHaveCount(0);
+  expect(requests).toEqual([homeRequest]);
+});
 
-  test('[rf-E22] показывает следующую тренировку и открывает её', async ({ page }) => {
-    await mockCatalog(page, CATALOG);
-    await mockSessionList(page, [finishedOf(2)]);
-    await openHome(page);
-
-    await expect(nextCard(page)).toContainText('Грудь');
-    await expect(nextCard(page)).toContainText('5 упражнений');
-    await expect(nextCard(page)).toContainText('Открыть');
-    await nextCard(page).click();
-
-    await expect(page).toHaveURL(/\/workouts\/3$/);
-  });
-
-  test('[rf-E23] без истории показывает первую тренировку', async ({ page }) => {
-    await mockCatalog(page, CATALOG);
-    await mockSessionList(page, []);
-    await openHome(page);
-
-    await expect(nextCard(page)).toContainText('Ноги');
-  });
-
-  test('[rf-E24] пустой каталог — карточки нет, остальная главная на месте', async ({ page }) => {
-    await mockCatalog(page, []);
-    await mockSessionList(page, []);
-    await openHome(page);
-
-    await expect(page.getByText('Выберите план и начинайте')).toBeVisible();
-    await expect(loading(page)).toHaveCount(0);
-    await expect(nextCard(page)).toHaveCount(0);
-  });
-
-  test('[rf-E25] загрузка и ошибка каталога', async ({ page }) => {
-    await mockSessionList(page, []);
-    let attempts = 0;
-    await page.route('**/api/workouts', async (route: Route) => {
-      attempts += 1;
-      if (attempts === 1) return fulfillAfterDelay(route, CATALOG).then(() => undefined);
-      return route.fulfill({ json: ok(CATALOG) });
-    });
-    await page.goto('/');
-    await expect(loading(page)).toBeVisible();
-    await expect(nextCard(page)).toBeVisible();
-
-    await page.unroute('**/api/workouts');
-    let failed = false;
-    await page.route('**/api/workouts', (route) => {
-      if (!failed) {
-        failed = true;
-        return route.fulfill({ status: HTTP_ERROR, json: errorBody });
-      }
-      return route.fulfill({ json: ok(CATALOG) });
-    });
-    await page.reload();
-    await expect(page.getByRole('alert')).toContainText(
-      'Не удалось загрузить следующую тренировку',
-    );
-
-    await page.getByRole('button', { name: 'Повторить' }).click();
-
-    await expect(nextCard(page)).toContainText('Ноги');
-  });
-
-  test('[rf-E26] загрузка и ошибка списка завершённых тренировок', async ({ page }) => {
-    await mockCatalog(page, CATALOG);
-    await page.route('**/api/sessions', (route) =>
-      fulfillAfterDelay(route, { sessions: [finishedOf(2)] }),
-    );
-    await page.goto('/');
-    await expect(loading(page)).toBeVisible();
-    await expect(nextCard(page)).toContainText('Грудь');
-
-    await page.unroute('**/api/sessions');
-    let failed = false;
-    await page.route('**/api/sessions', (route) => {
-      if (!failed) {
-        failed = true;
-        return route.fulfill({ status: HTTP_ERROR, json: errorBody });
-      }
-      return fulfillAfterDelay(route, { sessions: [finishedOf(2)] });
-    });
-    await page.reload();
-    await expect(page.getByRole('alert')).toContainText(
-      'Не удалось загрузить следующую тренировку',
-    );
-    await expect(nextCard(page)).toHaveCount(0);
-
-    await page.getByRole('button', { name: 'Повторить' }).click();
-
-    // пока список завершённых не получен, карточки с «первой» тренировкой нет
-    await expect(nextCard(page)).toHaveCount(0);
-    await expect(nextCard(page)).toContainText('Грудь');
-  });
-
-  test('[rf-E27] при активной тренировке карточки нет, виден только баннер «Продолжить»', async ({
+test('[E4] продолжение загружает данные на экране тренировки', async ({ page }) => {
+  await mockHome(page, active);
+  await openHome(page);
+  const continueLink = page.getByRole('link', { name: 'Продолжить' });
+  await expect(continueLink).toHaveAttribute('href', '/workouts/session');
+  await openActiveSession({
     page,
-  }) => {
-    await mockCatalog(page, CATALOG);
-    await mockSessionList(page, []);
-    await mockActive(page, makeSession());
-    await openHome(page);
-
-    await expect(
-      page.getByRole('complementary', { name: 'Незавершённая тренировка' }),
-    ).toBeVisible();
-    await expect(nextCard(page)).toHaveCount(0);
+    navigate: () => continueLink.click(),
   });
+});
+
+test('[E5] прямой вход загружает активную тренировку', async ({ page }) => {
+  await openActiveSession({ page, navigate: () => page.goto('/workouts/session') });
+});
+
+test('[E7] показывает рекомендацию после ровно одного запроса', async ({ page }) => {
+  const requests = watchApi(page);
+  await mockHome(page, next);
+  await openHome(page);
+  const card = page.getByRole('link', { name: /Грудь/ });
+  await expect(card).toBeVisible();
+  await expect(card).toHaveAttribute('href', '/workouts/5');
+  await expect(card).toContainText('3 упражнения');
+  expect(requests).toEqual([homeRequest]);
+});
+
+test('[E9] пустое состояние требует один запрос', async ({ page }) => {
+  const requests = watchApi(page);
+  const gate = { release: (): void => undefined };
+  const held = new Promise<void>((resolve) => {
+    gate.release = resolve;
+  });
+  await page.route('**/api/home', async (route) => {
+    await held;
+    await route.fulfill({ json: ok({ kind: 'empty' }) });
+  });
+  await page.goto('/');
+  const loading = page.getByRole('status', { name: 'Загрузка главной' });
+  try {
+    await expect(loading).toBeVisible();
+  } finally {
+    gate.release();
+  }
+  await expect(loading).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Strive' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Продолжить' })).toHaveCount(0);
+  await expect(page.getByText('Следующая тренировка')).toHaveCount(0);
+  expect(requests).toEqual([homeRequest]);
+});
+
+test('[E10] показывает ошибку и повтор рядом с приветствием', async ({ page }) => {
+  await page.route('**/api/home', (route) => route.fulfill({ status: 500, json: errorBody }));
+  await openHome(page);
+  await expect(page.getByRole('heading', { name: 'Strive' })).toBeVisible();
+  await expect(page.getByRole('alert')).toContainText('Не удалось загрузить главную');
+  await expect(page.getByRole('button', { name: 'Повторить' })).toBeVisible();
+});
+
+test('[E11] повтор делает один запрос и восстанавливает карточку', async ({ page }) => {
+  const requests = watchApi(page);
+  await page.route('**/api/home', (route) => route.fulfill({ status: 500, json: errorBody }), {
+    times: 1,
+  });
+  await openHome(page);
+  await page.route('**/api/home', (route) => route.fulfill({ json: ok(next) }));
+  await page.getByRole('button', { name: 'Повторить' }).click();
+  await expect(page.getByRole('link', { name: /Грудь/ })).toBeVisible();
+  expect(requests).toEqual([homeRequest, homeRequest]);
 });

@@ -6,6 +6,7 @@ import { ApiExceptionFilter } from '../common/api-exception-filter.js';
 import { ApiResponseInterceptor } from '../common/api-response.interceptor.js';
 import { envValidationSchema } from '../config/env.validation/index.js';
 import { HealthModule } from '../health/index.js';
+import { HomeModule } from '../home/index.js';
 import { PrismaModule } from '../prisma/index.js';
 import { SessionsModule } from '../sessions/index.js';
 import { WorkoutsModule } from '../workouts/index.js';
@@ -38,6 +39,7 @@ const SHARED_TOKEN_PATTERN = /(\/api\/shared\/)[^/?#]+/;
     HealthModule,
     WorkoutsModule,
     SessionsModule,
+    HomeModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: ApiExceptionFilter },

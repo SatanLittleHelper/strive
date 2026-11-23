@@ -158,7 +158,7 @@ test('на узком экране страница не прокручивае�
 });
 
 test('веб-клиент передаёт идентификатор устройства в API', async ({ page }) => {
-  const requestPromise = page.waitForRequest('**/api/sessions/active');
+  const requestPromise = page.waitForRequest('**/api/home');
 
   await page.goto('/');
 
