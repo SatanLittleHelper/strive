@@ -5,7 +5,26 @@
 		Каждая тренировка приближает к цели. Выберите план и начинайте.
 	</p>
 </section>
-<app-continue-banner />
-@if (showNextWorkout()) {
-	<app-next-workout />
-}
+<app-resource-state
+	errorMessage="Не удалось загрузить главную"
+	hideEmpty
+	loadingLabel="Загрузка главной"
+	[state]="state()"
+	(retry)="reload()"
+>
+	<div aria-hidden="true" appearance="neutral" loading tuiCardLarge [tuiSkeleton]="true">
+		<header tuiHeader>
+			<h2 tuiTitle>Тренировка<span tuiSubtitle>Загрузка тренировки</span></h2>
+		</header>
+	</div>
+	@if (card(); as data) {
+		@switch (data.kind) {
+			@case ('active') {
+				<app-continue-banner [workoutName]="data.workoutName" />
+			}
+			@case ('next') {
+				<app-next-workout [workout]="data.workout" />
+			}
+		}
+	}
+</app-resource-state>

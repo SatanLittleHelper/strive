@@ -35,3 +35,4 @@ export type {
   StartSessionRequest,
   WorkoutSession,
 } from './workout-session.types.js';
+export type { HomeResponse, HomeWorkout } from './home.types.js';

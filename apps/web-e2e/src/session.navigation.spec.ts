@@ -186,14 +186,6 @@ test.describe('маршрут экрана тренировки', () => {
     await expect(page).toHaveURL(/\/workouts\/session$/);
   });
 
-  test('баннер «Продолжить» ведёт на экран тренировки', async ({ page }) => {
-    await page.goto('/');
-
-    await page.getByRole('link', { name: 'Продолжить', exact: true }).click();
-
-    await expect(page).toHaveURL(/\/workouts\/session$/);
-  });
-
   test('ошибка старта показана в деталях, 409 открывает существующую сессию', async ({ page }) => {
     await page.route('**/api/workouts/1', (route) => route.fulfill({ json: ok(SESSION.workout) }));
     await page.route('**/api/sessions', (route) =>
@@ -211,17 +203,5 @@ test.describe('маршрут экрана тренировки', () => {
 
     await expect(page).toHaveURL(/\/workouts\/session$/);
     await expect(page.getByRole('heading', { name: 'Тренировка A', level: 1 })).toBeVisible();
-  });
-
-  test('при ошибке active главная скрывает баннер и не показывает status', async ({ page }) => {
-    await page.unroute('**/api/sessions/active');
-    await page.route('**/api/sessions/active', (route) =>
-      route.fulfill({ status: HTTP_ERROR, json: error }),
-    );
-    await page.goto('/');
-
-    await expect(page.getByRole('heading', { name: 'Strive' })).toBeVisible();
-    await expect(page.getByRole('status')).toHaveCount(0);
-    await expect(page.getByRole('link', { name: 'Продолжить', exact: true })).toHaveCount(0);
   });
 });

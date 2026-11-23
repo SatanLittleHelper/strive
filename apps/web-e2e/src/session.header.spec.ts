@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { MOBILE_VIEWPORT } from './e2e.constants';
+import { mockHome } from './support/home.fixtures';
 import { fullExercise, makeSession, ok } from './support/session.fixtures';
 import { position, progressBar } from './support/session.page';
 import { startSessionServer } from './support/session.server';
@@ -54,7 +55,9 @@ test.describe('шапка экрана тренировки', () => {
   });
 
   test('после «назад» на главной остаётся баннер «Продолжить»', async ({ page }) => {
-    await startSessionServer(page);
+    const session = makeSession();
+    await startSessionServer(page, { session });
+    await mockHome(page, { kind: 'active', workoutName: session.workout.name });
     await page.goto('/workouts/session');
 
     await page.getByRole('button', { name: BACK_NAME }).click();
